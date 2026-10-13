@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>場景檢視器</title>
+<style>
+  :root { --bg: #f6f5f2; --panel: rgba(255,255,255,.86); --text: #232323; --muted: #6b6b6b; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text);
+    font-family: "Noto Sans TC", -apple-system, "PingFang TC", sans-serif; overflow: hidden; }
+  canvas { display: block; }
+  .title { position: fixed; top: 24px; left: 24px; pointer-events: none; }
+  .title h1 { margin: 0; font-size: 22px; letter-spacing: .04em; }
+  .title p { margin: 6px 0 0; font-size: 13px; color: var(--muted); }
+  .panel { position: fixed; top: 24px; right: 24px; width: 220px; padding: 16px; background: var(--panel);
+    backdrop-filter: blur(10px); border-radius: 14px; box-shadow: 0 6px 24px rgba(0,0,0,.08); font-size: 13px; }
+  .panel h2 { margin: 0 0 10px; font-size: 13px; color: var(--muted); font-weight: 500; }
+  .row { display: flex; align-items: center; justify-content: space-between; margin: 6px 0; }
+  .row input[type=color] { width: 36px; height: 24px; border: none; background: none; padding: 0; cursor: pointer; }
+  select { width: 100%; padding: 6px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 10px; font: inherit; }
+  .btns { display: flex; gap: 8px; margin-top: 12px; }
+  button { flex: 1; padding: 8px 0; border: 0; border-radius: 8px; cursor: pointer; background: #232323; color: #fff; font-size: 12px; }
+  button.ghost { background: #ececec; color: #232323; }
+  .hint { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); font-size: 12px; color: var(--muted);
+    background: var(--panel); padding: 6px 14px; border-radius: 99px; }
+  .err { position: fixed; inset: 0; display: grid; place-items: center; color: #c33; font-size: 14px; padding: 24px; text-align: center; }
+  @media (max-width: 640px) {
+    .title { top: 16px; left: 16px; }
+    .panel { top: auto; bottom: 56px; right: 16px; left: 16px; width: auto; }
+  }
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<div class="title"><h1 id="name">場景</h1><p id="sub">正交相機 · 共用材質 · 可縮放不失真</p></div>
+<div class="panel">
+  <h2>場景</h2>
+  <select id="pick"></select>
+  <h2>即時調色（共用材質，全站同步）</h2>
+  <div class="row"><span>主色・藍</span><input type="color" data-mat="blue" value="#1f6fd6"></div>
+  <div class="row"><span>木紋</span><input type="color" data-mat="wood" value="#e2b273"></div>
+  <div class="row"><span>地毯</span><input type="color" data-mat="rug" value="#6fb2f0"></div>
+  <div class="row"><span>點綴・橘</span><input type="color" data-mat="accent" value="#fb5b1a"></div>
+  <div class="row"><span>地基</span><input type="color" data-mat="base" value="#e4e4e6"></div>
+  <div class="btns"><button id="replay">重播進場</button><button id="reset" class="ghost">回正視角</button></div>
+</div>
+<div class="hint">拖曳旋轉 · 滾輪縮放 · 滑過物件會浮起</div>
+
+<script type="module">
+// 單一場景檢視器：用 ?scene=<檔名> 載入 scenes/ 底下的場景
+import { M } from './shared/materials.js';
+import { createStage, createAnimator } from './shared/stage.js';
+
+// 新增場景時，把檔名加進這個清單
+const SCENES = ['office', 'cowork', 'exchange', 'plaza-a', 'plaza-b', 'shop', 'tower', 'university'];
+
+const params = new URLSearchParams(location.search);
+const id = params.get('scene') || 'office';
+const pick = document.getElementById('pick');
+SCENES.forEach(s => pick.add(new Option(s, s, false, s === id)));
+pick.onchange = () => { location.search = `?scene=${pick.value}`; };
+
+const stage = createStage({ view: 15 });
+stage.controls.target.set(0, 1.2, 0);
+
+let mod;
+try {
+  mod = await import(`./scenes/${id}.js`);
+} catch (e) {
+  document.body.insertAdjacentHTML('beforeend', `<div class="err">找不到或無法載入 scenes/${id}.js<br>${e.message}</div>`);
+  throw e;
+}
+const { root, items } = mod.default();
+stage.scene.add(root);
+document.getElementById('name').textContent = mod.meta?.name ?? id;
+document.title = `${mod.meta?.name ?? id} · 場景檢視器`;
+
+const anim = createAnimator(stage, items);
+document.querySelectorAll('[data-mat]').forEach(inp =>
+  inp.addEventListener('input', e => M[inp.dataset.mat].color.set(e.target.value)));
+document.getElementById('replay').onclick = () => anim.replay();
+document.getElementById('reset').onclick = () => {
+  stage.camera.zoom = 1; stage.lookAt(); stage.controls.target.set(0, 1.2, 0); stage.frame();
+};
+
+stage.renderer.setAnimationLoop(() => {
+  anim.update();
+  stage.controls.update();
+  stage.renderer.render(stage.scene, stage.camera);
+});
+</script>
+</body>
+</html>

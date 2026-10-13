@@ -1,0 +1,7 @@
+{
+  "cleanUrls": true,
+  "rewrites": [{ "source": "/", "destination": "/hero-map.html" }],
+  "headers": [
+    { "source": "/(.*)", "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }] }
+  ]
+}

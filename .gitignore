@@ -1,0 +1,7 @@
+# 系統與編輯器產生的檔案
+.DS_Store
+.claude/
+# 打包檔（內部預覽用，用 build.py 隨時可以重新產生）
+dist/
+# Vercel CLI 的本機設定
+.vercel/

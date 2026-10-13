@@ -1,0 +1,482 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>辦公研發空間 3D 試作</title>
+<style>
+  :root {
+    --bg: #f6f5f2;
+    --panel: rgba(255, 255, 255, 0.86);
+    --text: #232323;
+    --muted: #6b6b6b;
+    --accent: #fb5b1a;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text);
+    font-family: "Noto Sans TC", -apple-system, "PingFang TC", sans-serif; overflow: hidden; }
+  canvas { display: block; }
+  /* 左上：標題 */
+  .title { position: fixed; top: 24px; left: 24px; pointer-events: none; }
+  .title h1 { margin: 0; font-size: 22px; letter-spacing: .04em; }
+  .title p { margin: 6px 0 0; font-size: 13px; color: var(--muted); }
+  /* 右側：控制面板（示範顏色可即時調整） */
+  .panel { position: fixed; top: 24px; right: 24px; width: 220px; padding: 16px;
+    background: var(--panel); backdrop-filter: blur(10px); border-radius: 14px;
+    box-shadow: 0 6px 24px rgba(0,0,0,.08); font-size: 13px; }
+  .panel h2 { margin: 0 0 10px; font-size: 13px; color: var(--muted); font-weight: 500; }
+  .row { display: flex; align-items: center; justify-content: space-between; margin: 6px 0; }
+  .row input[type=color] { width: 36px; height: 24px; border: none; background: none; padding: 0; cursor: pointer; }
+  .btns { display: flex; gap: 8px; margin-top: 12px; }
+  button { flex: 1; padding: 8px 0; border: 0; border-radius: 8px; cursor: pointer;
+    background: #232323; color: #fff; font-size: 12px; }
+  button.ghost { background: #ececec; color: #232323; }
+  .hint { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    font-size: 12px; color: var(--muted); background: var(--panel); padding: 6px 14px; border-radius: 99px; }
+  @media (max-width: 640px) {
+    .title { top: 16px; left: 16px; }
+    .panel { top: auto; bottom: 56px; right: 16px; left: 16px; width: auto; }
+  }
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<div class="title">
+  <h1>辦公研發空間</h1>
+  <p>程式建模試作 · 正交相機 · 可縮放不失真</p>
+</div>
+
+<div class="panel">
+  <h2>即時調色（不用重新生圖）</h2>
+  <div class="row"><span>主色・藍</span><input type="color" id="c-blue" value="#1f6fd6"></div>
+  <div class="row"><span>木紋</span><input type="color" id="c-wood" value="#e2b273"></div>
+  <div class="row"><span>地毯</span><input type="color" id="c-rug" value="#6fb2f0"></div>
+  <div class="row"><span>點綴・橘</span><input type="color" id="c-accent" value="#fb5b1a"></div>
+  <div class="row"><span>地基</span><input type="color" id="c-base" value="#e4e4e6"></div>
+  <div class="btns">
+    <button id="replay">重播進場</button>
+    <button id="reset" class="ghost">回正視角</button>
+  </div>
+</div>
+<div class="hint">拖曳旋轉 · 滾輪縮放 · 滑過物件會浮起</div>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+// ---------- 基本場景設定 ----------
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;      // 柔和陰影
+renderer.toneMapping = THREE.ACESFilmicToneMapping;    // 電影感色調，讓塑膠質感更自然
+renderer.toneMappingExposure = 0.82;
+document.body.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color('#f6f5f2');
+// 環境反射：讓材質有柔和的高光，像霧面塑膠
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+
+// 正交相機：沒有近大遠小，所有物件透視角度永遠一致（等角視角的關鍵）
+const VIEW = 15;
+const aspect = innerWidth / innerHeight;
+const camera = new THREE.OrthographicCamera(-VIEW * aspect / 2, VIEW * aspect / 2, VIEW / 2, -VIEW / 2, 0.1, 200);
+const HOME = new THREE.Vector3(20, 17, 20);
+camera.position.copy(HOME);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.set(0, 1.2, 0);
+controls.enableDamping = true;
+controls.minZoom = 0.6;
+controls.maxZoom = 4;
+controls.maxPolarAngle = Math.PI * 0.42;  // 不讓鏡頭鑽到地板下
+controls.enablePan = false;
+
+// ---------- 燈光 ----------
+scene.add(new THREE.HemisphereLight('#ffffff', '#c9cdd6', 0.55));
+const sun = new THREE.DirectionalLight('#ffffff', 2.2);
+sun.position.set(-6, 14, 9);               // 左前上方打光，和 AI 圖的光源方向一致
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.camera.left = -9; sun.shadow.camera.right = 9;
+sun.shadow.camera.top = 9; sun.shadow.camera.bottom = -9;
+sun.shadow.radius = 6;
+sun.shadow.bias = -0.0005;
+scene.add(sun);
+
+// ---------- 材質（統一管理，改一個值就全場景同步） ----------
+const plastic = (color, extra = {}) => new THREE.MeshPhysicalMaterial({
+  color, roughness: 0.55, metalness: 0, clearcoat: 0.35, clearcoatRoughness: 0.45, ...extra
+});
+const M = {
+  base:   plastic('#e4e4e6'),
+  wall:   plastic('#f3f3f4'),
+  white:  plastic('#fbfbfb'),
+  rug:    plastic('#6fb2f0', { roughness: 0.9, clearcoat: 0 }),
+  wood:   plastic('#e2b273', { roughness: 0.7 }),
+  blue:   plastic('#1f6fd6'),
+  accent: plastic('#fb5b1a'),
+  yellow: plastic('#f2b632'),
+  green:  plastic('#4bb04f'),
+  dark:   plastic('#2b2f36', { roughness: 0.4 }),
+  keybase: plastic('#dfe2e7'),                                         // 鍵盤底座（比按鍵深一階）
+  screen: plastic('#dfe8f2', { roughness: 0.2, clearcoat: 0.8 }),
+  line:   plastic('#c9ccd2'),
+  glass:  plastic('#cfe6fb', { transmission: 0.6, roughness: 0.15, thickness: 0.2 }),
+};
+
+// ---------- 建模小工具 ----------
+// 圓角方塊：寬、高、深、圓角、材質、位置
+function box(w, h, d, mat, x = 0, y = 0, z = 0, r = 0.06) {
+  const m = new THREE.Mesh(new RoundedBoxGeometry(w, h, d, 4, Math.min(r, w / 2, h / 2, d / 2)), mat);
+  m.position.set(x, y, z);
+  m.castShadow = true; m.receiveShadow = true;
+  return m;
+}
+// 圓柱
+function cyl(rt, rb, h, mat, x = 0, y = 0, z = 0, seg = 32) {
+  const m = new THREE.Mesh(new THREE.CylinderGeometry(rt, rb, h, seg), mat);
+  m.position.set(x, y, z);
+  m.castShadow = true; m.receiveShadow = true;
+  return m;
+}
+// 球
+function ball(r, mat, x = 0, y = 0, z = 0) {
+  const m = new THREE.Mesh(new THREE.SphereGeometry(r, 32, 24), mat);
+  m.position.set(x, y, z);
+  m.castShadow = true; m.receiveShadow = true;
+  return m;
+}
+// 資料夾：書背朝向本地 +x，底部貼齊 y=0；厚度沿 z 軸
+// 用 rotation.y 決定書背朝哪個方向
+function binder(mat, h = 1.1, depth = 0.85, thick = 0.3) {
+  const g = new THREE.Group();
+  g.add(box(depth, h, thick, mat, 0, h / 2, 0, 0.05));                          // 本體
+  g.add(box(0.03, h * 0.36, thick * 0.62, M.white, depth / 2 + 0.005, h * 0.66, 0, 0.012)); // 書背白色標籤
+  const ring = cyl(0.085, 0.085, 0.03, M.white, depth / 2 + 0.008, h * 0.24, 0, 24); // 指洞外圈
+  ring.rotation.z = Math.PI / 2;
+  g.add(ring);
+  const hole = cyl(0.055, 0.055, 0.03, M.dark, depth / 2 + 0.018, h * 0.24, 0, 24);  // 指洞內部
+  hole.rotation.z = Math.PI / 2;
+  g.add(hole);
+  return g;
+}
+// 放置資料夾的小工具
+function placeBinder(parent, mat, x, y, z, rotY = 0, h) {
+  const b = binder(mat, h);
+  b.position.set(x, y, z);
+  b.rotation.y = rotY;
+  parent.add(b);
+  return b;
+}
+
+// 所有「會進場、可 hover」的物件
+const items = [];
+function item(group, x, z, delay, rotY = 0) {
+  group.position.set(x, 0, z);
+  group.rotation.y = rotY;
+  group.userData = { isItem: true, delay, lift: 0 };
+  items.push(group);
+  scene.add(group);
+  return group;
+}
+
+// ---------- 1. 地基平台 ----------
+const platform = new THREE.Group();
+platform.add(box(10, 1, 10, M.base, 0, -0.5, 0, 0.3));
+platform.add(box(6.6, 0.06, 6.2, M.rug, 0.6, 0.03, 0.4, 0.03));   // 藍色地毯
+scene.add(platform);
+
+// ---------- 2. 牆面（L 型轉角） ----------
+const walls = new THREE.Group();
+walls.add(box(0.3, 4.4, 9.6, M.wall, -4.75, 2.2, 0, 0.1));   // 左牆
+walls.add(box(9.3, 4.4, 0.3, M.wall, 0.15, 2.2, -4.75, 0.1)); // 後牆
+item(walls, 0, 0, 0.05);
+
+// ---------- 3. 白板（掛在後牆） ----------
+const board = new THREE.Group();
+board.add(box(3.8, 2.5, 0.16, M.white, 0, 2.7, 0, 0.08));
+board.add(box(3.1, 0.14, 0.22, M.dark, 0, 4.02, 0.04, 0.05));         // 上方軌道
+board.add(box(0.18, 0.3, 0.12, M.dark, -1.1, 3.88, 0.12, 0.03));      // 夾子
+board.add(box(0.18, 0.3, 0.12, M.dark, 1.1, 3.88, 0.12, 0.03));
+board.add(box(0.55, 0.55, 0.04, M.yellow, 0.6, 3.1, 0.1, 0.02));      // 便利貼
+board.add(box(0.5, 0.5, 0.04, M.blue, 1.15, 2.55, 0.1, 0.02));
+board.add(box(0.5, 0.5, 0.04, M.line, -1.15, 3.1, 0.1, 0.02));
+for (let i = 0; i < 3; i++) board.add(box(1.1 - i * 0.2, 0.06, 0.03, M.line, -1.0, 2.5 - i * 0.25, 0.1, 0.02)); // 文字線條
+item(board, -1.6, -4.5, 0.25);
+
+// ---------- 4. 書櫃（後牆右側） ----------
+const shelf = new THREE.Group();
+shelf.add(box(0.14, 3.7, 1.2, M.wood, -1.1, 1.85, 0));
+shelf.add(box(0.14, 3.7, 1.2, M.wood, 1.1, 1.85, 0));
+[0.08, 1.35, 2.5, 3.64].forEach(y => shelf.add(box(2.34, 0.14, 1.2, M.wood, 0, y, 0, 0.04)));
+shelf.add(box(2.06, 1.1, 0.1, M.white, 0, 0.72, 0.52, 0.04));         // 下方白色門片
+shelf.add(box(0.5, 0.06, 0.06, M.line, 0, 0.72, 0.6, 0.02));           // 把手
+// 資料夾：書背朝前（+z），沿 x 排列，間距大於厚度才不會互相穿插
+[[M.blue, -0.78], [M.white, -0.46], [M.yellow, -0.14]].forEach(([mat, x]) =>
+  placeBinder(shelf, mat, x, 2.57, 0, -Math.PI / 2, 0.95));
+shelf.add(box(0.9, 0.6, 0.85, M.white, 0.45, 1.75, 0, 0.06));          // 收納盒
+item(shelf, 3.0, -3.85, 0.4);
+
+// ---------- 5. 矮櫃 + 植栽（左牆） ----------
+const cab = new THREE.Group();
+cab.add(box(1.3, 1.4, 2.8, M.white, 0, 0.7, 0, 0.08));
+cab.add(box(1.4, 0.12, 2.9, M.wood, 0, 1.46, 0, 0.04));
+cab.add(box(0.06, 1.1, 0.04, M.line, 0.66, 0.7, 0, 0.02));             // 門縫
+// 資料夾：書背朝外（+x），沿 z 排列；藍、白、橘黃，和參考圖一致
+[[M.yellow, -1.0], [M.white, -0.67], [M.blue, -0.34]].forEach(([mat, z]) =>
+  placeBinder(cab, mat, 0, 1.52, z));
+const pot = cyl(0.32, 0.26, 0.5, M.white, 0, 1.77, 0.8);
+cab.add(pot);
+[[0, 2.3, 0.8, 0.32], [0.2, 2.55, 0.65, 0.26], [-0.18, 2.5, 0.95, 0.25], [0.05, 2.75, 0.85, 0.22]]
+  .forEach(([x, y, z, r]) => cab.add(ball(r, M.green, x, y, z)));
+item(cab, -3.95, 0.4, 0.55);
+
+// ---------- 6. 辦公桌（含抽屜櫃、電腦、文具） ----------
+const desk = new THREE.Group();
+desk.add(box(4.4, 0.16, 2.1, M.wood, 0, 1.78, 0, 0.05));                // 桌面
+[[-2.0, -0.85], [-2.0, 0.85]].forEach(([x, z]) => desk.add(box(0.12, 1.7, 0.12, M.white, x, 0.85, z, 0.04))); // 桌腳
+desk.add(box(1.2, 1.66, 1.9, M.white, 1.5, 0.85, 0, 0.06));             // 抽屜櫃
+[0.5, 1.15].forEach(y => desk.add(box(1.0, 0.04, 0.04, M.line, 1.5, y, 0.97, 0.02)));
+// 螢幕
+desk.add(box(0.7, 0.06, 0.45, M.dark, 0, 1.89, -0.55, 0.03));
+desk.add(box(0.12, 0.6, 0.12, M.dark, 0, 2.15, -0.6, 0.04));
+desk.add(box(2.0, 1.2, 0.12, M.dark, 0, 2.85, -0.62, 0.06));
+desk.add(box(1.84, 1.04, 0.04, M.screen, 0, 2.85, -0.55, 0.03));
+// 鍵盤：淺灰底座 + 一顆顆圓角按鍵（4 排，最下排有長空白鍵）
+const kb = new THREE.Group();
+kb.add(box(1.3, 0.05, 0.44, M.keybase, 0, 0.025, 0, 0.025));            // 底座
+const KEY_W = 0.082, KEY_D = 0.068, PITCH_X = 0.1, PITCH_Z = 0.088;
+const keyGeo = new RoundedBoxGeometry(KEY_W, 0.03, KEY_D, 3, 0.012);    // 共用同一個幾何，省效能
+// 每排的按鍵寬度（以「一般鍵」為 1 單位），加總都是 12
+const rows = [
+  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+  [1.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1.5],
+  [2, 1, 1, 1, 1, 1, 1, 1, 1, 2],
+  [1.5, 1, 1, 5, 1, 1, 1.5],                                             // 中間 5 單位是空白鍵
+];
+rows.forEach((row, ri) => {
+  let cursor = -6;                                                       // 從最左邊開始排
+  row.forEach(units => {
+    const key = new THREE.Mesh(keyGeo, M.white);
+    const cx = (cursor + units / 2) * PITCH_X;
+    key.scale.x = (units * PITCH_X - (PITCH_X - KEY_W)) / KEY_W;          // 寬鍵依單位拉長
+    key.position.set(cx, 0.062, (ri - 1.5) * PITCH_Z);
+    key.castShadow = true; key.receiveShadow = true;
+    kb.add(key);
+    cursor += units;
+  });
+});
+kb.position.set(-0.1, 1.86, 0.25);
+desk.add(kb);
+
+// 滑鼠：壓扁的半顆蛋形 + 中間按鍵分隔線 + 滾輪，前端朝螢幕（-z）
+const mouse = new THREE.Group();
+const shell = new THREE.Mesh(new THREE.SphereGeometry(1, 40, 20, 0, Math.PI * 2, 0, Math.PI / 2), M.white);
+shell.scale.set(0.12, 0.08, 0.19);
+shell.castShadow = true; shell.receiveShadow = true;
+mouse.add(shell);
+mouse.add(box(0.008, 0.02, 0.085, M.line, 0, 0.055, -0.12, 0.003));     // 左右鍵分隔線
+const wheel = cyl(0.02, 0.02, 0.022, M.dark, 0, 0.068, -0.075, 20);     // 滾輪
+wheel.rotation.z = Math.PI / 2;
+mouse.add(wheel);
+mouse.position.set(0.85, 1.86, 0.3);
+mouse.rotation.y = -0.15;
+desk.add(mouse);
+
+// 筆筒：用旋轉成形（Lathe）做出中空杯子，杯緣圓潤、杯底有厚度
+const cup = new THREE.Group();
+const profile = [                                                         // 杯子剖面：(半徑, 高度)
+  [0, 0], [0.17, 0], [0.19, 0.015], [0.196, 0.04], [0.2, 0.44],          // 杯底 → 外壁
+  [0.197, 0.455], [0.188, 0.466], [0.177, 0.466], [0.169, 0.455],         // 圓潤杯緣
+  [0.165, 0.44], [0.162, 0.075], [0.15, 0.06], [0, 0.06],                 // 內壁 → 杯底內側
+].map(([r, y]) => new THREE.Vector2(r, y));
+const cupMesh = new THREE.Mesh(new THREE.LatheGeometry(profile, 48), M.blue);
+cupMesh.material.side = THREE.DoubleSide;
+cupMesh.castShadow = true; cupMesh.receiveShadow = true;
+cup.add(cupMesh);
+// 筆：六角筆身 + 筆蓋 + 圓潤頂端
+function pencil(bodyMat, capMat, len) {
+  const g = new THREE.Group();
+  const body = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, len, 6), bodyMat);
+  body.position.y = len / 2; body.castShadow = true;
+  g.add(body);
+  const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.042, 0.042, 0.1, 12), capMat);
+  cap.position.y = len + 0.04; cap.castShadow = true;
+  g.add(cap);
+  const tip = new THREE.Mesh(new THREE.ConeGeometry(0.038, 0.07, 12), capMat);
+  tip.position.y = len + 0.11;
+  g.add(tip);
+  return g;
+}
+// 筆底靠近杯底中央、小角度往外散開：杯緣高度時筆身離杯壁仍有空隙，不會穿出也不會交叉
+[
+  [M.yellow, M.blue,   -0.04,  0.03,  0.16, 0.74],   // 往左斜
+  [M.blue,   M.accent,  0.0,  -0.05,  0.0,  0.84],   // 中間直立：最高
+  [M.yellow, M.blue,    0.04,  0.03, -0.16, 0.74],   // 往右斜
+].forEach(([body, cap, x, z, tilt, len]) => {
+  const p = pencil(body, cap, len);
+  p.position.set(x, 0.06, z);
+  p.rotation.z = tilt;
+  cup.add(p);
+});
+cup.position.set(-1.5, 1.86, -0.4);
+desk.add(cup);
+// 書本
+desk.add(box(0.75, 0.12, 0.55, M.blue, 1.6, 1.92, -0.25, 0.03));
+desk.add(box(0.68, 0.12, 0.5, M.yellow, 1.6, 2.04, -0.25, 0.03));
+item(desk, 0.7, -0.9, 0.7);
+
+// ---------- 7. 人體工學椅 ----------
+// 椅子朝向 -z（面對桌子），椅背在 +z 側（靠近觀看者）
+const chair = new THREE.Group();
+
+// 圓角矩形外框（中心為原點），用來做椅背的白框與藍色網面
+function roundRect(w, h, rTop, rBot) {
+  const s = new THREE.Shape();
+  const x = -w / 2, y = -h / 2;
+  s.moveTo(x + rBot, y);
+  s.lineTo(x + w - rBot, y);
+  s.quadraticCurveTo(x + w, y, x + w, y + rBot);
+  s.lineTo(x + w, y + h - rTop);
+  s.quadraticCurveTo(x + w, y + h, x + w - rTop, y + h);
+  s.lineTo(x + rTop, y + h);
+  s.quadraticCurveTo(x, y + h, x, y + h - rTop);
+  s.lineTo(x, y + rBot);
+  s.quadraticCurveTo(x, y, x + rBot, y);
+  return s;
+}
+// 把平面形狀擠出成有厚度、邊緣圓潤的立體
+function extrude(shape, depth, mat, bevel = 0.04) {
+  const geo = new THREE.ExtrudeGeometry(shape, {
+    depth, bevelEnabled: true, bevelThickness: bevel, bevelSize: bevel, bevelSegments: 5, curveSegments: 20,
+  });
+  geo.translate(0, 0, -depth / 2);
+  const m = new THREE.Mesh(geo, mat);
+  m.castShadow = true; m.receiveShadow = true;
+  return m;
+}
+
+// 五爪椅腳：中心軸 + 微微下斜的爪 + 雙輪腳輪
+chair.add(cyl(0.16, 0.18, 0.14, M.dark, 0, 0.3, 0));                    // 中心軸座
+for (let i = 0; i < 5; i++) {
+  const a = (i / 5) * Math.PI * 2 + 0.3;
+  const arm = new THREE.Group();
+  const spoke = box(0.78, 0.1, 0.15, M.dark, 0.42, 0, 0, 0.05);
+  spoke.rotation.z = -0.1;                                               // 往外微微下斜
+  arm.add(spoke);
+  arm.add(box(0.12, 0.1, 0.12, M.dark, 0.8, -0.08, 0, 0.04));           // 腳輪支架
+  const wheel = cyl(0.1, 0.1, 0.16, M.dark, 0.8, -0.18, 0, 24);          // 輪子（橫躺）
+  wheel.rotation.x = Math.PI / 2;
+  arm.add(wheel);
+  arm.position.y = 0.3;
+  arm.rotation.y = a;
+  chair.add(arm);
+}
+chair.add(cyl(0.07, 0.07, 0.5, M.dark, 0, 0.6, 0));                     // 氣壓桿
+chair.add(cyl(0.11, 0.13, 0.2, M.white, 0, 0.78, 0));                    // 氣壓桿白色護蓋
+chair.add(box(0.6, 0.14, 0.6, M.white, 0, 0.9, 0, 0.06));                // 座椅底座機構
+
+// 座椅：白色外殼 + 厚實藍色坐墊
+chair.add(box(1.32, 0.16, 1.2, M.white, 0, 1.03, 0, 0.08));
+chair.add(box(1.2, 0.18, 1.08, M.blue, 0, 1.18, -0.02, 0.09));
+
+// 椅背：白色圓角外框 + 內嵌藍色網面，整片微微後仰
+const back = new THREE.Group();
+const frame = roundRect(1.22, 1.45, 0.42, 0.22);
+frame.holes.push(roundRect(1.06, 1.29, 0.35, 0.15));                      // 挖空中間
+back.add(extrude(frame, 0.08, M.white, 0.03));
+back.add(extrude(roundRect(1.08, 1.31, 0.36, 0.16), 0.04, M.blue, 0.015)); // 藍色網面
+back.position.set(0, 2.05, 0.62);
+back.rotation.x = 0.14;                                                   // 後仰
+chair.add(back);
+// 椅背支架：從座椅後方往上接椅背
+chair.add(box(0.26, 0.3, 0.08, M.white, 0, 1.26, 0.6, 0.035));
+
+// 扶手：白色，從椅背兩側延伸下來接座椅
+[-0.7, 0.7].forEach(x => {
+  chair.add(box(0.1, 0.42, 0.12, M.white, x, 1.4, 0.0, 0.05));          // 立柱
+  chair.add(box(0.14, 0.09, 0.72, M.white, x, 1.62, 0.12, 0.045));      // 扶手面
+});
+item(chair, 0.6, 1.3, 0.9, 0.12);
+
+// ---------- 進場動畫（物件依序掉落） ----------
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+let startTime = performance.now();
+const DROP = 7;      // 掉落高度
+const DUR = 0.75;    // 每個物件的掉落時間（秒）
+// 彈跳緩動：落地後輕輕回彈
+function easeOutBounce(x) {
+  const n1 = 7.5625, d1 = 2.75;
+  if (x < 1 / d1) return n1 * x * x;
+  if (x < 2 / d1) return n1 * (x -= 1.5 / d1) * x + 0.75;
+  if (x < 2.5 / d1) return n1 * (x -= 2.25 / d1) * x + 0.9375;
+  return n1 * (x -= 2.625 / d1) * x + 0.984375;
+}
+
+// ---------- 滑鼠 hover：物件浮起 ----------
+const raycaster = new THREE.Raycaster();
+const pointer = new THREE.Vector2(9, 9);
+let hovered = null;
+addEventListener('pointermove', e => {
+  pointer.set((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
+});
+function findItem(obj) {
+  while (obj && !obj.userData.isItem) obj = obj.parent;
+  return obj;
+}
+
+// ---------- 控制面板 ----------
+const bind = (id, mat) => document.getElementById(id).addEventListener('input', e => mat.color.set(e.target.value));
+bind('c-blue', M.blue);
+bind('c-wood', M.wood); bind('c-rug', M.rug);
+bind('c-accent', M.accent); bind('c-base', M.base);
+document.getElementById('replay').onclick = () => { startTime = performance.now(); };
+document.getElementById('reset').onclick = () => {
+  camera.position.copy(HOME); camera.zoom = 1; camera.updateProjectionMatrix();
+  controls.target.set(0, 1.2, 0);
+};
+
+// ---------- 視窗縮放 ----------
+addEventListener('resize', () => {
+  const a = innerWidth / innerHeight;
+  camera.left = -VIEW * a / 2; camera.right = VIEW * a / 2;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+// ---------- 主迴圈 ----------
+renderer.setAnimationLoop(() => {
+  const t = (performance.now() - startTime) / 1000;
+
+  // hover 偵測
+  raycaster.setFromCamera(pointer, camera);
+  const hit = raycaster.intersectObjects(items, true)[0];
+  hovered = hit ? findItem(hit.object) : null;
+  if (hovered === walls) hovered = null;   // 牆面不浮起
+
+  for (const g of items) {
+    const u = g.userData;
+    u.lift += ((g === hovered ? 0.35 : 0) - u.lift) * 0.15;   // 平滑浮起／落下
+    const p = reduceMotion ? 1 : Math.min(Math.max((t - u.delay) / DUR, 0), 1);
+    g.visible = p > 0;
+    g.position.y = (1 - easeOutBounce(p)) * DROP + u.lift;
+  }
+  document.body.style.cursor = hovered ? 'pointer' : '';
+
+  controls.update();
+  renderer.render(scene, camera);
+});
+</script>
+</body>
+</html>
