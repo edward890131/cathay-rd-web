@@ -7,7 +7,7 @@
 <title>國泰產研 Hero 構圖</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Lexend+Exa:wght@700&family=Noto+Sans+TC:wght@400;600;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Lexend+Exa:wght@700&family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
   :root {
     /* 色彩（依設計稿 174:4660 與 WF Site Header 81:1850） */
@@ -43,17 +43,36 @@
   /* 捲動距離：用來驅動鏡頭 */
   .scroll-space { height: 700vh; }   /* 首屏 → 辦公研發空間 → 進駐企業 → 園區活動／最新消息 */
 
+  /* ---------- 載入畫面 ---------- */
+  html.loading, html.loading body { overflow: hidden; }   /* 載入中不能捲動 */
+  .loader { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; background: var(--bg);
+    transition: opacity .7s ease, visibility .7s; }
+  .loader.hide { opacity: 0; visibility: hidden; }
+  .loader.hide .loader-inner { transform: translateY(-12px) scale(.98); }
+  .loader-inner { display: flex; flex-direction: column; align-items: center; gap: 14px; width: min(360px, 80vw);
+    transition: transform .7s ease; }
+  .loader-brand { font: 700 14px/1 var(--font-display); letter-spacing: .2em; color: var(--text-secondary); }
+  .loader-num { display: flex; align-items: baseline; gap: 4px; font: 700 clamp(64px, 10vw, 112px)/1 var(--font-display);
+    letter-spacing: -0.06em; color: var(--text-heading); font-variant-numeric: tabular-nums; }
+  .loader-num small { font-size: .38em; color: var(--color-primary); letter-spacing: 0; }
+  .loader-bar { width: 100%; height: 4px; border-radius: 99px; background: rgba(0,0,0,.08); overflow: hidden; }
+  .loader-bar i { display: block; height: 100%; background: var(--color-primary); transform: scaleX(0); transform-origin: 0 50%; }
+  .loader-cap { margin: 0; font-size: 13px; color: var(--muted); }
+  body.night .loader-bar { background: rgba(255,255,255,.12); }   /* 夜晚：深色底上的進度條底軌 */
+  body.night .loader-brand { color: var(--muted); }
+
   /* ---------- Site Header（WF 81:1850） ---------- */
   .site-header { position: fixed; z-index: 5; top: 0; left: 0; right: 0; height: var(--header-h);
     display: flex; align-items: center; gap: 56px; padding: 0 var(--gutter);
-    background: var(--surface-page); border-bottom: 1px solid var(--border-default); }
+    background: var(--surface-page); border-bottom: 1px solid var(--border-default);
+    transition: background-color .8s, border-color .8s; }   /* 跟主視覺一起切換深淺色 */
   .site-header .logo { font-size: 18px; font-weight: 700; line-height: 1.6; color: var(--text-primary); text-decoration: none; }
   .site-header nav { display: flex; align-items: center; gap: 24px; }
-  .site-header nav a { display: inline-flex; align-items: center; gap: 4px; font-size: 16px; line-height: 1.6;
+  .site-header nav a { display: inline-flex; align-items: center; gap: 4px; font-size: 14px; font-weight: 500; line-height: 1.6;   /* Header 所有入口（含主按鈕）統一 14px／500 */
     color: var(--text-primary); text-decoration: none; white-space: nowrap; }
   .site-header nav a:hover { color: var(--color-primary); }
   .site-header .side-nav { margin-left: auto; }
-  .site-header .side-nav .btn { font-size: 14px; min-width: 156px; }   /* 字改 14px，按鈕維持原本 156 × 44 的大小 */   /* EN 與主按鈕推到最右邊 */
+  .site-header .side-nav .btn { font-size: 14px; font-weight: 500; height: 40px; min-width: 156px; }   /* Header 主按鈕：字 14px、高 40px */
   .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 44px; padding: 0 20px;
     border-radius: var(--radius-btn); background: var(--fill-button); color: var(--text-on-fill) !important; font-size: 16px; line-height: 1.6;
     text-decoration: none; white-space: nowrap; transition: background .2s; }
@@ -77,17 +96,19 @@
   /* 版型 A：全幅出血；位置依設計稿（1440×800：大標 left 70 / top 140，卡片 top 491） */
   .fade-a { position: fixed; inset: 0; z-index: 1; pointer-events: none;
     background: linear-gradient(90deg, var(--bg) 0%, color-mix(in srgb, var(--bg) 75%, transparent) 26%, transparent 48%); }
-  .hero-a { bottom: 9vh; left: 4.86vw;   /* Hero 文字不貼邊距，往內往上留呼吸空間（設計稿：left 70 / 1440） */ display: flex; flex-direction: column; gap: 5vh; }   /* 靠下對齊 */
-  /* 版型 B：左文右圖，左側實色面板 */
+  /* Hero 文字（兩種版型共用）：版型只改這三個數值，切換時 CSS 會平滑過渡，跟地圖鏡頭同步約 0.9 秒 */
+  .hero-main { --slogan: clamp(64px, 9vw, 130px); --gap: 5vh; --card-w: 500px;
+    bottom: 9vh; left: 4.86vw; display: flex; flex-direction: column; gap: var(--gap);   /* 不貼邊距，往內往上留呼吸空間（設計稿：left 70 / 1440） */
+    transition: opacity .2s, gap .9s cubic-bezier(.4,0,.2,1); }
+  .hero-main .slogan { font-size: var(--slogan); transition: font-size .9s cubic-bezier(.4,0,.2,1); }
+  .hero-main .card { width: var(--card-w); transition: width .9s cubic-bezier(.4,0,.2,1); }
+  body[data-layout="b"] .hero-main { --slogan: clamp(56px, 7vw, 110px); --gap: 40px; --card-w: 32vw; }   /* 左文右圖：字小一點、牌卡跟左側面板等寬 */
+  /* 版型 B 的左側實色面板 */
   .panel-b { position: fixed; z-index: 1; top: 0; bottom: 0; left: 0; width: 40vw; background: var(--bg);
-    box-shadow: 12px 0 40px rgba(0,0,0,.04); pointer-events: none; }
-  .hero-b { bottom: 9vh; left: 4.86vw; width: 32vw;   /* 靠下對齊 */
-    display: flex; flex-direction: column; gap: 40px; }
-  .hero-b .slogan { font-size: clamp(56px, 7vw, 110px); }
-  .hero-b .card { width: 100%; }
-  /* 全幅切換的動態由程式控制：左側面板滑入／滑出、兩組 Hero 文字交叉淡入、地圖鏡頭平滑移動 */
-  .hero-a, .hero-b { will-change: opacity, transform; }
-  .panel-b { will-change: transform; }
+    box-shadow: 12px 0 40px rgba(0,0,0,.04); pointer-events: none; will-change: transform; }
+  /* 程式還沒開始跑（3D、字型下載中）時的初始狀態：面板與漸層先就定位 */
+  body[data-layout="a"] .panel-b { transform: translateX(-100%); }
+  body[data-layout="b"] .fade-a { opacity: 0; }
 
   /* ---------- 捲動後的空間說明卡（沿用 .card 樣式） ---------- */
   .caption { position: fixed; z-index: 2; left: var(--gutter); bottom: var(--gutter); width: 440px; opacity: 0;
@@ -139,9 +160,15 @@
   body.focus .hero, body.focus .fade-a, body.focus .panel-b, body.focus .hint { display: none; }   /* ?focus= 模式只看地圖 */
 
 
-  /* ---------- 夜晚模式：只改主視覺區（Header 維持白底） ---------- */
+  /* ---------- 夜晚模式（Header 也一起變深色） ---------- */
+  body.night .site-header { --surface-page: #151922; --text-primary: #ebedf2; --border-default: rgba(255,255,255,.08); }
+  body.night .site-header .btn { background: #ebedf2; color: #1f2328 !important; }   /* 深色底上主按鈕反白 */
+  body.night .site-header .btn:hover { background: #fff; }
+  body.night .site-header nav img { filter: invert(1); }                              /* 外部連結圖示改白色 */
+  .site-header .logo, .site-header nav a { transition: color .8s; }
+  .site-header .btn { transition: background-color .8s, color .8s; }
   body { transition: background-color .8s; }
-  body.night { --bg: #1b2233; --text-heading: #ebedf2; --muted: #a3acbd; }
+  body.night { --bg: #0e1118; --text-heading: #ebedf2; --muted: #a3acbd; }
 
   /* ---------- 左上角：段落錨點 ---------- */
   .sec-nav { position: fixed; z-index: 4; top: calc(var(--header-h) + var(--gutter)); left: var(--gutter); display: flex; gap: 4px; padding: 6px;
@@ -218,11 +245,10 @@
     :root { --header-h: 60px; }
     :root { --gutter: 16px; }
     .site-header .btn { height: 36px; padding: 0 14px; font-size: 14px; }
-    .hero-a { bottom: calc(var(--gutter) + 88px); left: var(--gutter); right: var(--gutter); gap: 20px; }   /* 下方留給開始體驗按鈕 */
+    .hero-main, body[data-layout="b"] .hero-main { --gap: 20px; --card-w: 100%; bottom: calc(var(--gutter) + 88px); left: var(--gutter); right: var(--gutter); }   /* 手機：兩種版型一樣，下方留給開始體驗按鈕 */
     .card { width: 100%; padding: 20px; gap: 14px; }
     .card h2 { font-size: 18px; }
     .panel-b { width: 100vw; bottom: auto; height: 52vh; }
-    .hero-b { top: calc(var(--header-h) + 3vh); bottom: auto; left: var(--gutter); width: calc(100vw - var(--gutter) * 2); gap: 16px; }
     .caption { right: var(--gutter); width: auto; bottom: calc(var(--gutter) + 88px); }
     .free-panel { display: none; }   /* 手機不顯示滑鼠操作說明 */
     .continue { width: 76px; height: 76px; }
@@ -240,6 +266,50 @@
 </script>
 </head>
 <body data-layout="a">
+<!-- 載入畫面：3D 引擎、字型、場景、Logo 都載入完才淡出；百分比跟著實際進度跑 -->
+<div class="loader" id="loader" role="progressbar" aria-label="網站載入中" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+  <div class="loader-inner">
+    <span class="loader-brand">CNRD</span>
+    <div class="loader-num"><span id="loaderNum">0</span><small>%</small></div>
+    <div class="loader-bar"><i id="loaderBar"></i></div>
+    <p class="loader-cap" id="loaderCap">正在載入 3D 引擎…</p>
+  </div>
+</div>
+<script>
+  // 進度：target 是實際載入到哪裡（由 3D 程式回報），shown 是畫面上顯示的數字（慢慢追上 target，只增不減）
+  // 3D 引擎下載中沒辦法知道真實進度，所以先自己慢慢爬到 30%
+  (() => {
+    const L = window.__load = { target: 0, shown: 0, done: false, t0: performance.now(), caption: null };
+    // 依當地時間先決定白天／夜晚，載入畫面就用對應的底色（08:00–17:59 白天）
+    const nq = new URLSearchParams(location.search).get('night'), h = new Date().getHours();
+    if (nq === '1' || (nq !== '0' && (h < 8 || h >= 18))) document.body.classList.add('night');
+    const num = document.getElementById('loaderNum'), bar = document.getElementById('loaderBar');
+    const cap = document.getElementById('loaderCap'), el = document.getElementById('loader');
+    document.documentElement.classList.add('loading');
+    const tick = () => {
+      if (L.target < 30) L.target = Math.min(30, L.target + 0.25);
+      if (performance.now() - L.t0 > 20000) L.done = true;            // 保險：20 秒還沒好就直接進網站
+      const goal = L.done ? 100 : L.target;
+      L.shown += Math.max((goal - L.shown) * 0.08, goal > L.shown ? 0.4 : 0);
+      if (L.shown > goal) L.shown = goal;
+      num.textContent = Math.floor(L.shown);
+      bar.style.transform = `scaleX(${L.shown / 100})`;
+      el.setAttribute('aria-valuenow', Math.floor(L.shown));
+      if (L.caption) cap.textContent = L.caption;
+      if (L.done && L.shown >= 99.9) {                                  // 跑到 100% 停一下再淡出
+        setTimeout(() => {
+          el.classList.add('hide');
+          document.documentElement.classList.remove('loading');
+          window.dispatchEvent(new Event('loader:hide'));
+          setTimeout(() => el.remove(), 900);
+        }, 250);
+        return;
+      }
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  })();
+</script>
 
 <!-- Site Header（WF 81:1850） -->
 <header class="site-header">
@@ -256,25 +326,10 @@
   </nav>
 </header>
 
-<!-- 版型 A：全幅 -->
+<!-- Hero 文字：全幅／左文右圖共用同一組，切換時字級、牌卡寬度平滑變化 -->
 <div class="fade-a"></div>
-<section class="hero hero-a" id="heroA">
-  <h1 class="slogan"><span class="o">Grow</span>Beyond</h1>
-  <div class="card-wrap">
-  <div class="card">
-    <div class="copy">
-      <h2>產學共生，驅動創新未來</h2>
-      <p>國泰產業研發中心是國內首宗產業研發中心 BOT 案，讓台北市中心的臺北大學建國校區，這片承載北大師生法商教育歷史的土地，成為學界與業界共同投入研究、培育人才的場域。</p>
-    </div>
-    <span class="tag">國泰產研中心｜臺北大學建國校區</span>
-  </div>
-  <p class="hint">往下捲動 ↓ 鏡頭會拉近到「辦公研發空間」　·　拖曳可轉動地圖</p>
-  </div>
-</section>
-
-<!-- 版型 B：左文右圖 -->
 <div class="panel-b"></div>
-<section class="hero hero-b" id="heroB">
+<section class="hero hero-main" id="hero">
   <h1 class="slogan"><span class="o">Grow</span>Beyond</h1>
   <div class="card-wrap">
   <div class="card">
@@ -386,6 +441,14 @@ import { M } from './shared/materials.js';
 import { box, cyl, ball, tree, lamp } from './shared/kit.js';
 import { createStage, createAnimator, SUN_DIR, ISO_DIR } from './shared/stage.js';
 
+// 回報載入進度給載入畫面（只會往前，不會倒退）
+const progress = (v, caption) => {
+  const L = window.__load; if (!L) return;
+  L.target = Math.max(L.target, v);
+  if (caption) L.caption = caption;
+};
+progress(30, '正在準備字型…');                                         // 走到這裡代表 3D 引擎與網站程式都下載好了
+
 // ============ 舞台 ============
 const stage = createStage({ view: 60, shadowSize: 62, shadowRes: 4096, target: [0, 0, 0], background: '#f2f2f2', maxPixelRatio: 1.5 });
 stage.controls.enabled = false;           // 預設由捲動控制鏡頭
@@ -407,6 +470,7 @@ const clocks = [];      // 公園時鐘（指針跟著現在時間）
 const fountains = [];   // 噴水池動畫（水柱脈動、水簾伸縮、水珠落下）
 // 「國泰產業研發中心」中文字：three.js 內建字型沒有中文，改用頁面已載入的 Noto Sans TC 畫在貼圖上
 await document.fonts.load('700 96px "Noto Sans TC"', '國泰產業研發中心').catch(() => {});
+progress(38);
 function textTexture(text, color, bg) {
   const c = document.createElement('canvas'); c.width = 1024; c.height = 128;
   const g = c.getContext('2d');
@@ -474,7 +538,12 @@ function drawLogoWall() {
     drawLogoFit(g, i, c.width / 2, c.height / 2, 56, c.width * 0.75, c.height * 0.62);
   });
 }
-Promise.all(TENANTS.map((_, i) => loadLogo(i).catch(() => {}))).then(() => { drawStrip(); drawLogoWall(); });
+// 場景模型和企業 Logo 同時在下載，進度用兩者加總：48% 起跳，場景佔 40%、Logo 佔 10%
+let logosDone = 0, scenesDone = 0, sceneTotal = Infinity;   // sceneTotal 等開始載入場景時才知道
+const assetProgress = () => progress(48 + 40 * (scenesDone / sceneTotal) + 10 * (logosDone / TENANTS.length));
+const logosReady = Promise.all(TENANTS.map((_, i) => loadLogo(i).catch(() => {}).then(() => {
+  logosDone++; assetProgress();
+}))).then(() => { drawStrip(); drawLogoWall(); });
 
 // CNRD 立體字用的字型（載入失敗就不放字，不影響其他東西）
 const font = await new FontLoader()
@@ -660,8 +729,12 @@ const GRAY = {
 
 // 已完成的場景模組（status: 'done'）；載入失敗或未完成就用灰盒
 const mods = {};
-await Promise.all(Object.keys(NAMES).map(id =>
-  import(`./scenes/${id}.js`).then(m => { if (m.meta?.status === 'done') mods[id] = m; }).catch(() => {})));
+progress(48, '正在建構共創聚落…');
+const sceneIds = Object.keys(NAMES);
+sceneTotal = sceneIds.length;
+await Promise.all(sceneIds.map(id =>
+  import(`./scenes/${id}.js`).then(m => { if (m.meta?.status === 'done') mods[id] = m; }).catch(() => {})
+    .then(() => { scenesDone++; assetProgress(); })));
 
 // 效能優化：把一個靜態場景裡「同材質」的零件合併成一個網格
 // 一間辦公室原本有幾百個零件，每幀要畫幾百次（畫陰影再加倍）；合併後每種材質只要畫一次，外觀完全不變
@@ -1365,7 +1438,7 @@ function onRect(r, s) {
 const anim = createAnimator(stage, items);
 
 const body = document.body;
-const heroA = document.getElementById('heroA'), heroB = document.getElementById('heroB');
+const hero = document.getElementById('hero');
 const caption = document.getElementById('caption'), hints = document.querySelectorAll('.hint');
 let free = false;
 
@@ -1569,9 +1642,11 @@ var haloMat = new THREE.SpriteMaterial({ map: haloTex, transparent: true, opacit
 const hemi = scene.children.find(o => o.isHemisphereLight);
 // 白天與夜晚的數值，切換時在兩者之間平滑過渡
 const DAY   = { bg: new THREE.Color('#f2f2f2'), sky: new THREE.Color('#ffffff'), gnd: new THREE.Color('#c9cdd6'), hemi: 0.55, sun: new THREE.Color('#ffffff'), sunI: 2.2, env: 1 };
-const NIGHT = { bg: new THREE.Color('#1b2233'), sky: new THREE.Color('#6f82bd'), gnd: new THREE.Color('#1c2132'), hemi: 0.3,  sun: new THREE.Color('#9fb2ff'), sunI: 0.38, env: 0.16 };
+const NIGHT = { bg: new THREE.Color('#0e1118'), sky: new THREE.Color('#5d6d9e'), gnd: new THREE.Color('#10131b'), hemi: 0.22, sun: new THREE.Color('#9fb2ff'), sunI: 0.3, env: 0.12 };   // 背景接近黑、環境光再暗一點
 // 所有共用材質的原始環境反射強度（夜晚要調暗，不然物件會像在白天一樣亮）
 const baseEnv = new Map(Object.values(M).map(m => [m, m.envMapIntensity ?? 1]));
+// 地面類材質（人行道、道路、路緣、標線）：夜晚顏色壓暗，讓整體更接近黑，而不是一片灰
+const NIGHT_GROUND = ['sidewalk', 'road', 'curb', 'lane'].filter(k => M[k]).map(k => ({ m: M[k], day: M[k].color.clone() }));
 const glowBase = { lampBulb: [0, 3.2], shopGlow: [0.35, 1.8], lampGlow: [0.7, 3], brandSign: [0, 1.4] };   // [白天, 夜晚] 的發光強度
 let nightTarget = 0, nightT = 0;
 function applyNight(t) {
@@ -1591,15 +1666,22 @@ function applyNight(t) {
   subtitleMat.color.setScalar(lerp(1, 0.25, t));                             // 夜晚底色變暗，字更突出
   lampLights.forEach(l => { l.intensity = 45 * t; });
   haloMat.opacity = t;
+  NIGHT_GROUND.forEach(({ m, day }) => m.color.copy(day).multiplyScalar(lerp(1, 0.45, t)));
   lightboxMat.emissiveIntensity = lerp(0.35, 1.1, t);
   boardLights.forEach(l => { l.intensity = 14 * t; });                         // 燈箱晚上更亮
 }
-document.getElementById('tNight').onclick = e => {
-  const on = e.currentTarget.getAttribute('aria-pressed') !== 'true';
-  e.currentTarget.setAttribute('aria-pressed', String(on));
+// 切換白天／夜晚；instant = 直接切好（剛打開網頁時用），否則慢慢過渡
+const nightBtn = document.getElementById('tNight');
+function setNight(on, instant = false) {
+  nightBtn.setAttribute('aria-pressed', String(on));
   nightTarget = on ? 1 : 0;
   body.classList.toggle('night', on);
-};
+  if (instant) { nightT = nightTarget; applyNight(nightT); }
+}
+let nightManual = false;                                    // 使用者自己按過切換，就不再依時間自動切
+nightBtn.onclick = () => { nightManual = true; setNight(nightBtn.getAttribute('aria-pressed') !== 'true'); };
+// 依使用者電腦的當地時間：08:00–17:59 白天，其他時間夜晚
+const isNightHour = () => { const h = new Date().getHours(); return h < 8 || h >= 18; };
 
 // 操作說明收合：記住使用者的選擇（瀏覽器儲存失敗時就用預設展開）
 // 操作說明：工具列的 ? 按鈕展開／收合（預設收合）
@@ -1611,10 +1693,21 @@ helpBtn.onclick = () => {
 
 const params = new URLSearchParams(location.search);
 build(VARIANTS[params.get('variant')] ? params.get('variant') : '1');   // 只顯示方案 1；方案 2、3 保留在網址參數 ?variant=2 / 3
+// 全部載入完、畫出第一個畫面後，載入畫面跑到 100% 並淡出；進場掉落動畫等載入畫面開始淡出才播，第一眼就看得到
+progress(0, '正在載入進駐企業…');
+logosReady.then(() => requestAnimationFrame(() => requestAnimationFrame(() => {
+  if (window.__load) { window.__load.caption = '準備完成'; window.__load.done = true; }
+})));
+addEventListener('loader:hide', () => anim.replay(), { once: true });
 window.__debug = { stage, people, pets };
 // 網址加上 ?focus=x,y,z,zoom 會直接進入自由檢視並把鏡頭對準該位置（方便檢查細節或分享特定畫面）
 // 網址加上 ?night=1 會直接用夜晚模式打開
-if (new URLSearchParams(location.search).get('night') === '1') document.getElementById('tNight').click();
+// 網址加 ?night=1 / ?night=0 可以強制夜晚／白天（檢查畫面用），否則依當地時間
+const nightParam = new URLSearchParams(location.search).get('night');
+if (nightParam === '1' || nightParam === '0') { nightManual = true; setNight(nightParam === '1', true); }
+else setNight(isNightHour(), true);
+// 網頁開著跨過 08:00 或 18:00 時自動切換（每分鐘檢查一次，使用者手動切過就不管）
+setInterval(() => { if (!nightManual && isNightHour() !== (nightTarget === 1)) setNight(isNightHour()); }, 60000);
 const focusParam = new URLSearchParams(location.search).get('focus');
 if (focusParam) {
   const [fx, fy, fz, fzoom = 4] = focusParam.split(',').map(Number);
@@ -1627,8 +1720,8 @@ if (focusParam) {
   setTimeout(() => { stage.controls.enableDamping = true; }, 500);
 }   // 除錯用：可在 Console 檢查人物與動物
 
-const smooth = t => t * t * (3 - 2 * t);
-const lerp = (a, b, t) => a + (b - a) * t;
+function smooth(t) { return t * t * (3 - 2 * t); }   // 用 function 宣告：程式一開始就能用（夜晚模式初始化會用到）
+function lerp(a, b, t) { return a + (b - a) * t; }
 const tmp = new THREE.Vector3(), tmpV = new THREE.Vector3(), camDir = ISO_DIR.clone();
 const layoutHome = new THREE.Vector3();
 let layoutT = body.dataset.layout === 'b' ? 1 : 0;
@@ -1684,12 +1777,9 @@ stage.renderer.setAnimationLoop(() => {
   }
 
   const heroOpacity = String(Math.max(0, 1 - e * 2.5));
-  // 兩組 Hero 文字交叉淡入（帶一點位移）、左側面板從左邊滑進來、漸層跟著淡出
+  // 左側面板從左邊滑進來、漸層跟著淡出（Hero 文字的字級、牌卡寬度由 CSS 過渡）
   const hOp = Number(heroOpacity);
-  heroA.style.opacity = hOp * (1 - lk); heroA.style.transform = `translateX(${-lk * 24}px)`;
-  heroB.style.opacity = hOp * lk;       heroB.style.transform = `translateX(${(1 - lk) * 24}px)`;
-  heroA.style.visibility = 1 - lk < 0.02 ? 'hidden' : '';
-  heroB.style.visibility = lk < 0.02 ? 'hidden' : '';
+  hero.style.opacity = hOp;                                          // Hero 文字只跟捲動淡出；版型切換時的字級、寬度變化交給 CSS
   fadeA.style.opacity = hOp * (1 - lk);
   panelB.style.opacity = hOp;
   panelB.style.transform = `translateX(${-(1 - lk) * 100}%)`;
@@ -1810,7 +1900,7 @@ stage.renderer.setAnimationLoop(() => {
 
   // 標籤避讓：Hero 文字所在的「整個左側欄」（從畫面頂端到底部）都不放標籤，
   // 不只避開字本身，也避免標籤浮在大標上方／旁邊干擾閱讀（文字淡出後就不需要避讓）
-  const heroEl = body.dataset.layout === 'a' ? heroA : heroB;
+  const heroEl = hero;
   let colRight = -1;
   if (Number(heroEl.style.opacity || 1) > 0.2) {
     const range = document.createRange();                       // 用文字實際寬度，不用區塊寬度
