@@ -24,6 +24,13 @@
     --chip-bg: rgba(0,0,0,.06);
     --panel: rgba(255,255,255,.88);
     --muted: #6b6b6b;
+    --card-border: #fff;                 /* 毛玻璃卡片的亮邊 */
+    --card-title: #000;                  /* 卡片標題 */
+    --hover: #ececec;                    /* 按鈕滑過、分段按鈕底、鍵盤提示底 */
+    --sep: #ddd;                         /* 工具列分隔線 */
+    --seg-on: #fff;                      /* 分段按鈕選中 */
+    --track: #cfcfcf;                    /* 開關底軌（關） */
+    --fill-hover: #3a4048;               /* 黑底按鈕滑過 */
     --done: #32c133; --wip: #b9b4ab;
     /* 字體 */
     --font-family: "Noto Sans TC", -apple-system, "PingFang TC", sans-serif;
@@ -31,6 +38,7 @@
     --header-h: 72px;
     /* 版面邊距：上下左右統一 20px（跟右上工具列原本的位置一樣），Header、Hero、說明卡、按鈕都往外貼齊這條線 */
     --gutter: 20px;
+    --panel-w: 40;                       /* 左文右圖：左側底色區塊寬度（單位 vw，程式也會讀這個數字） */
     /* 圓角：全站只用這四級 */
     --radius-card: 20px;    /* 大卡片（Hero 卡、段落說明卡） */
     --radius-panel: 16px;   /* 浮動面板（工具列、錨點列、操作說明） */
@@ -76,7 +84,7 @@
   .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 44px; padding: 0 20px;
     border-radius: var(--radius-btn); background: var(--fill-button); color: var(--text-on-fill) !important; font-size: 16px; line-height: 1.6;
     text-decoration: none; white-space: nowrap; transition: background .2s; }
-  .btn:hover { background: #3a4048; }
+  .btn:hover { background: var(--fill-hover); }
   .menu-btn { display: none; }
 
   /* ---------- Hero 文字（設計稿 174:4660） ---------- */
@@ -85,26 +93,31 @@
     letter-spacing: -0.09em; font-size: clamp(64px, 9vw, 130px); color: var(--text-heading); }
   .slogan .o { color: var(--color-primary); display: block; }
   .card { width: 500px; max-width: 100%; padding: 32px; border-radius: var(--radius-card); display: flex; flex-direction: column; gap: 20px;
-    align-items: flex-start; background: var(--card-bg); border: 1px solid #fff; backdrop-filter: blur(22px);
+    align-items: flex-start; background: var(--card-bg); border: 1px solid var(--card-border); backdrop-filter: blur(22px);
     -webkit-backdrop-filter: blur(22px); pointer-events: auto; }
   .card .copy { display: flex; flex-direction: column; gap: 16px; }
-  .card h2 { margin: 0; font-size: 20px; font-weight: 700; line-height: 1.4; color: #000; }
+  .card h2 { margin: 0; font-size: 20px; font-weight: 700; line-height: 1.4; color: var(--card-title); }
   .card p { margin: 0; font-size: 14px; line-height: 1.6; color: var(--text-secondary); }
-  .tag { display: inline-block; padding: 6px 16px; border-radius: 99px; background: var(--chip-bg);
-    font-size: 14px; font-weight: 600; line-height: 1.6; color: var(--text-secondary); white-space: nowrap; }
+  .tag { display: inline-block; padding: 6px 16px; border-radius: 18px; background: var(--chip-bg);   /* 一行時是膠囊形，寬度不夠會換行 */
+    font-size: 14px; font-weight: 600; line-height: 1.6; color: var(--text-secondary); }
 
   /* 版型 A：全幅出血；位置依設計稿（1440×800：大標 left 70 / top 140，卡片 top 491） */
   .fade-a { position: fixed; inset: 0; z-index: 1; pointer-events: none;
     background: linear-gradient(90deg, var(--bg) 0%, color-mix(in srgb, var(--bg) 75%, transparent) 26%, transparent 48%); }
   /* Hero 文字（兩種版型共用）：版型只改這三個數值，切換時 CSS 會平滑過渡，跟地圖鏡頭同步約 0.9 秒 */
-  .hero-main { --slogan: clamp(64px, 9vw, 130px); --gap: 5vh; --card-w: 500px;
+  /* slogan 跟著畫面等比縮放：1440 × 800 時約 96px；同時看寬和高，取比較小的，避免矮螢幕上大標壓到牌卡 */
+  .hero-main { --slogan: max(48px, min(6.67vw, 12vh)); --gap: 5vh; --card-w: 500px;
     bottom: 9vh; left: 4.86vw; display: flex; flex-direction: column; gap: var(--gap);   /* 不貼邊距，往內往上留呼吸空間（設計稿：left 70 / 1440） */
-    transition: opacity .2s, gap .9s cubic-bezier(.4,0,.2,1); }
-  .hero-main .slogan { font-size: var(--slogan); transition: font-size .9s cubic-bezier(.4,0,.2,1); }
-  .hero-main .card { width: var(--card-w); transition: width .9s cubic-bezier(.4,0,.2,1); }
-  body[data-layout="b"] .hero-main { --slogan: clamp(56px, 7vw, 110px); --gap: 40px; --card-w: 32vw; }   /* 左文右圖：字小一點、牌卡跟左側面板等寬 */
+    transition: opacity .2s; }
+  .hero-main .slogan { font-size: var(--slogan); }
+  .hero-main .card { width: var(--card-w); transition: background-color .8s, border-color .8s; }
+  /* 只有切換全幅的那 1 秒有過渡（拖動視窗大小時字級要立刻跟上，不要慢半拍） */
+  body.layout-switching .hero-main { transition: opacity .2s, gap .9s cubic-bezier(.4,0,.2,1); }
+  body.layout-switching .hero-main .slogan { transition: font-size .9s cubic-bezier(.4,0,.2,1); }
+  body.layout-switching .hero-main .card { transition: width .9s cubic-bezier(.4,0,.2,1), background-color .8s, border-color .8s; }
+  body[data-layout="b"] .hero-main { --slogan: max(44px, min(5.2vw, 9.5vh)); --gap: 40px; --card-w: calc(var(--panel-w) * 1vw - 4.86vw * 2); }   /* 左文右圖：字小一點；牌卡放進左側底色區塊，左右留一樣的距離 */
   /* 版型 B 的左側實色面板 */
-  .panel-b { position: fixed; z-index: 1; top: 0; bottom: 0; left: 0; width: 40vw; background: var(--bg);
+  .panel-b { position: fixed; z-index: 1; top: 0; bottom: 0; left: 0; width: calc(var(--panel-w) * 1vw); background: var(--bg);
     box-shadow: 12px 0 40px rgba(0,0,0,.04); pointer-events: none; will-change: transform; }
   /* 程式還沒開始跑（3D、字型下載中）時的初始狀態：面板與漸層先就定位 */
   body[data-layout="a"] .panel-b { transform: translateX(-100%); }
@@ -115,7 +128,7 @@
     transform: translateY(12px); transition: opacity .3s, transform .3s; pointer-events: none; }
   .caption.show { opacity: 1; transform: none; }
   .caption small { color: var(--color-primary); font-family: var(--font-display); font-weight: 700; font-size: 13px; letter-spacing: .02em; }
-  .caption h3 { margin: 0; font-size: 26px; font-weight: 700; line-height: 1.4; color: #000; }
+  .caption h3 { margin: 0; font-size: 26px; font-weight: 700; line-height: 1.4; color: var(--card-title); }
 
   /* 進駐企業卡：所有 Logo 排成格狀 */
   .logo-wall { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; width: 100%; }
@@ -124,7 +137,8 @@
 
   /* ---------- 布告欄牌卡：位置與大小由程式對齊 3D 板面（設計尺寸 480px 寬，再整體縮放） ---------- */
   .board-panel { position: fixed; z-index: 2; left: 0; top: 0; width: 480px; transform-origin: 0 0; opacity: 0; pointer-events: none;
-    display: flex; flex-direction: column; background: #fbf3e6; border-radius: var(--radius-sm); overflow: hidden; transition: opacity .35s; }
+    display: flex; flex-direction: column; background: #fbf3e6; border-radius: var(--radius-sm); overflow: hidden; transition: opacity .35s;
+    --text-primary: #1f2328; --text-secondary: rgba(0,0,0,.6); }   /* 布告欄上的白紙：深淺色模式都維持淺色 */
   .board-panel.show { opacity: 1; pointer-events: auto; }
   .bp-head { display: flex; align-items: center; justify-content: space-between; height: 40px; padding: 0 16px; color: #fff; flex: none; }
   .bp-head.orange { background: var(--color-primary); }
@@ -157,60 +171,72 @@
   .label.done i { background: var(--done); }
   .label { opacity: 0; }
   .label.show { opacity: 1; }      /* 進場前 5 秒顯示，之後只在 hover 該場景時顯示 */
-  body.focus .hero, body.focus .fade-a, body.focus .panel-b, body.focus .hint { display: none; }   /* ?focus= 模式只看地圖 */
+  body.focus .hero, body.focus .fade-a, body.focus .panel-b, body.focus .drag-tip { display: none; }   /* ?focus= 模式只看地圖 */
 
 
   /* ---------- 夜晚模式（Header 也一起變深色） ---------- */
-  body.night .site-header { --surface-page: #151922; --text-primary: #ebedf2; --border-default: rgba(255,255,255,.08); }
-  body.night .site-header .btn { background: #ebedf2; color: #1f2328 !important; }   /* 深色底上主按鈕反白 */
-  body.night .site-header .btn:hover { background: #fff; }
   body.night .site-header nav img { filter: invert(1); }                              /* 外部連結圖示改白色 */
   .site-header .logo, .site-header nav a { transition: color .8s; }
   .site-header .btn { transition: background-color .8s, color .8s; }
   body { transition: background-color .8s; }
-  body.night { --bg: #0e1118; --text-heading: #ebedf2; --muted: #a3acbd; }
+  body.night { --bg: #0e1118; --text-heading: #ebedf2; --muted: #a3acbd;
+    /* 夜晚：浮在畫面上的卡片、工具列、按鈕全部改深色，黑底按鈕反成淺色 */
+    --text-primary: #ebedf2; --text-secondary: rgba(235,237,242,.68); --card-title: #f4f5f8;
+    --card-bg: rgba(22,26,35,.78); --card-border: rgba(255,255,255,.08); --chip-bg: rgba(255,255,255,.08);
+    --panel: rgba(22,26,35,.86); --hover: rgba(255,255,255,.08); --sep: rgba(255,255,255,.12);
+    --seg-on: rgba(255,255,255,.16); --track: rgba(255,255,255,.22);
+    --fill-button: #ebedf2; --text-on-fill: #1f2328; --fill-hover: #fff;
+    --surface-page: #151922; --border-default: rgba(255,255,255,.08); }
 
   /* ---------- 左上角：段落錨點 ---------- */
   .sec-nav { position: fixed; z-index: 4; top: calc(var(--header-h) + var(--gutter)); left: var(--gutter); display: flex; gap: 4px; padding: 6px;
     border-radius: var(--radius-panel); background: var(--panel); backdrop-filter: blur(8px); box-shadow: 0 6px 24px rgba(0,0,0,.08);
-    opacity: 0; transform: translateY(-8px); pointer-events: none; transition: opacity .3s, transform .3s; }
+    opacity: 0; transform: translateY(-8px); pointer-events: none; transition: opacity .3s, transform .3s, background-color .8s; }
   body.in-sections .sec-nav { opacity: 1; transform: none; pointer-events: auto; }
   .sec-nav button { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border: 0; border-radius: var(--radius-btn);
     background: transparent; color: var(--text-secondary); font: 500 13px/1 var(--font-family); cursor: pointer; white-space: nowrap;
     transition: background .2s, color .2s; }
   .sec-nav button b { font: 700 11px/1 var(--font-display); color: var(--muted); }
-  .sec-nav button:hover { background: #ececec; color: var(--text-primary); }
-  .sec-nav button.on { background: var(--fill-button); color: #fff; }
-  .sec-nav button.on b { color: var(--color-primary); }
+  .sec-nav { position: fixed; }   /* 滑塊以錨點列為定位基準 */
+  .sec-nav button { position: relative; z-index: 1; }
+  .sec-nav button:hover { color: var(--text-primary); }
+  /* 橡皮筋滑塊（參考 React Bits「Rubber Segment」）：切換時前緣先衝過去、整條被拉長，後緣再追上並稍微壓過頭後回彈 */
+  .sec-thumb { position: absolute; z-index: 2; top: 6px; height: 36px; left: 0; width: 0; border-radius: var(--radius-btn);
+    background: var(--fill-button); overflow: hidden; pointer-events: none; transition: background-color .8s; }
+  /* 滑塊裡面放一份同樣排版的文字（反白色），跟著滑塊位置反向位移，被蓋到的那一段文字就會變成反白 */
+  .sec-thumb .clone { position: absolute; top: -6px; left: 0; display: flex; gap: 4px; padding: 6px; }
+  .sec-thumb .clone span.btn-like { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px;
+    color: var(--text-on-fill); font: 500 13px/1 var(--font-family); white-space: nowrap; }
+  .sec-thumb .clone b { font: 700 11px/1 var(--font-display); color: var(--color-primary); }
 
   /* ---------- 右上角：工具列 + 操作說明 ---------- */
   .dock { position: fixed; z-index: 4; top: calc(var(--header-h) + var(--gutter)); right: var(--gutter);
     display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
   .tools { display: flex; align-items: center; gap: 6px; padding: 6px; border-radius: var(--radius-panel); background: var(--panel);
-    backdrop-filter: blur(8px); box-shadow: 0 6px 24px rgba(0,0,0,.08); }
-  .tools .sep { width: 1px; align-self: stretch; background: #ddd; margin: 4px 2px; }
+    backdrop-filter: blur(8px); box-shadow: 0 6px 24px rgba(0,0,0,.08); transition: background-color .8s; }
+  .tools .sep { width: 1px; align-self: stretch; background: var(--sep); margin: 4px 2px; }
   /* 圓角圖示按鈕 */
   .icon-btn { width: 36px; height: 36px; display: grid; place-items: center; border: 0; border-radius: var(--radius-btn); padding: 0;
     background: transparent; color: var(--text-primary); cursor: pointer; transition: background .2s; }
-  .icon-btn:hover { background: #ececec; }
+  .icon-btn:hover { background: var(--hover); }
   .icon-btn svg { width: 20px; height: 20px; }
   #tNight .moon { display: none; }
-  #tNight[aria-pressed="true"] { background: var(--fill-button); color: #fff; }
+  #tNight[aria-pressed="true"] { background: var(--fill-button); color: var(--text-on-fill); }
   #tNight[aria-pressed="true"] .sun { display: none; }
   #tNight[aria-pressed="true"] .moon { display: block; }
   /* 材質切換（分段按鈕） */
-  .seg { display: flex; gap: 2px; padding: 2px; border-radius: var(--radius-btn); background: #ececec; }
+  .seg { display: flex; gap: 2px; padding: 2px; border-radius: var(--radius-btn); background: var(--hover); }
   .seg button { height: 32px; padding: 0 10px; border: 0; border-radius: 8px; background: transparent; color: var(--text-secondary);
     font: 500 12px/1 var(--font-family); cursor: pointer; transition: background .2s, color .2s; }
   .seg button:hover { color: var(--text-primary); }
-  .seg button[aria-pressed="true"] { background: #fff; color: var(--text-primary); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+  .seg button[aria-pressed="true"] { background: var(--seg-on); color: var(--text-primary); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
   /* 全幅開關 */
   .switch { display: inline-flex; align-items: center; gap: 8px; padding: 0 8px 0 10px; height: 36px; font-size: 12px;
     color: var(--text-primary); cursor: pointer; user-select: none; }
   .switch input { position: absolute; opacity: 0; pointer-events: none; }
-  .switch .track { position: relative; width: 34px; height: 20px; border-radius: 99px; background: #cfcfcf; transition: background .2s; }
+  .switch .track { position: relative; width: 34px; height: 20px; border-radius: 99px; background: var(--track); transition: background .2s; }
   .switch .track::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%;
-    background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.25); transition: transform .2s; }
+    background: var(--text-on-fill); box-shadow: 0 1px 3px rgba(0,0,0,.25); transition: transform .2s; }
   .switch input:checked + .track { background: var(--fill-button); }
   .switch input:checked + .track::after { transform: translateX(14px); }
   .switch input:focus-visible + .track { outline: 2px solid var(--color-primary); outline-offset: 2px; }
@@ -220,23 +246,32 @@
   .free-panel.collapsed { display: none; }         /* 預設收合，按工具列的 ? 展開 */
   .free-panel strong { font-size: 12px; font-weight: 700; }
   .free-panel .keys { display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; line-height: 1.6; }
-  .free-panel kbd { font-family: inherit; font-size: 11px; padding: 1px 6px; border-radius: 4px; background: #ececec; white-space: nowrap; }
-  #tHelp[aria-expanded="true"] { background: #ececec; }
+  .free-panel kbd { font-family: inherit; font-size: 11px; padding: 1px 6px; border-radius: 4px; background: var(--hover); white-space: nowrap; }
+  #tHelp[aria-expanded="true"] { background: var(--hover); }
   /* 繼續觀看：使用者動過地圖後才出現，點了回到原本的捲動流程 */
   .continue { position: fixed; z-index: 4; right: var(--gutter); bottom: var(--gutter); width: 88px; height: 88px; border-radius: 50%; border: 0;
     display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
-    background: var(--fill-button); color: #fff; font: 600 12px/1.3 var(--font-family); cursor: pointer;
+    background: var(--fill-button); color: var(--text-on-fill); font: 600 12px/1.3 var(--font-family); cursor: pointer;
     box-shadow: 0 10px 30px rgba(0,0,0,.18); opacity: 0; transform: scale(.6); pointer-events: none;
-    transition: opacity .25s, transform .3s cubic-bezier(.3,1.6,.5,1), background .2s; }
+    transition: opacity .25s, transform .3s cubic-bezier(.3,1.6,.5,1), background .8s, color .8s; }
   .continue svg { width: 22px; height: 22px; animation: nudge 1.6s ease-in-out infinite; }
-  .continue:hover { background: #3a4048; }
+  .continue:hover { background: var(--fill-hover); }
   body.free .continue, body.at-hero .continue { opacity: 1; transform: none; pointer-events: auto; }
   body.focus .continue { display: none; }
-  body.free .hint { opacity: 0 !important; }
   @keyframes nudge { 50% { transform: translateY(3px); } }
   .card-wrap { display: flex; flex-direction: column; gap: 12px; }
-  .hint { margin: 0; padding-left: 4px; font-size: 12px; color: var(--muted);
-    transition: opacity .3s; pointer-events: none; }
+  /* 進場提示彈窗：物件掉落時出現在地圖上方，5 秒後淡出（使用者先拖曳或捲動就提早消失） */
+  .drag-tip { position: fixed; z-index: 3; top: 50%; left: var(--tip-x, 62%); display: flex; align-items: center; gap: 12px;
+    padding: 14px 22px 14px 16px; border-radius: var(--radius-panel); background: var(--panel); color: var(--text-primary);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); box-shadow: 0 10px 30px rgba(0,0,0,.12);
+    font: 500 15px/1.4 var(--font-family); white-space: nowrap; pointer-events: none;
+    opacity: 0; transform: translate(-50%, calc(-50% + 10px)) scale(.96); transition: opacity .5s, transform .5s cubic-bezier(.2,.8,.2,1); }
+  .drag-tip.show { opacity: 1; transform: translate(-50%, -50%); }
+  body[data-layout="b"] .drag-tip { --tip-x: 70%; }   /* 左文右圖：放在右側地圖的中間 */
+  .drag-tip .ico { position: relative; width: 40px; height: 32px; color: var(--color-primary); }
+  .drag-tip .ico svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .drag-tip .ico .hand { animation: tip-drag 1.6s ease-in-out infinite; color: var(--text-primary); }
+  @keyframes tip-drag { 0%, 100% { transform: translateX(-7px); } 50% { transform: translateX(7px); } }
 
   @media (max-width: 1100px) {
     .site-header .main-nav, .site-header .side-nav a:not(.btn) { display: none; }
@@ -253,9 +288,9 @@
     .free-panel { display: none; }   /* 手機不顯示滑鼠操作說明 */
     .continue { width: 76px; height: 76px; }
     .sec-nav { top: calc(var(--header-h) + var(--gutter) + 58px); }   /* 手機：放在工具列下方 */
-    .sec-nav button { padding: 0 10px; }
-    .sec-nav button span { display: none; }
-    .hint { display: none; }
+    .sec-nav button, .sec-thumb .clone span.btn-like { padding: 0 10px; }
+    .sec-nav button span, .sec-thumb .clone span.btn-like span { display: none; }
+    .drag-tip { --tip-x: 50% !important; top: 42%; font-size: 14px; }
   }
 </style>
 <script type="importmap">
@@ -339,7 +374,6 @@
     </div>
     <span class="tag">國泰產研中心｜臺北大學建國校區</span>
   </div>
-  <p class="hint">往下捲動 ↓ 鏡頭會拉近到「辦公研發空間」　·　拖曳可轉動地圖</p>
   </div>
 </section>
 
@@ -387,7 +421,17 @@
   <button data-stop="1"><b>02</b><span>辦公研發空間</span></button>
   <button data-stop="2"><b>03</b><span>進駐企業</span></button>
   <button data-stop="3"><b>04</b><span>活動消息</span></button>
+  <div class="sec-thumb" id="secThumb" aria-hidden="true"><div class="clone"></div></div>
 </nav>
+
+<!-- 進場提示：拖曳可轉動地圖 -->
+<div class="drag-tip" id="dragTip" role="status" aria-live="polite">
+  <span class="ico" aria-hidden="true">
+    <svg viewBox="0 0 40 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12c3-5 9-8 14-8s11 3 14 8"/><path d="M6 6v6h6"/><path d="M34 6v6h-6"/></svg>
+    <svg class="hand" viewBox="0 0 40 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 30v-4l-4-5a2 2 0 0 1 3-2.5l2 2V12a2 2 0 0 1 4 0v6l5 1a3 3 0 0 1 2.4 3.3L30 30"/></svg>
+  </span>
+  <span id="dragTipText">拖曳可轉動地圖</span>
+</div>
 
 <div class="dock">
 <div class="tools">
@@ -405,9 +449,6 @@
   </button>
   <button class="icon-btn" id="tHelp" aria-expanded="false" aria-controls="freePanel" aria-label="操作說明" title="操作說明">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .8-1 1.5v.4"/><circle cx="12" cy="17" r=".6" fill="currentColor"/></svg>
-  </button>
-  <button class="icon-btn" id="tReplay" aria-label="重播進場動畫" title="重播進場">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
   </button>
 </div>
 
@@ -550,7 +591,21 @@ const font = await new FontLoader()
   .loadAsync('https://cdn.jsdelivr.net/npm/three@0.160.0/examples/fonts/helvetiker_bold.typeface.json')
   .catch(() => null);
 const pets = [];
-const cars = [];   // 繞著中央綠地慢慢開的小汽車
+const cars = [];   // 繞著最外圈道路慢慢開的小汽車
+const carLights = [];   // 小汽車的車頭點光源（夜晚開）
+// 車頭燈照在路面上的光：一張中間亮、往前和兩側漸淡的貼圖，用「疊加發光」的方式畫在路面上
+const beamMat = (() => {
+  const c = document.createElement('canvas'); c.width = 128; c.height = 256;
+  const g = c.getContext('2d');
+  // 橢圓形光斑：靠近車頭最亮，往前拉長、四周自然淡掉（在貼圖邊界之前就已經完全透明，才不會有方形硬邊）
+  g.translate(64, 236); g.scale(1, 3.4);
+  const grad = g.createRadialGradient(0, 0, 2, 0, 0, 60);
+  grad.addColorStop(0, 'rgba(255,226,160,0.95)');
+  grad.addColorStop(0.4, 'rgba(255,214,140,0.4)');
+  grad.addColorStop(1, 'rgba(255,200,120,0)');
+  g.fillStyle = grad; g.fillRect(-64, -70, 128, 70);
+  return new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(c), transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending });
+})();
 const labelEls = [];
 let heroColRight = -1;   // 上一幀算出的 Hero 文字欄右緣（螢幕座標），對話雲用來避讓
 const lampLights = [];   // 夜晚模式的路燈光源與光暈
@@ -978,7 +1033,7 @@ function build(variantId) {
   // 清空上一個方案
   world.traverse(o => { if (o.isCSS2DObject) o.element.remove(); });   // 標籤是 DOM 元素，要手動移除
   board = null; lightbox = null; boardLights.length = 0;
-  world.clear(); items.length = 0; people.length = 0; pets.length = 0; cars.length = 0; clocks.length = 0; fountains.length = 0; labelEls.length = 0; lampLights.length = 0;
+  world.clear(); items.length = 0; people.length = 0; pets.length = 0; cars.length = 0; carLights.length = 0; clocks.length = 0; fountains.length = 0; labelEls.length = 0; lampLights.length = 0;
   seed = 7;
   const L = VARIANTS[variantId]();
   const placed = [];
@@ -1096,7 +1151,7 @@ function build(variantId) {
     const cx = (b.x0 + b.x1) / 2, cz = (b.z0 + b.z1) / 2;
     (big ? [[cx, b.z0 + 2.2]] :   // 大綠地左側那棵換成布告欄
       [[b.x0 + 2, b.z0 + 2], [b.x1 - 2, b.z1 - 2]]).forEach(([x, z]) => {
-      const t = tree(1.1); addItem(t, x, z, { delay: 1.5, baseY: CURB_H, drop: 4, liftAmount: 0.3 });
+      const t = tree(1.1); addItem(t, x, z, { delay: 1.5, baseY: CURB_H, drop: 4, hoverable: false });   // 裝飾物：hover 不浮起
     });
   });
   L.blocks.slice(0, 6).forEach(b => {
@@ -1159,7 +1214,7 @@ function build(variantId) {
       sub.position.set(0, BASE_H / 2 + 0.03, 0.705);                  // 白底正中間（略往上，抵銷上方字母的視覺重量）
       g.add(sub);
       g.rotation.y = FACE;
-      addItem(g, cx + C, cz + C, { delay: 1.2, baseY: Y, drop: 6 });
+      addItem(g, cx + C, cz + C, { delay: 1.2, baseY: Y, drop: 6, hoverable: false });   // 裝飾物：hover 不浮起
       g.rotation.y = FACE;
     }
     // 左角：復古電腦裝置藝術（參考 80 年代一體式電腦：米色外殼、映像管螢幕、軟碟槽、分離式鍵盤）
@@ -1255,7 +1310,7 @@ function build(variantId) {
         hands.push({ hPivot, mPivot });
       });
       const x = cx - C, z = cz - C;
-      addItem(g, x, z, { delay: 1.4, baseY: Y, drop: 6 });
+      addItem(g, x, z, { delay: 1.4, baseY: Y, drop: 6, hoverable: false });   // 裝飾物：hover 不浮起
       g.rotation.y = Math.atan2(cx - x, cz - z);                      // 鐘面正對中央廣場
       clocks.push(hands);
     }
@@ -1301,7 +1356,7 @@ function build(variantId) {
         const arc = new THREE.Mesh(new THREE.TubeGeometry(curve, 20, 0.035, 6), M.waterLight);
         arc.castShadow = false; jets.add(arc);
       }
-      addItem(g, cx + C, cz - C, { delay: 1.5, baseY: Y, drop: 6 });
+      addItem(g, cx + C, cz - C, { delay: 1.5, baseY: Y, drop: 6, hoverable: false });   // 裝飾物：hover 不浮起
       fountains.push({ jets, strands, drops });
     }
     // 左側（時鐘與雕像之間）：園區布告欄，跟旁邊的道路平行（正面朝 +x、面向廣場）
@@ -1411,7 +1466,8 @@ function toyCar() {
   bodyG.add(box(0.98, 0.1, 0.14, M.white, 0, 0.3, -0.88, 0.05));      // 後保險桿
   [-0.3, 0.3].forEach(x => {
     const lamp = ball(0.075, M.lampBulb, x, 0.48, 0.86); lamp.castShadow = false; bodyG.add(lamp);   // 車頭燈
-    bodyG.add(box(0.14, 0.08, 0.04, M.accent, x, 0.5, -0.88, 0.02));                                   // 尾燈
+    bodyG.add(box(0.14, 0.08, 0.04, M.carTail, x, 0.5, -0.88, 0.02));                                  // 尾燈（晚上亮紅光）
+    const glow = new THREE.Sprite(haloMat); glow.scale.setScalar(0.7); glow.position.set(x, 0.48, 0.95); bodyG.add(glow);   // 車頭燈光暈
   });
   const wheels = [];
   [[-0.46, 0.55], [0.46, 0.55], [-0.46, -0.55], [0.46, -0.55]].forEach(([x, z]) => {
@@ -1421,6 +1477,12 @@ function toyCar() {
     w.add(tire, hub); w.position.set(x, 0.2, z);
     g.add(w); wheels.push(w);
   });
+  // 車頭前方路面上的光（貼在路面上，跟著車子走）＋ 一盞往前照的點光源
+  const beam = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 2.6), beamMat);
+  beam.rotation.x = -Math.PI / 2; beam.position.set(0, 0.03, 2.1);
+  beam.raycast = () => {}; g.add(beam);
+  const light = new THREE.PointLight('#ffd9a0', 0, 5, 1.6);
+  light.position.set(0, 0.6, 1.6); g.add(light); carLights.push(light);
   g.scale.setScalar(1.45);                                              // 跟人物比例相稱，又不會寬到碰到兩側散步的人
   return { g, body: bodyG, wheels };
 }
@@ -1439,7 +1501,17 @@ const anim = createAnimator(stage, items);
 
 const body = document.body;
 const hero = document.getElementById('hero');
-const caption = document.getElementById('caption'), hints = document.querySelectorAll('.hint');
+const caption = document.getElementById('caption');
+// 進場提示彈窗：跟著進場掉落動畫一起出現，5 秒後淡出；使用者先拖曳或往下捲就提早收起
+const dragTip = document.getElementById('dragTip');
+if (matchMedia('(pointer: coarse)').matches) document.getElementById('dragTipText').textContent = '左右滑動可轉動地圖';   // 手機、平板
+let dragTipTimer;
+function showDragTip() {
+  clearTimeout(dragTipTimer);
+  dragTip.classList.add('show');
+  dragTipTimer = setTimeout(hideDragTip, 5000);
+}
+function hideDragTip() { clearTimeout(dragTipTimer); dragTip.classList.remove('show'); }
 let free = false;
 
 // fill：地圖寬度佔「可用畫面寬度」的比例；版型 B 左側被文字面板佔掉 40%
@@ -1484,8 +1556,21 @@ const boardEls = [document.getElementById('boardEvents'), document.getElementByI
 
 
 // 全幅開關：開 = 版型 A（全幅出血），關 = 版型 B（左文右圖）
-document.getElementById('tFull').onchange = e => { body.dataset.layout = e.currentTarget.checked ? 'a' : 'b'; };
-document.getElementById('tReplay').onclick = () => { exitFree(); scrollTo(0, 0); anim.replay(); };
+let layoutTimer, autoLayoutTimer, layoutTouched = false;
+const tFull = document.getElementById('tFull');
+function setLayout(name) {
+  body.classList.add('layout-switching');                     // 開啟字級／寬度過渡，1 秒後關掉
+  clearTimeout(layoutTimer); layoutTimer = setTimeout(() => body.classList.remove('layout-switching'), 1000);
+  body.dataset.layout = name;
+  tFull.checked = name === 'a';
+}
+tFull.onchange = () => { layoutTouched = true; clearTimeout(autoLayoutTimer); setLayout(tFull.checked ? 'a' : 'b'); };
+// 進場：先用全幅看整張地圖掉落，等所有物件都落地後，自動切換成左文右圖（使用者自己切過就不自動切）
+function scheduleAutoLayout() {
+  clearTimeout(autoLayoutTimer);
+  const landed = Math.max(0, ...items.map(it => it.userData.delay ?? 0)) + anim.dur;   // 最後一個物件落地的時間（秒）
+  autoLayoutTimer = setTimeout(() => { if (!layoutTouched && !free) setLayout('b'); }, (landed + 0.4) * 1000);
+}
 
 // ============ 地圖操作 ============
 // 在 Hero 區可以直接拖曳地圖；只要使用者動過地圖（拖曳、縮放、旋轉），就進入「操作模式」：
@@ -1558,6 +1643,41 @@ const continueLabel = document.getElementById('continueLabel');
 const secBtns = [...document.querySelectorAll('#secNav button')];
 secBtns.forEach(b => { b.onclick = () => goStop(Number(b.dataset.stop)); });
 
+// ===== 錨點列的橡皮筋滑塊 =====
+// 滑塊的左右兩個邊緣各自用彈簧追目標：往哪邊移動，那一側的邊緣（前緣）比較硬、先衝到；
+// 另一側（後緣）比較軟、慢一點才追上，而且會稍微衝過頭再彈回來 → 看起來像橡皮被拉長再壓扁
+const secThumb = document.getElementById('secThumb'), secClone = secThumb.querySelector('.clone');
+secClone.innerHTML = secBtns.map(b => `<span class="btn-like">${b.innerHTML}</span>`).join('');
+const rubber = { l: 0, r: 0, vl: 0, vr: 0, tl: 0, tr: 0, dir: 0, active: -1, running: false, last: 0 };
+function slotEdges(i) { const b = secBtns[i]; return [b.offsetLeft, b.offsetLeft + b.offsetWidth]; }
+function drawThumb() {
+  secThumb.style.left = `${rubber.l}px`;
+  secThumb.style.width = `${Math.max(0, rubber.r - rubber.l)}px`;
+  secClone.style.left = `${-rubber.l}px`;                       // 反白文字反向位移，跟底下的文字對齊
+}
+function setSecActive(i, instant = false) {
+  if (i === rubber.active && !instant) return;
+  const [tl, tr] = slotEdges(i);
+  rubber.dir = rubber.active < 0 ? 0 : Math.sign(i - rubber.active);
+  rubber.active = i; rubber.tl = tl; rubber.tr = tr;
+  secBtns.forEach((b, k) => b.setAttribute('aria-current', k === i ? 'true' : 'false'));
+  if (instant) { rubber.l = tl; rubber.r = tr; rubber.vl = rubber.vr = 0; drawThumb(); return; }
+  if (!rubber.running) { rubber.running = true; rubber.last = performance.now(); requestAnimationFrame(stepRubber); }
+}
+function stepRubber(now) {
+  const dt = Math.min((now - rubber.last) / 1000, 1 / 30); rubber.last = now;
+  const FAST = [700, 52], SLOW = [240, 17];                     // [彈性, 阻尼]：前緣硬又快，後緣軟、會衝過頭一點
+  const [kl, dl] = rubber.dir < 0 ? FAST : SLOW;                 // 往左移：左緣是前緣
+  const [kr, dr] = rubber.dir < 0 ? SLOW : FAST;                 // 往右移：右緣是前緣
+  rubber.vl += ((rubber.tl - rubber.l) * kl - rubber.vl * dl) * dt; rubber.l += rubber.vl * dt;
+  rubber.vr += ((rubber.tr - rubber.r) * kr - rubber.vr * dr) * dt; rubber.r += rubber.vr * dt;
+  drawThumb();
+  const settled = Math.abs(rubber.tl - rubber.l) + Math.abs(rubber.tr - rubber.r) < 0.3 && Math.abs(rubber.vl) + Math.abs(rubber.vr) < 2;
+  if (settled) { rubber.l = rubber.tl; rubber.r = rubber.tr; drawThumb(); rubber.running = false; return; }
+  requestAnimationFrame(stepRubber);
+}
+addEventListener('resize', () => { if (rubber.active >= 0) setSecActive(rubber.active, true); });
+
 // ============ 材質切換（塑膠／霧面／磨砂） ============
 // 所有場景共用 M 裡的材質，所以改材質參數就能整張地圖一起換，不用重建模型
 // 玻璃、窗戶、螢幕、水、金屬維持光滑，不參與切換
@@ -1568,6 +1688,9 @@ const finishMats = Object.entries(M)
 const finishBase = new Map(finishMats.map(m => [m, { r: m.roughness, cc: m.clearcoat, ccr: m.clearcoatRoughness }]));
 // 磨砂顆粒：用物件在世界中的位置算雜訊（大地板、小物件的顆粒一樣細），讓粗糙度、法線、顏色有細微變化
 const grainU = { value: 0 };
+let finishGrain = 0, nightLevel = 0;   // 目前材質的顆粒量、目前的夜晚程度（0 白天 ～ 1 夜晚）
+// 夜晚光線很暗，顆粒造成的暗點和凹凸會被放大成髒污感，所以晚上把顆粒量降到 25%
+const applyGrain = () => { grainU.value = finishGrain * lerp(1, 0.25, nightLevel); };
 const GRAIN_GLSL = `
 uniform float uGrain;
 varying vec3 vGrainPos;
@@ -1618,7 +1741,7 @@ function setFinish(name) {
     m.roughness = f.r(o); m.clearcoat = f.cc(o); m.clearcoatRoughness = f.ccr(o);
     m.sheen = f.sheen; m.sheenRoughness = 0.8; m.sheenColor.set('#ffffff');
   });
-  grainU.value = f.grain;
+  finishGrain = f.grain; applyGrain();
   document.querySelectorAll('#finishSeg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.finish === name)));
 }
 document.querySelectorAll('#finishSeg button').forEach(b => { b.onclick = () => setFinish(b.dataset.finish); });
@@ -1665,7 +1788,10 @@ function applyNight(t) {
   subtitleMat.emissiveIntensity = 0.9 * t;                                    // 夜晚中文字發光
   subtitleMat.color.setScalar(lerp(1, 0.25, t));                             // 夜晚底色變暗，字更突出
   lampLights.forEach(l => { l.intensity = 45 * t; });
+  carLights.forEach(l => { l.intensity = 10 * t; });                      // 小汽車車頭燈
+  beamMat.opacity = 0.85 * t;
   haloMat.opacity = t;
+  nightLevel = t; applyGrain();                                             // 磨砂顆粒跟著日夜調整
   NIGHT_GROUND.forEach(({ m, day }) => m.color.copy(day).multiplyScalar(lerp(1, 0.45, t)));
   lightboxMat.emissiveIntensity = lerp(0.35, 1.1, t);
   boardLights.forEach(l => { l.intensity = 14 * t; });                         // 燈箱晚上更亮
@@ -1698,7 +1824,7 @@ progress(0, '正在載入進駐企業…');
 logosReady.then(() => requestAnimationFrame(() => requestAnimationFrame(() => {
   if (window.__load) { window.__load.caption = '準備完成'; window.__load.done = true; }
 })));
-addEventListener('loader:hide', () => anim.replay(), { once: true });
+addEventListener('loader:hide', () => { anim.replay(); showDragTip(); scheduleAutoLayout(); }, { once: true });
 window.__debug = { stage, people, pets };
 // 網址加上 ?focus=x,y,z,zoom 會直接進入自由檢視並把鏡頭對準該位置（方便檢查細節或分享特定畫面）
 // 網址加上 ?night=1 會直接用夜晚模式打開
@@ -1724,6 +1850,8 @@ function smooth(t) { return t * t * (3 - 2 * t); }   // 用 function 宣告：�
 function lerp(a, b, t) { return a + (b - a) * t; }
 const tmp = new THREE.Vector3(), tmpV = new THREE.Vector3(), camDir = ISO_DIR.clone();
 const layoutHome = new THREE.Vector3();
+let heroEdge = 0;   // 左側文字區塊目前的右邊界（往下捲時往左收）
+const panelVw = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--panel-w')) || 40;   // 左側底色區塊寬度（vw），跟 CSS 同一個設定
 let layoutT = body.dataset.layout === 'b' ? 1 : 0;
 const fadeA = document.querySelector('.fade-a'), panelB = document.querySelector('.panel-b');
 let last = performance.now();
@@ -1776,14 +1904,25 @@ stage.renderer.setAnimationLoop(() => {
     stage.sun.position.copy(ctl.target).addScaledVector(SUN_DIR, 80);
   }
 
-  const heroOpacity = String(Math.max(0, 1 - e * 2.5));
-  // 左側面板從左邊滑進來、漸層跟著淡出（Hero 文字的字級、牌卡寬度由 CSS 過渡）
-  const hOp = Number(heroOpacity);
-  hero.style.opacity = hOp;                                          // Hero 文字只跟捲動淡出；版型切換時的字級、寬度變化交給 CSS
-  fadeA.style.opacity = hOp * (1 - lk);
-  panelB.style.opacity = hOp;
+  const heroOpacity = String(Math.max(0, 1 - e * 2.5));               // 其他元件（操作說明等）仍用這個值淡出
+  // 往下捲時，左側文字區塊像窗簾一樣往左收合：右邊界從原本位置一路縮到畫面最左邊（不是變透明）
+  const collapse = smooth(Math.min(e * 1.6, 1));                     // 0 = 完整、1 = 收合完畢（跟鏡頭移動同步）
+  const heroRect = hero.getBoundingClientRect(), heroLeft = heroRect.left, heroW = heroRect.width;   // 裁切不影響這個尺寸
+  const edgeFull = lerp(heroLeft + heroW + 32, innerWidth * panelVw / 100, lk); // 收合前的右邊界：全幅 = 文字右緣、左文右圖 = 面板右緣
+  heroEdge = edgeFull * (1 - collapse);                              // 目前的右邊界（螢幕座標）
+  const visibleW = Math.max(0, heroEdge - heroLeft);
+  hero.style.clipPath = collapse > 0 ? `inset(-60px ${Math.max(0, heroW - visibleW)}px -60px -60px)` : '';
+  hero.style.visibility = visibleW <= 0 ? 'hidden' : 'visible';
+  hero.style.opacity = 1;
+  // 左文右圖的面板：版型切換時從左邊滑進來；往下捲時寬度跟著文字一起縮到 0
+  panelB.style.opacity = 1;
+  panelB.style.width = `${panelVw * (1 - collapse)}vw`;
   panelB.style.transform = `translateX(${-(1 - lk) * 100}%)`;
-  hints.forEach(h => { h.style.opacity = p > 0.02 ? 0 : 1; });
+  // 全幅的左側漸層：版型切換時淡出；往下捲時跟著往左收
+  fadeA.style.opacity = 1 - lk;
+  fadeA.style.transformOrigin = '0 50%';
+  fadeA.style.transform = `scaleX(${1 - collapse})`;
+  if (p > 0.02 || free) { if (dragTip.classList.contains('show')) hideDragTip(); }   // 捲動或拖曳地圖就收起提示
   caption.classList.toggle('show', !free && at === 1);
   capTenants.classList.toggle('show', !free && at === 2);
   // 燈箱跑馬燈：慢慢往左捲，約 3 秒移動一個 Logo
@@ -1902,14 +2041,14 @@ stage.renderer.setAnimationLoop(() => {
   // 不只避開字本身，也避免標籤浮在大標上方／旁邊干擾閱讀（文字淡出後就不需要避讓）
   const heroEl = hero;
   let colRight = -1;
-  if (Number(heroEl.style.opacity || 1) > 0.2) {
+  if (heroEl.style.visibility !== 'hidden') {
     const range = document.createRange();                       // 用文字實際寬度，不用區塊寬度
     heroEl.querySelectorAll('.slogan span, .slogan').forEach(n => {
       range.selectNodeContents(n);
       colRight = Math.max(colRight, range.getBoundingClientRect().right);
     });
     heroEl.querySelectorAll('.card').forEach(n => { colRight = Math.max(colRight, n.getBoundingClientRect().right); });
-    colRight += 24;                                              // 留一點呼吸空間
+    colRight = Math.min(colRight + 24, heroEdge);                // 留一點呼吸空間；收合中就只避開還看得到的部分
   }
   heroColRight = colRight;
   // 進場：落地後顯示每種空間的代表標籤 5 秒；之後只顯示滑鼠所在場景的標籤
@@ -1940,7 +2079,8 @@ stage.renderer.setAnimationLoop(() => {
   // 段落錨點：離開首屏後顯示；轉場過一半就切換到下一站的按鈕
   body.classList.toggle('in-sections', !free && e > 0.6);
   const activeStop = Math.min(SEGS, Math.max(0, Math.floor(u - 0.38) + 1));
-  secBtns.forEach(b => b.classList.toggle('on', Number(b.dataset.stop) === activeStop));
+  // 錨點列還沒出現時直接定位（不播動畫），出現後才用橡皮筋效果切換
+  setSecActive(activeStop, !body.classList.contains('in-sections') && rubber.active !== activeStop);
 });
 </script>
 </body>

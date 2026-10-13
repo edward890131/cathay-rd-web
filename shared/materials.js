@@ -33,6 +33,7 @@ export const M = {
   retroShell:   plastic('#e6dac5', { roughness: 0.7, clearcoat: 0.15 }),   // 廣場復古電腦：米色外殼、鍵帽
   retroShellDk: plastic('#cfc1a8', { roughness: 0.75, clearcoat: 0.1 }),   // 復古電腦：螢幕框、散熱孔、底座（比外殼深一階）
   crt:          plastic('#26352b', { roughness: 0.12, clearcoat: 1, emissive: '#4f8a5c', emissiveIntensity: 0.12 }),   // 復古電腦：映像管螢幕（之後放幻燈片）
+  carTail:      plastic('#e8402a', { emissive: '#ff3b20', emissiveIntensity: 0 }),   // 小汽車尾燈（晚上亮紅光）
   parkLawn: plastic('#3f8535', { roughness: 0.85, clearcoat: 0 }),  // 中央大綠地的底（比 grass 深，讓畫面中心有份量）
   treeTop:  plastic('#4bb04f'),                                       // 樹冠
   trunk:    plastic('#b98a5c', { roughness: 0.8 }),                   // 樹幹
@@ -101,3 +102,4 @@ M.towerLit.userData.night  = [0, 1.4];
 M.univLit = plastic('#7fb6ea', { roughness: 0.25, clearcoat: 0.9, emissive: '#ffd27a', emissiveIntensity: 0 }); // university：窗玻璃（白天同 M.window；夜晚亮暖黃）
 M.univLit.userData.night = [0, 1.3];
 M.crt.userData.night = [0.12, 0.9];   // 復古電腦螢幕：夜晚亮起綠光
+M.carTail.userData.night = [0, 1.8];   // 小汽車尾燈：夜晚亮起
