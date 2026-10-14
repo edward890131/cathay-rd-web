@@ -242,7 +242,8 @@
   .news time { font-size: 10px; color: var(--text-secondary); }
 
   /* ---------- 3D 標籤 ---------- */
-  .label { transition: opacity .25s; font-size: 12px; padding: 4px 10px; border-radius: 99px; background: rgba(31,35,40,.82); color: #fff;
+  .label { transition: opacity .25s; font-size: 12px; padding: 4px 10px; border-radius: 99px; background: rgba(31,35,40,.7); color: #fff;
+    -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);   /* 背景模糊（毛玻璃）；底色透明度從 .82 降到 .7，模糊才看得出來 */
     white-space: nowrap; display: flex; gap: 6px; align-items: center; }
   .label i { width: 7px; height: 7px; border-radius: 50%; background: var(--wip); }
   .label.done i { background: var(--done); }
@@ -3860,7 +3861,8 @@ stage.renderer.setAnimationLoop(() => {
   const introOn = anim.elapsed > 1.2 && anim.elapsed < 6.2 && innerWidth >= 760;
   const hoverEl = hotHovered ? hotHovered.label : anim.hovered?.userData.labelEl;
   // 觸控裝置沒有 hover：進場標籤播完後，首屏常駐顯示可以點的標籤（小汽車只標一台）；點過的場景標籤顯示 2.5 秒
-  const touchHot = isCoarse && anim.elapsed > 6.2 && sv < 0.02 && !free;
+  // 手機不常駐（畫面小，標籤會蓋住地圖）；平板維持
+  const touchHot = isCoarse && innerWidth >= 760 && anim.elapsed > 6.2 && sv < 0.02 && !free;
   if (tapLabel && (now > tapLabelUntil || sv > 0.02)) tapLabel = null;
   for (const el of labelEls) {
     const r = (introOn && el.intro) || (touchHot && el.classList.contains('hot')) ? el.getBoundingClientRect() : null;
