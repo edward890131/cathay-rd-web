@@ -3314,58 +3314,93 @@ const BGM_KEY = 'cnrd-bgm', BGM_VOL = 0.2, BGM_FADE = 1.5;   // 記憶用的 key
 const bgm = { ctx: null, master: null, src: null, on: false, pending: false };
 const musicBtn = document.getElementById('musicBtn');
 
-// 合成音源：C 大調五聲音階旋律（八音琴）＋ 低音 ＋ 柔和長音墊底；每 8 小節循環
+// 合成音源：鋼琴旋律 ＋ 木吉他分解和弦（80 BPM，8 小節循環）；第二輪鋼琴只彈每小節第一個音，讓耳朵休息、不搶主題
 function makeSynthSource(ctx, out) {
-  const BPM = 96, BEAT = 60 / BPM, BAR = BEAT * 4;
+  const BPM = 80, BEAT = 60 / BPM, BAR = BEAT * 4, SR = ctx.sampleRate;
   const hz = m => 440 * 2 ** ((m - 69) / 12);                 // MIDI 音高轉頻率
-  // 和弦進行 C → Am → F → G（每小節一個），旋律只用 C D E G A，不容易出現不和諧音
-  const CHORDS = [
-    { bass: 36, pad: [60, 64, 67] }, { bass: 33, pad: [57, 60, 64] },
-    { bass: 41, pad: [57, 60, 65] }, { bass: 43, pad: [59, 62, 67] },
-  ];
-  // 旋律：每小節 8 個八分音符，0 = 休止；數字為 MIDI 音高
+  // 和弦（吉他五條弦的音，由低到高）：Cmaj7 → Am7 → Fmaj7 → G → Cmaj7 → Em7 → Fmaj7 → G
+  const C = [48,55,59,64,67], Am = [45,52,55,60,64], F = [41,48,52,57,64], G = [43,50,55,59,62], Em = [40,47,50,55,62];
+  const CHORDS = [C, Am, F, G, C, Em, F, G];
+  const PICK = [0,2,3,4,1,3,2,3];                              // 指彈順序：每個八分音符撥哪條弦（0 = 低音弦）
+  // 鋼琴旋律：[第幾拍開始, MIDI 音高, 長度（拍）]
   const MEL = [
-    [72,0,76,0,79,0,76,74], [72,0,76,0,81,0,79,76],
-    [77,0,81,0,84,0,81,79], [79,0,74,0,76,0,0,0],
-    [76,0,79,0,84,0,81,79], [76,0,72,0,76,0,79,81],
-    [84,0,81,0,79,0,76,74], [72,0,0,0,76,0,72,0],
+    [[0,76,1.5],[1.5,74,.5],[2,72,1],[3,67,1]],
+    [[0,69,1.5],[1.5,72,.5],[2,76,2]],
+    [[0,77,1],[1,76,.5],[1.5,74,.5],[2,72,1],[3,69,1]],
+    [[0,71,1.5],[1.5,72,.5],[2,74,2]],
+    [[0,79,1.5],[1.5,76,.5],[2,72,1],[3,74,1]],
+    [[0,76,1],[1,74,1],[2,71,2]],
+    [[0,72,1],[1,74,.5],[1.5,76,.5],[2,77,1],[3,81,1]],
+    [[0,79,2.5],[3,74,1]],
   ];
-  // 簡單的殘響：用漸弱的雜訊當脈衝響應
-  const ir = ctx.createBuffer(2, ctx.sampleRate * 2.4, ctx.sampleRate);
-  for (let c = 0; c < 2; c++) { const d = ir.getChannelData(c); for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length) ** 3; }
+  // 殘響：用漸弱的雜訊當脈衝響應（像在木頭小房間裡彈）
+  const ir = ctx.createBuffer(2, SR * 2.2, SR);
+  for (let c = 0; c < 2; c++) { const d = ir.getChannelData(c); for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length) ** 3.5; }
   const verb = ctx.createConvolver(); verb.buffer = ir;
-  const verbGain = ctx.createGain(); verbGain.gain.value = 0.35;
-  const delay = ctx.createDelay(1); delay.delayTime.value = BEAT * 0.75;   // 附點八分音符回音
-  const fb = ctx.createGain(); fb.gain.value = 0.28; delay.connect(fb); fb.connect(delay);
+  const verbGain = ctx.createGain(); verbGain.gain.value = 0.3;
   const dry = ctx.createGain(); dry.gain.value = 0.9;
-  const bus = ctx.createGain();                                // 所有音色先進這條，再分到乾音／殘響／回音
-  bus.connect(dry); bus.connect(verb); bus.connect(delay);
-  verb.connect(verbGain); verbGain.connect(out); delay.connect(verbGain); dry.connect(out);
+  const bus = ctx.createGain();
+  bus.connect(dry); bus.connect(verb); verb.connect(verbGain); verbGain.connect(out); dry.connect(out);
 
-  // 單一音符：起音快、尾音指數衰減
-  const note = (m, t, dur, type, vol, attack = 0.01) => {
-    const o = ctx.createOscillator(), g = ctx.createGain();
-    o.type = type; o.frequency.value = hz(m);
-    g.gain.setValueAtTime(0, t);
-    g.gain.linearRampToValueAtTime(vol, t + attack);
-    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    o.connect(g); g.connect(bus); o.start(t); o.stop(t + dur + 0.05);
+  // 吉他：Karplus-Strong 撥弦演算法（一小段雜訊在「弦長」的延遲裡來回、越來越柔），每個音高只算一次存起來
+  const gtrCache = new Map();
+  const gtrBuf = m => {
+    if (gtrCache.has(m)) return gtrCache.get(m);
+    const len = Math.floor(SR * 2.4), buf = ctx.createBuffer(1, len, SR), y = buf.getChannelData(0);
+    const d = SR / hz(m) - 0.5, N = Math.floor(d), fr = d - N;  // 小數延遲：音才準
+    let prev = 0, lp = 0, peak = 0;
+    for (let n = 0; n < len; n++) {
+      let x = 0;
+      if (n < N) { lp += ((Math.random() * 2 - 1) - lp) * 0.35; x = lp; }   // 激發：柔化過的雜訊＝尼龍弦、指腹撥
+      const a = n - N >= 0 ? y[n - N] : 0, b = n - N - 1 >= 0 ? y[n - N - 1] : 0;
+      const s = (1 - fr) * a + fr * b;
+      y[n] = x + 0.996 * 0.5 * (s + prev); prev = s;
+      peak = Math.max(peak, Math.abs(y[n]));
+    }
+    for (let n = 0; n < len; n++) y[n] /= peak || 1;
+    gtrCache.set(m, buf); return buf;
   };
+  const guitar = (m, t, vol) => {
+    const s = ctx.createBufferSource(), g = ctx.createGain(), p = ctx.createStereoPanner?.();
+    s.buffer = gtrBuf(m); g.gain.value = vol;
+    if (p) { p.pan.value = -0.25; s.connect(g); g.connect(p); p.connect(bus); } else { s.connect(g); g.connect(bus); }  // 吉他偏左、鋼琴偏右
+    s.start(t);
+  };
+  // 鋼琴：幾個泛音疊成的音色＋兩支微微走音的振盪器（比較溫暖），亮度隨時間變暗、音量指數衰減
+  const pianoWave = ctx.createPeriodicWave(new Float32Array([0,0,0,0,0,0,0]), new Float32Array([0,1,.45,.25,.12,.07,.04]));
+  const piano = (m, t, dur, vol) => {
+    const g = ctx.createGain(), f = ctx.createBiquadFilter(), p = ctx.createStereoPanner?.();
+    f.type = 'lowpass'; f.Q.value = 0.5;
+    f.frequency.setValueAtTime(Math.min(hz(m) * 8, 6000), t); f.frequency.exponentialRampToValueAtTime(Math.max(hz(m) * 2, 600), t + 1.2);
+    const end = t + dur + 0.6;
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + 0.005);
+    g.gain.setTargetAtTime(vol * 0.25, t + 0.005, 0.5);                  // 按著時慢慢變小
+    g.gain.setTargetAtTime(0.0001, t + dur, 0.18);                      // 放開：制音器壓下
+    [0, 3].forEach(cents => {
+      const o = ctx.createOscillator(); o.setPeriodicWave(pianoWave); o.frequency.value = hz(m); o.detune.value = cents;
+      o.connect(f); o.start(t); o.stop(end);
+    });
+    f.connect(g);
+    if (p) { p.pan.value = 0.2; g.connect(p); p.connect(bus); } else g.connect(bus);
+  };
+
   const scheduleBar = (bar, t0) => {
-    const ch = CHORDS[bar % 4], mel = MEL[bar % 8];
-    note(ch.bass, t0, BEAT * 1.8, 'triangle', 0.5); note(ch.bass, t0 + BEAT * 2, BEAT * 1.8, 'triangle', 0.35);
-    ch.pad.forEach(m => note(m - 12, t0, BAR * 0.98, 'sine', 0.09, 0.5));        // 柔和長音墊底
-    mel.forEach((m, i) => { if (m) {
-      note(m, t0 + i * BEAT / 2, BEAT * 1.4, 'triangle', 0.22);                  // 主音
-      note(m + 12, t0 + i * BEAT / 2, BEAT * 0.6, 'sine', 0.05);                 // 高八度泛音，像八音盒
-    } });
+    const ch = CHORDS[bar % 8], sparse = Math.floor(bar / 8) % 2 === 1;
+    PICK.forEach((k, i) => {
+      const swing = i % 2 ? BEAT * 0.04 : 0;                        // 一點點搖擺感，比較像人在彈
+      guitar(ch[k], t0 + i * BEAT / 2 + swing, k === 0 ? 0.32 : 0.2);
+    });
+    MEL[bar % 8].forEach(([b, m, d], i) => {
+      if (sparse && i > 0) return;
+      piano(m, t0 + b * BEAT, d * BEAT, sparse ? 0.11 : 0.15);
+    });
   };
   // 排程器：每 0.5 秒檢查一次，提前 1.5 秒把音符排進音訊時鐘（比 setTimeout 直接發聲準）
   let bar = 0, next = 0, timer = 0;
   const tick = () => { while (next < ctx.currentTime + 1.5) { scheduleBar(bar++, next); next += BAR; } };
   return {
     start() { bar = 0; next = ctx.currentTime + 0.1; tick(); timer = setInterval(tick, 500); },
-    stop() { clearInterval(timer); bus.disconnect(); setTimeout(() => { try { dry.disconnect(); verb.disconnect(); delay.disconnect(); } catch {} }, 4000); },
+    stop() { clearInterval(timer); bus.disconnect(); setTimeout(() => { try { dry.disconnect(); verb.disconnect(); } catch {} }, 4000); },
   };
 }
 // 音檔音源（日後換真實音檔用）：<audio loop> 接進同一條增益節點，淡入淡出、暫停邏輯完全不用改
