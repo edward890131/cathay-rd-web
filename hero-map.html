@@ -36,6 +36,8 @@
     --font-family: "Noto Sans TC", -apple-system, "PingFang TC", sans-serif;
     --font-display: "Lexend Exa", "Noto Sans TC", sans-serif;
     --header-h: 72px;
+    --tools-h: 48px;                     /* 右上工具列高度（觸控裝置按鈕加大後會變高，錨點列要跟著往下） */
+    --nav-btn: 36px;                     /* 錨點列按鈕高度 */
     /* 版面邊距：上下左右統一 20px（跟右上工具列原本的位置一樣），Header、Hero、說明卡、按鈕都往外貼齊這條線 */
     --gutter: 20px;
     --panel-w: 40;                       /* 左文右圖：左側底色區塊寬度（單位 vw，程式也會讀這個數字） */
@@ -85,7 +87,10 @@
     border-radius: var(--radius-btn); background: var(--fill-button); color: var(--text-on-fill) !important; font-size: 16px; line-height: 1.6;
     text-decoration: none; white-space: nowrap; transition: background .2s; }
   .btn:hover { background: var(--fill-hover); }
-  .menu-btn { display: none; }
+  .site-header .menu-btn { display: none; }   /* 手機才出現：Logo 左邊的選單按鈕，從左側滑出選單 */
+  .drawer, .drawer-backdrop { display: none; }
+  .menu-btn .ico-close, .menu-btn[aria-expanded="true"] .ico-menu { display: none; }
+  .menu-btn[aria-expanded="true"] .ico-close { display: block; }
 
   /* ---------- Hero 文字（設計稿 174:4660） ---------- */
   .hero { position: fixed; z-index: 2; pointer-events: none; transition: opacity .2s; }
@@ -161,6 +166,7 @@
     display: flex; flex-direction: column; background: #fbf3e6; border-radius: var(--radius-sm); overflow: hidden; transition: opacity .35s;
     --text-primary: #1f2328; --text-secondary: rgba(0,0,0,.6); }   /* 布告欄上的白紙：深淺色模式都維持淺色 */
   .board-panel.show { opacity: 1; pointer-events: auto; }
+  .board-sheet { display: contents; }   /* 桌機：兩張牌卡各自貼在 3D 板面上；直式螢幕改成下方面板（見 RWD 區塊） */
   .bp-head { display: flex; align-items: center; justify-content: space-between; height: 40px; padding: 0 16px; color: #fff; flex: none; }
   .bp-head.orange { background: var(--color-primary); }
   .bp-head.blue { background: #1f6fd6; }
@@ -214,7 +220,7 @@
     border-radius: var(--radius-panel); background: var(--panel); backdrop-filter: blur(8px); box-shadow: 0 6px 24px rgba(0,0,0,.08);
     opacity: 0; transform: translateY(-8px); pointer-events: none; transition: opacity .3s, transform .3s, background-color .8s; }
   body.in-sections .sec-nav { opacity: 1; transform: none; pointer-events: auto; }
-  .sec-nav button { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border: 0; border-radius: var(--radius-btn);
+  .sec-nav button { display: inline-flex; align-items: center; gap: 6px; height: var(--nav-btn); padding: 0 14px; border: 0; border-radius: var(--radius-btn);
     background: transparent; color: var(--text-secondary); font: 500 13px/1 var(--font-family); cursor: pointer; white-space: nowrap;
     transition: background .2s, color .2s; }
   .sec-nav button b { font: 700 11px/1 var(--font-display); color: var(--muted); }
@@ -228,11 +234,11 @@
   .sec-nav.fade-l.fade-r { -webkit-mask-image: linear-gradient(90deg, transparent, #000 32px, #000 calc(100% - 32px), transparent); mask-image: linear-gradient(90deg, transparent, #000 32px, #000 calc(100% - 32px), transparent); }
   .sec-nav button:hover { color: var(--text-primary); }
   /* 橡皮筋滑塊（參考 React Bits「Rubber Segment」）：切換時前緣先衝過去、整條被拉長，後緣再追上並稍微壓過頭後回彈 */
-  .sec-thumb { position: absolute; z-index: 2; top: 6px; height: 36px; left: 0; width: 0; border-radius: var(--radius-btn);
+  .sec-thumb { position: absolute; z-index: 2; top: 6px; height: var(--nav-btn); left: 0; width: 0; border-radius: var(--radius-btn);
     background: var(--fill-button); overflow: hidden; pointer-events: none; transition: background-color .8s; }
   /* 滑塊裡面放一份同樣排版的文字（反白色），跟著滑塊位置反向位移，被蓋到的那一段文字就會變成反白 */
   .sec-thumb .clone { position: absolute; top: -6px; left: 0; display: flex; gap: 4px; padding: 6px; }
-  .sec-thumb .clone span.btn-like { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px;
+  .sec-thumb .clone span.btn-like { display: inline-flex; align-items: center; gap: 6px; height: var(--nav-btn); padding: 0 14px;
     color: var(--text-on-fill); font: 500 13px/1 var(--font-family); white-space: nowrap; }
   .sec-thumb .clone b { font: 700 11px/1 var(--font-display); color: var(--color-primary); }
 
@@ -278,11 +284,6 @@
   .tr-group p { margin: 0; }
   .tr-group a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
   .tr-group a:hover { color: var(--color-primary); }
-  @media (max-width: 760px) {
-    .tr-modal { right: var(--gutter); width: auto; top: auto; bottom: calc(var(--gutter) + 88px); height: 58vh; }   /* 手機：底部抽屜，上方留給地圖 */
-    .tr-dialog { padding: 20px; }
-    .tr-map { height: 160px; }
-  }
 
   /* ---------- 右上角：工具列 + 操作說明 ---------- */
   .dock { position: fixed; z-index: 4; top: calc(var(--header-h) + var(--gutter)); right: var(--gutter);
@@ -334,6 +335,7 @@
   .free-panel .keys { display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; line-height: 1.6; }
   .free-panel kbd { font-family: inherit; font-size: 11px; padding: 1px 6px; border-radius: 4px; background: var(--hover); white-space: nowrap; }
   #tHelp[aria-expanded="true"] { background: var(--hover); }
+  .free-panel .help-touch { display: none; }      /* 觸控裝置換成手勢說明（見下方 pointer: coarse） */
   /* 繼續觀看：使用者動過地圖後才出現，點了回到原本的捲動流程 */
   .continue { position: fixed; z-index: 4; right: var(--gutter); bottom: var(--gutter); width: 88px; height: 88px; border-radius: 50%; border: 0;
     display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
@@ -434,22 +436,126 @@
 
   @media (max-width: 1100px) {
     .site-header .main-nav, .site-header .side-nav a:not(.btn) { display: none; }
+    .sec-nav { max-width: calc(100vw - var(--gutter) * 3 - 320px); }   /* 錨點列可以用到工具列左邊為止，不再限制 40vw */
+  }
+  @media (max-width: 900px) {
+    #deviceSeg, #deviceSeg + .sep { display: none !important; }        /* 手機、平板本身不需要 RWD 預覽切換 */
+    .sec-nav { max-width: calc(100vw - var(--gutter) * 3 - 230px); }
+  }
+
+  /* ---------- 上圖下文：手機、直式平板 ----------
+     直式螢幕寬度不夠「左文右圖」：左欄的牌卡只剩約 250px、文字一直換行，右邊地圖也被裁掉。
+     改成地圖在上半部、文字在下方全寬；鏡頭用 shiftY 把主體推到卡片上方的空白區（程式用同一組條件判斷，見 STACKED_MQ） */
+  @media (max-width: 760px), (max-width: 1100px) and (max-aspect-ratio: 10/11) {
+    .panel-b { display: none; }
+    .fade-a, body[data-layout="b"] .fade-a { background: linear-gradient(0deg, var(--bg) 0%, color-mix(in srgb, var(--bg) 82%, transparent) 30%, transparent 55%); }   /* 漸層改成從下往上，墊在文字底下 */
+    .hero-main, body[data-layout="b"] .hero-main { --slogan: clamp(56px, 11vw, 104px); --gap: 28px; --card-w: min(560px, 100%);
+      left: var(--gutter); right: var(--gutter); bottom: 5vh; }
+    .drag-tip, body[data-layout="b"] .drag-tip { --tip-x: 50%; top: 30%; }     /* 放在上半部的地圖中間 */
+    /* 布告欄：貼在 3D 板面上會縮到看不清楚（手機約 0.35 倍），改成畫面下方的原尺寸面板，上方鏡頭照常看布告欄 */
+    .board-sheet { position: fixed; z-index: 2; left: var(--gutter); right: calc(var(--gutter) * 2 + 88px); bottom: var(--gutter);
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px; pointer-events: none; }
+    /* 交通資訊：說明卡改到下方全寬（右邊讓出圓形按鈕），小汽車在卡片上方的空白區；--tr-h 是卡片高度（vh，程式也會讀） */
+    :root { --tr-h: 50; }
+    .tr-modal { left: var(--gutter); right: calc(var(--gutter) * 2 + 88px); width: auto; top: auto; bottom: var(--gutter); height: calc(var(--tr-h) * 1vh); }
+    .board-sheet .board-panel { position: relative; width: auto; height: auto; align-self: stretch; box-shadow: 0 10px 30px rgba(0,0,0,.14); }
+    /* 牌卡用原尺寸排版：活動兩欄 grid（minmax(0, 1fr) 才不會被長標題撐寬、切掉右邊那欄），文字超過一行就換行 */
+    .board-sheet .events { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .board-sheet .ev .img { flex: none; aspect-ratio: 16 / 9; min-height: 0; }
+    .board-sheet .ev time, .board-sheet .ev small, .board-sheet .ev b, .board-sheet .news b { white-space: normal; overflow: visible; }
+    /* 最新消息跟園區活動等高（stretch），三則消息平分高度 */
+    .board-sheet .news li { flex: 1 1 0; }
   }
   @media (max-width: 760px) {
     :root { --header-h: 60px; }
     :root { --gutter: 16px; }
-    .site-header .btn { height: 36px; padding: 0 14px; font-size: 14px; }
-    .hero-main, body[data-layout="b"] .hero-main { --gap: 20px; --card-w: 100%; bottom: calc(var(--gutter) + 88px); left: var(--gutter); right: var(--gutter); }   /* 手機：兩種版型一樣，下方留給開始體驗按鈕 */
-    .card { width: 100%; padding: 20px; gap: 14px; }
-    .card h2 { font-size: 18px; }
-    .panel-b { width: 100vw; bottom: auto; height: 52vh; }
-    .caption { right: var(--gutter); width: auto; bottom: calc(var(--gutter) + 88px); }
-    .free-panel { display: none; }   /* 手機不顯示滑鼠操作說明 */
-    .continue { width: 76px; height: 76px; }
-    .sec-nav { top: calc(var(--header-h) + var(--gutter) + 58px); max-width: calc(100vw - var(--gutter) * 2); }   /* 手機：放在工具列下方，寬度用整個螢幕 */
+    .site-header .btn { height: 40px; padding: 0 14px; font-size: 14px; }
+    /* 手機：牌卡跟右下角的圓形箭頭按鈕並排（牌卡右邊讓出按鈕的寬度），底部對齊 */
+    :root { --continue: 52px; }
+    .hero-main, body[data-layout="b"] .hero-main { --gap: 20px; --card-w: 100%; bottom: var(--gutter); right: calc(var(--gutter) + var(--continue) + 10px); }
+    .card { width: 100%; padding: 16px; gap: 12px; }
+    .card .copy { gap: 8px; }
+    .card h2 { font-size: 16px; }
+    .card p { font-size: 13px; }
+    .tag { padding: 4px 12px; font-size: 12px; }
+    .caption { right: calc(var(--gutter) + var(--continue) + 10px); width: auto; bottom: var(--gutter); }
+    .caption h3 { font-size: 20px; }
+    .about-copy h4 { font-size: 16px; }
+    .about-copy p { font-size: 13px; }
+    /* 圓形按鈕縮小、只留箭頭（提示往下看的閱讀順序）；文字仍保留給螢幕閱讀器 */
+    .continue { width: var(--continue); height: var(--continue); box-shadow: 0 6px 18px rgba(0,0,0,.18); }
+    .continue #continueLabel { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .continue svg { width: 20px; height: 20px; }
+    /* 選單：Logo 左邊的按鈕，從左側滑出（Header 的入口＋顯示設定）；工具列搬進選單裡，錨點列往上補到工具列原本的位置 */
+    .site-header { gap: 4px; }
+    .site-header .menu-btn { display: grid; margin-left: -10px; }
+    .dock { display: none; }
+    .drawer { position: fixed; z-index: 6; top: var(--header-h); bottom: 0; left: 0; width: min(320px, 80vw); display: flex; flex-direction: column;
+      padding: 8px var(--gutter) calc(var(--gutter) + 16px); overflow-y: auto; background: var(--surface-page); border-right: 1px solid var(--border-default);
+      box-shadow: 12px 0 40px rgba(0,0,0,.12); transform: translateX(-104%); visibility: hidden;
+      transition: transform .35s cubic-bezier(.2,.8,.2,1), visibility 0s .35s, background-color .8s; }
+    body.menu-open .drawer { transform: none; visibility: visible; transition: transform .35s cubic-bezier(.2,.8,.2,1), visibility 0s, background-color .8s; }
+    .drawer-backdrop { display: block; position: fixed; z-index: 6; inset: var(--header-h) 0 0 0; background: rgba(15,18,24,.35);
+      opacity: 0; pointer-events: none; transition: opacity .3s; }
+    body.menu-open .drawer-backdrop { opacity: 1; pointer-events: auto; }
+    .drawer-nav { display: flex; flex-direction: column; }
+    .drawer-nav a { display: flex; align-items: center; gap: 6px; min-height: 52px; border-bottom: 1px solid var(--border-default);
+      font-size: 16px; font-weight: 500; color: var(--text-primary); text-decoration: none; }
+    body.night .drawer-nav img { filter: invert(1); }
+    .drawer-title { margin: 24px 0 8px; font-size: 12px; font-weight: 600; letter-spacing: .04em; color: var(--muted); }
+    .drawer .dock { position: static; display: flex; align-items: stretch; gap: 8px; }
+    .drawer .tools, .drawer .free-panel { box-shadow: none; backdrop-filter: none; background: var(--hover); }
+    .drawer .tools { align-self: flex-start; }
+    .drawer .select select { background: var(--surface-page); }
+    .sec-nav { top: calc(var(--header-h) + var(--gutter)); max-width: calc(100vw - var(--gutter) * 2); }
     .sec-nav button, .sec-thumb .clone span.btn-like { padding: 0 10px; }
     .sec-nav button span, .sec-thumb .clone span.btn-like span { display: none; }
-    .drag-tip { --tip-x: 50% !important; top: 42%; font-size: 14px; }
+    .drag-tip, body[data-layout="b"] .drag-tip { font-size: 14px; }
+    /* 布告欄：牌卡放在畫面中間、疊在 3D 布告欄上（鏡頭把板面對準牌卡）；兩張左右滑動切換（活動／消息），露出下一張的邊緣 */
+    .board-sheet { left: 0; right: 0; top: calc(var(--header-h) + var(--gutter) + var(--nav-btn) + 24px); bottom: calc(var(--gutter) + var(--continue) + 10px);
+      display: grid; grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 92%; align-content: center; padding: 0 var(--gutter);   /* 同一列的兩張牌卡等高，整列垂直置中 */
+      overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding: 0 var(--gutter); scrollbar-width: none; overscroll-behavior-x: contain; }
+    .board-sheet::-webkit-scrollbar { display: none; }
+    .board-sheet:has(.show) { pointer-events: auto; }
+    .board-sheet .board-panel { scroll-snap-align: start; }
+    /* 交通資訊：卡片在下方、跟圓形按鈕並排（高 62vh，上方留給小汽車），內嵌地圖 20vh */
+    :root { --tr-h: 62; }
+    .tr-modal { right: calc(var(--gutter) + var(--continue) + 10px); }
+    .tr-dialog { padding: 20px 16px; gap: 14px; }
+    .tr-head h2 { font-size: 20px; }
+    .tr-map { height: 20vh; }
+    .tr-body { gap: 16px; }
+    .tr-addr p { font-size: 15px; }
+    /* 一起從這裡起步：上方不用讓工具列（收在選單裡），下方讓出圓形按鈕；角色插圖縮小 */
+    .join { padding: calc(var(--header-h) + var(--gutter)) var(--gutter) calc(var(--gutter) + var(--continue) + 16px); }
+    .join-card { padding: 20px 16px; }
+    .join-card > h2 { font-size: 20px; }
+    .join-card > p { font-size: 13px; line-height: 1.7; }
+    .join-grid { gap: 12px; margin-top: 16px; }
+    .join-item { padding: 18px 92px 18px 16px; gap: 8px; }
+    .join-item h3 { font-size: 16px; }
+    .join-item p, .join-item dl { font-size: 13px; }
+    .join-fig { width: 84px; height: 140px; right: 4px; }
+  }
+
+  /* ---------- 觸控裝置（手機、平板）：沒有 hover、手指比滑鼠粗，按鈕點擊區至少 44px ---------- */
+  @media (pointer: coarse) {
+    :root { --tools-h: 56px; --nav-btn: 44px; }
+    .icon-btn, #deviceSeg button { width: 44px; height: 44px; }
+    .select select { height: 44px; font-size: 13px; }
+    .free-panel .help-mouse { display: none; }
+    .free-panel .help-touch { display: grid; }
+    /* 3D 標籤：可以點的那幾個（理念與使命、進駐企業、園區活動、交通資訊）在首屏常駐顯示，點標籤直接前往；點擊區往外擴 */
+    .label.hot { position: relative; pointer-events: auto; cursor: pointer; font-size: 13px; padding: 7px 12px; }
+    .label.hot::after { content: ""; position: absolute; inset: -6px -4px; }
+    /* 理念與使命的步驟線：看起來一樣細，可點的範圍加寬加高 */
+    .about-step { gap: 6px; }
+    .about-rail { gap: 0; padding-top: 0; }
+    .about-rail button { width: 24px; height: 40px; background: transparent; overflow: visible; }
+    .about-rail button::before, .about-rail button i { content: ""; position: absolute; top: 7px; bottom: 7px; left: 10px; right: auto; width: 4px; border-radius: 2px; }
+    .about-rail button::before { background: var(--track); }
+    .bp-head { height: 44px; }
+    .bp-head a { padding: 12px 0 12px 12px; }
   }
 </style>
 <script type="importmap">
@@ -507,6 +613,10 @@
 
 <!-- Site Header（WF 81:1850） -->
 <header class="site-header">
+  <button class="icon-btn menu-btn" id="menuBtn" aria-expanded="false" aria-controls="drawer" aria-label="開啟選單">
+    <svg class="ico-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    <svg class="ico-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+  </button>
   <a class="logo" href="#">CNRD</a>
   <nav class="main-nav">
     <a href="#">園區介紹</a>
@@ -519,6 +629,19 @@
     <a class="btn" href="#">產研媒合平台 →</a>
   </nav>
 </header>
+<!-- 手機選單：從左側滑出；上面是 Header 的入口，下面是顯示設定（手機上程式會把右上工具列搬進來） -->
+<div class="drawer-backdrop" id="drawerBackdrop"></div>
+<aside class="drawer" id="drawer" aria-label="選單">
+  <nav class="drawer-nav">
+    <a href="#">園區介紹</a>
+    <a href="#">產學合作</a>
+    <a href="#">最新消息</a>
+    <a href="#" target="_blank" rel="noopener">研究發展處<img src="assets/icon-external-link.svg" width="16" height="16" alt="另開新視窗" /></a>
+    <a href="#" lang="en">English</a>
+  </nav>
+  <p class="drawer-title">顯示設定</p>
+  <div id="drawerTools"></div>
+</aside>
 
 <!-- Hero 文字：全幅／左文右圖共用同一組，切換時字級、牌卡寬度平滑變化 -->
 <div class="fade-a"></div>
@@ -570,6 +693,7 @@
 </section>
 
 <!-- 園區活動＋最新消息：鏡頭拉近中央綠地的布告欄，牌卡疊在兩塊板面上（WF 81:1930、81:1940） -->
+<div class="board-sheet" id="boardSheet">
 <div class="board-panel" id="boardEvents">
   <header class="bp-head orange"><strong>園區活動</strong><a href="#">查看全部 →</a></header>
   <div class="events">
@@ -586,6 +710,7 @@
     <li><a href="#"><span class="ntag">產學</span><b>第六屆厝客松聯展</b><time>2027-06-25 17:30</time></a></li>
     <li><a href="#"><span class="ntag">大樓</span><b>反詐騙提醒</b><time>2027-06-20 09:00</time></a></li>
   </ul>
+</div>
 </div>
 
 
@@ -648,7 +773,7 @@
   <span id="dragTipText">拖曳可轉動地圖</span>
 </div>
 
-<div class="dock">
+<div class="dock" id="dock">
 <div class="tools">
   <div class="seg" id="deviceSeg" role="group" aria-label="RWD 預覽">
     <button data-device="desktop" aria-pressed="true" aria-label="桌機" title="桌機">
@@ -688,11 +813,18 @@
 
 <div class="free-panel collapsed" id="freePanel" role="dialog" aria-label="地圖操作說明">
   <strong>操作說明</strong>
-  <div class="keys">
+  <div class="keys help-mouse">
     <kbd>拖曳</kbd><span>旋轉角度</span>
     <kbd>右鍵／滾輪鍵拖曳</kbd><span>前後左右移動（也可用 Shift＋拖曳）</span>
     <kbd>雙指捏合／Ctrl＋滾輪</kbd><span>拉近拉遠</span>
     <span></span><span style="color:var(--muted)">動過地圖後，按右下角「繼續觀看」往下看</span>
+  </div>
+  <div class="keys help-touch">
+    <kbd>上下滑動</kbd><span>捲動頁面、切換章節</span>
+    <kbd>左右滑動</kbd><span>旋轉地圖角度（首屏）</span>
+    <kbd>雙指捏合</kbd><span>拉近拉遠，雙指拖曳可移動</span>
+    <kbd>點標籤</kbd><span>直接前往該段落</span>
+    <span></span><span style="color:var(--muted)">動過地圖後，按右下角的箭頭按鈕回到導覽</span>
   </div>
 </div>
 </div>
@@ -783,9 +915,14 @@ const { scene } = stage;
 // 「關於這個計畫」電腦螢幕幻燈片：獨立的 3D 小劇場，用同一個渲染器畫在同一個畫布上
 const about = createAboutSlides();
 about.init(stage.renderer);
+// 上圖下文（手機、直式平板）：跟 CSS 的 RWD 區塊用同一組條件，版面和鏡頭才不會對不上
+const STACKED_MQ = matchMedia('(max-width: 760px), (max-width: 1100px) and (max-aspect-ratio: 10/11)');
 const setAboutView = () => {
-  const desk = innerWidth >= 760;                                    // 桌機：主體往右推，左邊留給文字卡片；手機：卡片在下方，主體往上推
-  about.setView(innerWidth, innerHeight, { shiftX: desk ? innerWidth * 0.16 : 0, shiftY: desk ? 0 : -innerHeight * 0.12 });
+  // 桌機：主體往右推，左邊留給文字卡片；上圖下文：卡片在下方，主體推到卡片上方空白區的正中間
+  if (!STACKED_MQ.matches) return about.setView(innerWidth, innerHeight, { shiftX: innerWidth * 0.16 });
+  const top = document.querySelector(innerWidth < 760 ? '.site-header' : '.tools')?.getBoundingClientRect().bottom ?? 0;
+  const bottom = document.getElementById('aboutCard')?.getBoundingClientRect().top ?? innerHeight;
+  about.setView(innerWidth, innerHeight, { shiftY: -(innerHeight / 2 - (top + bottom) / 2) });
 };
 setAboutView();
 addEventListener('resize', setAboutView);
@@ -902,6 +1039,7 @@ const beamMat = (() => {
   return new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(c), transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending });
 })();
 const labelEls = [];
+let heroColTop = Infinity;   // 上圖下文時改用 Hero 文字的上緣避讓（文字在下方全寬）
 let heroColRight = -1;   // 上一幀算出的 Hero 文字欄右緣（螢幕座標），對話雲用來避讓
 const lampLights = [];   // 夜晚模式的路燈光源與光暈
 
@@ -1449,7 +1587,7 @@ let retroScreen = null;   // 廣場復古電腦的螢幕（之後播「關於這
 // 布告欄、燈箱的 hover 標籤（點擊後捲到對應段落）
 function hotspotLabel(parent, text, y) {
   const el = document.createElement('div');
-  el.className = 'label done';
+  el.className = 'label done hot';                     // hot：可以點的標籤（觸控裝置在首屏常駐顯示，點了前往）
   el.innerHTML = `<i></i>${text}`;
   el.intro = false;                                   // 只在 hover 時出現
   labelEls.push(el);
@@ -1966,12 +2104,12 @@ const LAYOUT = {
   b: { fill: 0.56, view: 55, shift: 0.17, home: new THREE.Vector3(-4.1, 0, -4.1) },
 };
 // 依地圖大小算出鏡頭要看多大範圍，讓整個聚落剛好放進畫面
-function fitView(Lc, narrow) {
+function fitView(Lc, stacked) {
   if (!current) return 60;
   const { W, D } = current.L;
   const screenW = (W + D) * 0.72;                 // 等角視角下地圖在畫面上的寬度（世界單位）
   const aspect = innerWidth / innerHeight;
-  return Math.max(screenW / (aspect * (narrow ? 0.95 : Lc.fill)), (W + D) * 0.42);
+  return Math.max(screenW / (aspect * (stacked ? 0.95 : Lc.fill)), (W + D) * 0.42);
 }
 const ZOOM_VIEW = 17;
 // ===== 捲動時間軸（單位：螢幕高）=====
@@ -2007,22 +2145,30 @@ const STOP_S = [0, ABOUT_IN + 0.3, ABOUT_OUT + EXIT * 0.85, ABOUT_OUT + EXIT + M
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 // 每一站的鏡頭：看哪裡（target）、畫面要容納多少（view）、往右偏多少（shift，讓左側說明卡不擋到）
 const stopTarget = new THREE.Vector3();
-function stopAt(i, Lc, narrow) {
+// stacked：上圖下文（手機、直式平板）。sy = 垂直偏移，把主體推到下方卡片上方的空白區（stackArea 每幀量一次）
+const stackArea = { hero: [0, 1], caption: [0, 1], tenants: [0, 1], board: [0, 1], traffic: [0, 1] };   // 每一站可用的畫面高度範圍（佔畫面高度比例：上緣、下緣）
+const areaSY = a => 0.5 - (a[0] + a[1]) / 2;                         // 讓主體落在這個範圍的正中間
+function stopAt(i, Lc, stacked) {
   const aspect = innerWidth / innerHeight;
   if (i === 2 && current?.office) {                // 站點編號見 TIMELINE：2 辦公研發空間、3 進駐企業、4 活動消息
     const o = current.office;
-    return { target: stopTarget.clone().set(o.x, o.y + 2.4, o.z), view: ZOOM_VIEW, shift: 0, dir: ISO_DIR };
+    return { target: stopTarget.clone().set(o.x, o.y + 2.4, o.z), view: ZOOM_VIEW, shift: 0, dir: ISO_DIR, sy: stacked ? areaSY(stackArea.caption) : 0 };
   }
-  if (i === 3 && lightbox) return { target: lightbox.center, view: narrow ? 10 : 7, shift: narrow ? 0 : 0.16, dir: lightbox.dir };
+  if (i === 3 && lightbox) return { target: lightbox.center, view: stacked ? (innerWidth < 760 ? 10 : 8) : 7, shift: stacked ? 0 : 0.16, dir: lightbox.dir, sy: stacked ? areaSY(stackArea.tenants) : 0 };
   if (i === 4 && board) {                         // 布告欄寬度佔畫面約 78%，高度也要放得下
+    if (stacked) {                                // 上圖下文：牌卡改在下方面板，鏡頭把布告欄放進上方空白區
+      const a = stackArea.board, h = Math.max(a[1] - a[0], 0.2);
+      if (innerWidth < 760) return { target: board.center, view: board.height * 0.75 / h, shift: 0, dir: board.dir, sy: areaSY(a) };   // 手機：板面比牌卡高約 1.25 倍，上下露出布告欄的框
+      return { target: board.center, view: Math.max(board.width / 0.94 / aspect, board.height * 1.15 / h), shift: 0, dir: board.dir, sy: areaSY(a) };
+    }
     return { target: board.center, view: Math.max(board.width / 0.9 / aspect, board.height / 0.86), shift: 0, dir: board.dir };   // 兩塊板面佔畫面寬約 90%
   }
   if (i === 'screen' && computer) {               // 貼近螢幕：正對電腦、螢幕玻璃剛好填滿整個畫面
     const aspect2 = innerWidth / innerHeight;
     return { target: computer.screen, view: Math.min(1.15, 1.57 / aspect2) * 0.96, shift: 0, dir: SCREEN_DIR, dist: 2.2 };   // dist：鏡頭真的貼到螢幕前，前面的建築才不會擋住
   }
-  if (typeof i === 'number' && i > 1) return stopAt(i - 1, Lc, narrow);
-  return { target: Lc.home, view: Lc.view, shift: Lc.shift, dir: ISO_DIR };   // Lc 是兩種版型依切換進度混合後的結果
+  if (typeof i === 'number' && i > 1) return stopAt(i - 1, Lc, stacked);
+  return { target: Lc.home, view: Lc.view, shift: Lc.shift, dir: ISO_DIR, sy: Lc.sy ?? 0 };   // Lc 是兩種版型依切換進度混合後的結果
 }
 const SCREEN_DIR = new THREE.Vector3(0, 0.12, 1).normalize();     // 正對復古電腦螢幕（電腦正面朝 +z）
 const capTenants = document.getElementById('capTenants');
@@ -2060,7 +2206,26 @@ ctl.screenSpacePanning = false;            // 沿地面平移，不會往上下�
 ctl.mouseButtons = { LEFT: THREE.MOUSE.ROTATE, MIDDLE: THREE.MOUSE.PAN, RIGHT: THREE.MOUSE.PAN };
 ctl.touches = { ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_PAN };
 canvas.style.touchAction = 'pan-y';        // 手機：上下滑照常捲動頁面，左右滑轉動地圖
-ctl.addEventListener('change', () => { if (!free && ctl.enabled) enterFree(); });   // 使用者真的動到地圖才算
+// 觸控：單指要「明顯往左右滑」才算轉地圖；往上下滑（或只晃一下）一律留給頁面捲動，避免不小心進入操作模式、頁面被鎖住
+// （瀏覽器判斷成捲動之前，還是會先送一兩個移動事件過來，所以要自己看方向）
+const touchPts = new Map();                // 正在觸碰的手指：pointerId → 按下的位置
+let touchDX = 0, touchDY = 0;              // 這次觸碰最大的水平／垂直位移
+const isCoarse = matchMedia('(pointer: coarse)').matches;
+canvas.addEventListener('pointerdown', e => {
+  if (e.pointerType !== 'touch') return;
+  if (!touchPts.size) touchDX = touchDY = 0;
+  touchPts.set(e.pointerId, [e.clientX, e.clientY]);
+  if (touchPts.size >= 2 && !free && ctl.enabled) enterFree();      // 雙指一放上去就進入操作模式，第一次捏合就能縮放
+}, { capture: true });                     // capture：要比地圖操作（OrbitControls）先執行，它才會知道縮放已經打開
+canvas.addEventListener('pointermove', e => {
+  const p0 = touchPts.get(e.pointerId);
+  if (p0) { touchDX = Math.max(touchDX, Math.abs(e.clientX - p0[0])); touchDY = Math.max(touchDY, Math.abs(e.clientY - p0[1])); }
+});
+['pointerup', 'pointercancel'].forEach(ev => canvas.addEventListener(ev, e => touchPts.delete(e.pointerId)));
+ctl.addEventListener('change', () => {                                // 使用者真的動到地圖才算
+  if (free || !ctl.enabled || (touchPts.size === 1 && !(touchDX > 12 && touchDX > touchDY * 1.2))) return;
+  enterFree();
+});
 // 觸控板捏合（瀏覽器會當成 Ctrl＋滾輪）：擋掉瀏覽器縮放網頁，改成進入操作模式
 canvas.addEventListener('wheel', e => {
   if (!free && ctl.enabled && e.ctrlKey) { e.preventDefault(); enterFree(); }
@@ -2104,10 +2269,23 @@ function pickHotspot(ptr) {                          // 滑鼠位置底下是布
   hotRay.setFromCamera(ptr, stage.camera);
   return [board, lightbox, computer, ...cars].find(h => h && hotRay.intersectObject(h.g, true).some(i => i.object.isMesh)) ?? null;
 }
+let tapLabel = null, tapLabelUntil = 0;               // 觸控：點一下地圖上的場景，顯示它的標籤 2.5 秒（取代 hover）
 canvas.addEventListener('click', e => {
   if (!downAt || Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) > 5) return;
-  const hit = pickHotspot(new THREE.Vector2(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1));   // 點擊當下重新判斷，不靠上一幀
-  if (hit) hit.stop === 'traffic' ? goTraffic(hit) : goStop(hit.stop);
+  const ptr = new THREE.Vector2(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
+  const hit = pickHotspot(ptr);                        // 點擊當下重新判斷，不靠上一幀
+  if (hit) return hit.stop === 'traffic' ? goTraffic(hit) : goStop(hit.stop);
+  if (!isCoarse) return;
+  hotRay.setFromCamera(ptr, stage.camera);
+  let o = hotRay.intersectObjects(items, true)[0]?.object;
+  while (o && !o.userData.labelEl) o = o.parent;
+  tapLabel = o?.userData.labelEl ?? null; tapLabelUntil = performance.now() + 2500;
+});
+// 可點的標籤本身也能點（觸控裝置上標籤常駐，手指直接點標籤最直覺）
+labels.domElement.addEventListener('click', e => {
+  const el = e.target.closest('.label.hot');
+  const h = el && [board, lightbox, computer, ...cars].find(x => x?.label === el);
+  if (h) h.stop === 'traffic' ? goTraffic(h) : goStop(h.stop);
 });
 // ===== 交通資訊彈窗 =====
 const trModal = document.getElementById('trModal'), trMap = document.getElementById('trMap');
@@ -2138,7 +2316,7 @@ function goTraffic(car) {
   if (glide) { cancelAnimationFrame(glide.raf); glide = null; }
   jump = null;
   car ??= cars.reduce((a, c) => (c.g.position.distanceTo(camLook) < a.g.position.distanceTo(camLook) ? c : a));
-  carFocus = { car, t0: performance.now(), from: { target: camLook.clone(), dir: camDir.clone(), view: stage.view, shift: stage.shift, dist: camDistNow } };
+  carFocus = { car, t0: performance.now(), from: { target: camLook.clone(), dir: camDir.clone(), view: stage.view, shift: stage.shift, shiftY: stage.shiftY, dist: camDistNow } };
   clearTimeout(carFocusTimer);
   carFocusTimer = setTimeout(openTraffic, CAR_FLY - 150);
 }
@@ -2186,7 +2364,7 @@ const camLook = new THREE.Vector3(); let camDistNow = 120;
 const carTarget = new THREE.Vector3(), carFront = new THREE.Vector3();   // 交通資訊：小汽車前方的鏡頭位置   // 每一幀記下鏡頭看哪裡、離多遠（給直飛當起點）
 const JUMP_DUR = 2800;
 function startJump() {
-  jump = { t0: performance.now(), dur: JUMP_DUR, target: camLook.clone(), dir: camDir.clone(), view: stage.view, shift: stage.shift, dist: camDistNow };
+  jump = { t0: performance.now(), dur: JUMP_DUR, target: camLook.clone(), dir: camDir.clone(), view: stage.view, shift: stage.shift, shiftY: stage.shiftY, dist: camDistNow };
 }
 function goStop(n) {                                  // 回到原本視角，捲到第 n 站
   const from = currentChapter;
@@ -2332,6 +2510,8 @@ aboutRail.innerHTML = ABOUT_COPY.steps.map((c, i) => `<button data-step="${i}" a
 const railBtns = [...aboutRail.children], railFills = railBtns.map(b => b.firstChild);
 aboutCopy.innerHTML = ABOUT_COPY.steps.map(c => `<div><span class="n">${c.n}</span><h4>${c.h}</h4><p>${c.p}</p></div>`).join('');
 const copyBlocks = [...aboutCopy.children];
+setAboutView();                                                      // 卡片內容填好、高度確定後，重新量一次幻燈片的取景（上圖下文時要避開卡片）
+document.fonts.ready.then(setAboutView);
 const goAboutStep = i => glideTo(innerHeight * (ABOUT_IN + ABOUT_STEP * i + 0.3));
 railBtns.forEach((b, i) => { b.onclick = () => { userNav(i); goAboutStep(i); }; });
 let shownCopy = -1;
@@ -2524,6 +2704,28 @@ const isNightHour = () => { const h = new Date().getHours(); return h < 8 || h >
 
 // 操作說明收合：記住使用者的選擇（瀏覽器儲存失敗時就用預設展開）
 // 操作說明：工具列的 ? 按鈕展開／收合（預設收合）
+// 手機：Header 的選單按鈕展開／收起工具列；點選單外面、按 Esc 就收起
+// 手機：Logo 左邊的選單按鈕，從左側滑出選單；點遮罩、點選單裡的連結、按 Esc 就收起
+const menuBtn = document.getElementById('menuBtn'), dockEl = document.getElementById('dock'), drawer = document.getElementById('drawer');
+const setMenu = open => {
+  body.classList.toggle('menu-open', open);
+  menuBtn.setAttribute('aria-expanded', String(open)); menuBtn.setAttribute('aria-label', open ? '關閉選單' : '開啟選單');
+  drawer.inert = !open;                                   // 收起時不能被 Tab 鍵選到
+};
+setMenu(false);
+menuBtn.onclick = () => setMenu(!body.classList.contains('menu-open'));
+document.getElementById('drawerBackdrop').onclick = () => setMenu(false);
+drawer.querySelectorAll('.drawer-nav a').forEach(a => { a.addEventListener('click', () => setMenu(false)); });
+addEventListener('keydown', e => { if (e.key === 'Escape') setMenu(false); });
+// 右上工具列：手機搬進選單的「顯示設定」，其他尺寸放回右上角（同一組按鈕，功能不用重綁）
+const PHONE_MQ = matchMedia('(max-width: 760px)'), dockHome = document.createComment('dock');
+dockEl.before(dockHome);
+const placeDock = () => {
+  if (PHONE_MQ.matches) document.getElementById('drawerTools').append(dockEl);
+  else { dockHome.after(dockEl); setMenu(false); }
+};
+placeDock();
+PHONE_MQ.addEventListener('change', placeDock);
 const freePanel = document.getElementById('freePanel'), helpBtn = document.getElementById('tHelp');
 helpBtn.onclick = () => {
   const open = freePanel.classList.toggle('collapsed') === false;
@@ -2610,6 +2812,31 @@ if (focusParam) {
   setTimeout(() => { stage.controls.enableDamping = true; }, 500);
 }   // 除錯用：可在 Console 檢查人物與動物
 
+// ===== 上圖下文（手機、直式平板）=====
+// 每一幀量一次：工具列／錨點列下緣 ～ 該站卡片上緣，就是主體可以放的範圍
+const toolsEl = document.querySelector('.tools'), siteHeader = document.querySelector('.site-header'), boardSheet = document.getElementById('boardSheet');
+function measureStackArea() {
+  const H = innerHeight, top = el => el.getBoundingClientRect().top, bottom = el => el.getBoundingClientRect().bottom;
+  const toolsB = (innerWidth < 760 ? bottom(siteHeader) : bottom(toolsEl)) + 8, navB = Math.max(toolsB, bottom(secNav) + 8);   // 手機：工具列收在選單裡，從 Header 下緣起算
+  stackArea.hero = [toolsB / H, (top(hero) - 8) / H];
+  stackArea.caption = [navB / H, (top(caption) - 8) / H];
+  stackArea.tenants = [navB / H, (top(capTenants) - 8) / H];
+  // 交通資訊卡飛到車子前才打開（還量不到），所以用 CSS 的卡片高度 --tr-h 推算卡片上緣
+  const trH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--tr-h')) || 50;
+  stackArea.traffic = [navB / H, 1 - trH / 100 - (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--gutter')) + 8) / H];
+  stackArea.board = innerWidth < 760 ? [top(boardEls[0]) / H, bottom(boardEls[0]) / H]   // 手機：牌卡在畫面中間，板面對準牌卡
+    : [navB / H, (top(boardSheet) - 8) / H];
+}
+// 首屏：整張地圖的寬度放進畫面寬度，高度放進文字上方的空白區，取比較大的那個
+const STACK_HOME = new THREE.Vector3(0, 0, 0);
+function stackedHome() {
+  const a = stackArea.hero, h = Math.max(a[1] - a[0], 0.2);
+  const v = fitView(LAYOUT.a, true);
+  const mapH = current ? (current.L.W + current.L.D) * 0.72 * 0.58 : 0;   // 等角視角下地圖在畫面上的高度（約寬度的 0.58）
+  // 手機：地圖放大到約 1.9 倍、填滿寬度（左右超出沒關係），中央綠地落在 Header 與大標之間
+  if (innerWidth < 760) return { home: STACK_HOME, view: v / 1.9, shift: 0, sy: areaSY(a) - 0.05 };   // 往下一點，讓地圖下緣墊在大標後面
+  return { home: STACK_HOME, view: Math.max(v, mapH / h), shift: 0, sy: areaSY(a) };
+}
 function smooth(t) { return t * t * (3 - 2 * t); }   // 用 function 宣告：程式一開始就能用（夜晚模式初始化會用到）
 function lerp(a, b, t) { return a + (b - a) * t; }
 const tmp = new THREE.Vector3(), tmpV = new THREE.Vector3(), camDir = ISO_DIR.clone(), cullV = new THREE.Vector3();
@@ -2625,13 +2852,14 @@ stage.renderer.setAnimationLoop(() => {
   const now = performance.now(), dt = Math.min((now - last) / 16.7, 3); last = now;
   const max = document.documentElement.scrollHeight - innerHeight;
   const p = max > 0 ? scrollY / max : 0;
-  const narrow = innerWidth < 760;
+  const stacked = STACKED_MQ.matches;                                // 上圖下文（手機、直式平板）
+  if (stacked) measureStackArea();
   // 全幅切換：版型進度 0（全幅）→ 1（左文右圖）慢慢過渡，鏡頭位置、大小、偏移一起混合
   layoutT += ((body.dataset.layout === 'b' ? 1 : 0) - layoutT) * Math.min(0.065 * dt, 1);   // 約 0.9 秒完成
   if (Math.abs(layoutT - Math.round(layoutT)) < 0.001) layoutT = Math.round(layoutT);
   const lk = smooth(layoutT);
-  const vA = fitView(LAYOUT.a, narrow), vB = (!narrow && LAYOUT.b.view) || fitView(LAYOUT.b, narrow);
-  const Lc = { home: layoutHome.copy(LAYOUT.a.home).lerp(LAYOUT.b.home, lk), view: lerp(vA, vB, lk), shift: lerp(LAYOUT.a.shift, LAYOUT.b.shift, lk) };
+  const vA = fitView(LAYOUT.a, stacked), vB = (!stacked && LAYOUT.b.view) || fitView(LAYOUT.b, stacked);
+  const Lc = stacked ? stackedHome() : { home: layoutHome.copy(LAYOUT.a.home).lerp(LAYOUT.b.home, lk), view: lerp(vA, vB, lk), shift: lerp(LAYOUT.a.shift, LAYOUT.b.shift, lk) };
   // 捲動時間軸：首屏 → 鑽進電腦螢幕 → 螢幕裡的 3 步幻燈片 → 退出 → 辦公研發空間 → 進駐企業 → 活動消息
   const sv = scrollY / innerHeight;
   const { seg, k, f: segF } = timelineAt(sv);
@@ -2648,13 +2876,13 @@ stage.renderer.setAnimationLoop(() => {
     ctl.enabled = sv < 0.02 && !returning && !joinOn;                            // 只有在 Hero 區（還沒往下捲）才能拖曳地圖
     // 關掉動態效果的人：不做鑽進螢幕的推近，鏡頭停在首屏，到點直接切換畫面
     const kk = reduceMotion && seg.kind === 'dive' ? (seg.from === 0 ? 0 : 1) : k;
-    let A = stopAt(seg.from, Lc, narrow), B = stopAt(seg.to, Lc, narrow), kk2 = kk;
+    let A = stopAt(seg.from, Lc, stacked), B = stopAt(seg.to, Lc, stacked), kk2 = kk;
     // 鑽進／退出螢幕分兩階段：
     //   ① 鏡頭轉到電腦正面，同時把螢幕移到畫面正中央（畫面稍微拉近一點）
     //   ② 螢幕留在正中央，原地一路推進到玻璃填滿畫面
     // 退出時倒過來：先原地拉遠，再飛到下一站
     if (seg.kind === 'dive') {
-      const scr = stopAt('screen', Lc, narrow);
+      const scr = stopAt('screen', Lc, stacked);
       const mid = { target: scr.target, view: 14, shift: 0, dir: SCREEN_DIR, dist: 30 };   // 螢幕在正中央、還沒推近的狀態
       const into = seg.to === 'screen', SPLIT = 0.45;
       const pFar = into ? A : B;                                        // 遠的那一端（首屏或辦公研發空間）
@@ -2664,7 +2892,8 @@ stage.renderer.setAnimationLoop(() => {
     }
     // 鑽進／退出：大小用「等比」縮放（越靠近推得越細，不會最後一下猛衝）；地圖站之間：先稍微拉遠再拉近
     stage.view = seg.kind === 'map' ? lerp(A.view, B.view, kk2) + Math.sin(Math.PI * kk2) * 14 : Math.exp(lerp(Math.log(A.view), Math.log(B.view), kk2));
-    stage.shift = narrow ? 0 : lerp(A.shift, B.shift, kk2);
+    stage.shift = stacked ? 0 : lerp(A.shift, B.shift, kk2);
+    stage.shiftY = stacked ? lerp(A.sy ?? 0, B.sy ?? 0, kk2) : 0;      // 上圖下文：主體推到卡片上方
     tmp.copy(A.target).lerp(B.target, kk2);
     stage.camera.zoom = 1;
     stage.lookAt(tmp);
@@ -2681,6 +2910,7 @@ stage.renderer.setAnimationLoop(() => {
       camDir.lerpVectors(jump.dir, camDir, jk).normalize();
       stage.view = Math.exp(lerp(Math.log(jump.view), Math.log(stage.view), jk)) * lift;
       stage.shift = lerp(jump.shift, stage.shift, jk);
+      stage.shiftY = lerp(jump.shiftY ?? 0, stage.shiftY, jk);
       const d = Math.exp(lerp(Math.log(jump.dist), Math.log(camDist), jk));
       stage.lookAt(tmp);
       stage.camera.position.copy(tmp).addScaledVector(camDir, d);
@@ -2696,8 +2926,9 @@ stage.renderer.setAnimationLoop(() => {
       tmp.lerpVectors(F.target, carTarget, fk);
       camDir.lerpVectors(F.dir, carFront, fk).normalize();
       stage.view = Math.exp(lerp(Math.log(F.view), Math.log(20), fk)) * (1 + 0.5 * Math.sin(Math.PI * fk));
-      const trShift = narrow ? 0 : Math.min(((trModal.offsetWidth || innerWidth * 0.5) + 20) / innerWidth / 2, 0.3);   // 左邊是交通資訊卡：車子放在右邊剩下空間的中間
+      const trShift = stacked ? 0 : Math.min(((trModal.offsetWidth || innerWidth * 0.5) + 20) / innerWidth / 2, 0.3);   // 左邊是交通資訊卡：車子放在右邊剩下空間的中間
       stage.shift = lerp(F.shift, trShift, fk);
+      stage.shiftY = lerp(F.shiftY ?? 0, stacked ? areaSY(stackArea.traffic) : 0, fk);   // 上圖下文：交通資訊卡在下方，車子放在卡片上方空白區
       const d = Math.exp(lerp(Math.log(F.dist), Math.log(30), fk));
       stage.lookAt(tmp);
       stage.camera.position.copy(tmp).addScaledVector(camDir, d);
@@ -2727,7 +2958,8 @@ stage.renderer.setAnimationLoop(() => {
   // 往下捲時，左側文字區塊像窗簾一樣往左收合：右邊界從原本位置一路縮到畫面最左邊（不是變透明）
   const collapse = smooth(Math.min(e * 1.6, 1));                     // 0 = 完整、1 = 收合完畢（跟鏡頭移動同步）
   const heroRect = hero.getBoundingClientRect(), heroLeft = heroRect.left, heroW = heroRect.width;   // 裁切不影響這個尺寸
-  const edgeFull = lerp(heroLeft + heroW + 32, innerWidth * panelVw / 100, lk); // 收合前的右邊界：全幅 = 文字右緣、左文右圖 = 面板右緣
+  const lkE = stacked ? 0 : lk;                                        // 上圖下文：沒有左側面板，一律照全幅處理
+  const edgeFull = lerp(heroLeft + heroW + 32, innerWidth * panelVw / 100, lkE); // 收合前的右邊界：全幅 = 文字右緣、左文右圖 = 面板右緣
   heroEdge = edgeFull * (1 - collapse);                              // 目前的右邊界（螢幕座標）
   const visibleW = Math.max(0, heroEdge - heroLeft);
   hero.style.clipPath = collapse > 0 ? `inset(-60px ${Math.max(0, heroW - visibleW)}px -60px -60px)` : '';
@@ -2736,11 +2968,11 @@ stage.renderer.setAnimationLoop(() => {
   // 左文右圖的面板：版型切換時從左邊滑進來；往下捲時寬度跟著文字一起縮到 0
   panelB.style.opacity = 1;
   panelB.style.width = `${panelVw * (1 - collapse)}vw`;
-  panelB.style.transform = `translateX(${-(1 - lk) * 100}%)`;
+  panelB.style.transform = `translateX(${-(1 - lkE) * 100}%)`;
   // 全幅的左側漸層：版型切換時淡出；往下捲時跟著往左收
-  fadeA.style.opacity = 1 - lk;
+  fadeA.style.opacity = stacked ? 1 - collapse : 1 - lk;              // 上圖下文：底部漸層跟著文字淡出
   fadeA.style.transformOrigin = '0 50%';
-  fadeA.style.transform = `scaleX(${1 - collapse})`;
+  fadeA.style.transform = stacked ? '' : `scaleX(${1 - collapse})`;
   if (sv > 0.02 || free) { if (dragTip.classList.contains('show')) hideDragTip(); }   // 捲動或拖曳地圖就收起提示
   caption.classList.toggle('show', !free && !jump && !carFocus && at === 2);
   capTenants.classList.toggle('show', !free && !jump && !carFocus && at === 3);
@@ -2773,7 +3005,7 @@ stage.renderer.setAnimationLoop(() => {
       c.g.position.x += 0.35;
       c.g.quaternion.copy(stage.camera.quaternion);                         // 永遠面向鏡頭
       tmpV.copy(c.g.position).project(stage.camera);
-      const inHeroCol = (tmpV.x + 1) / 2 * innerWidth < heroColRight;      // 落在 Hero 文字欄就不顯示
+      const inHeroCol = (tmpV.x + 1) / 2 * innerWidth < heroColRight || (1 - tmpV.y) / 2 * innerHeight > heroColTop;   // 落在 Hero 文字區就不顯示
       // 人物掉落、站穩後再停一下，雲才開始出現（重播進場時也會先收起來）
       const landed = anim.elapsed > h.g.userData.delay + anim.dur + 0.8;
       const want = speaker && landed && !inHeroCol ? 0.62 : 0;
@@ -2896,8 +3128,10 @@ stage.renderer.setAnimationLoop(() => {
   // 標籤避讓：Hero 文字所在的「整個左側欄」（從畫面頂端到底部）都不放標籤，
   // 不只避開字本身，也避免標籤浮在大標上方／旁邊干擾閱讀（文字淡出後就不需要避讓）
   const heroEl = hero;
-  let colRight = -1;
-  if (heroEl.style.visibility !== 'hidden') {
+  let colRight = -1, colTop = Infinity;
+  if (heroEl.style.visibility !== 'hidden' && stacked) {
+    colTop = heroEl.getBoundingClientRect().top - 12;           // 上圖下文：文字在下方全寬，避開文字上緣以下
+  } else if (heroEl.style.visibility !== 'hidden') {
     const range = document.createRange();                       // 用文字實際寬度，不用區塊寬度
     heroEl.querySelectorAll('.slogan span, .slogan').forEach(n => {
       range.selectNodeContents(n);
@@ -2906,19 +3140,27 @@ stage.renderer.setAnimationLoop(() => {
     heroEl.querySelectorAll('.card').forEach(n => { colRight = Math.max(colRight, n.getBoundingClientRect().right); });
     colRight = Math.min(colRight + 24, heroEdge);                // 留一點呼吸空間；收合中就只避開還看得到的部分
   }
-  heroColRight = colRight;
+  heroColRight = colRight; heroColTop = colTop;
   // 進場：落地後顯示每種空間的代表標籤 5 秒；之後只顯示滑鼠所在場景的標籤
-  const introOn = anim.elapsed > 1.2 && anim.elapsed < 6.2;
+  // 手機地圖太小，6 個進場標籤會疊成一團、還壓到拖曳提示：手機不播進場標籤，提示收起後只顯示可以點的標籤
+  const introOn = anim.elapsed > 1.2 && anim.elapsed < 6.2 && innerWidth >= 760;
   const hoverEl = hotHovered ? hotHovered.label : anim.hovered?.userData.labelEl;
+  // 觸控裝置沒有 hover：進場標籤播完後，首屏常駐顯示可以點的標籤（小汽車只標一台）；點過的場景標籤顯示 2.5 秒
+  const touchHot = isCoarse && anim.elapsed > 6.2 && sv < 0.02 && !free;
+  if (tapLabel && (now > tapLabelUntil || sv > 0.02)) tapLabel = null;
   for (const el of labelEls) {
-    const intro = introOn && el.intro && el.getBoundingClientRect().left >= colRight;   // 進場標籤避開 Hero 文字欄
-    el.classList.toggle('show', intro || el === hoverEl);
+    const r = (introOn && el.intro) || (touchHot && el.classList.contains('hot')) ? el.getBoundingClientRect() : null;
+    const clear = r && r.left >= colRight && r.bottom <= colTop;      // 避開 Hero 文字
+    const intro = introOn && el.intro && clear;
+    const hot = touchHot && clear && el.classList.contains('hot') && (!cars.length || cars.every(c => c.label !== el) || cars[0].label === el);
+    el.classList.toggle('show', intro || hot || el === hoverEl || el === tapLabel);
   }
   // 布告欄牌卡：把兩塊板面的四個角投影到螢幕上，HTML 牌卡等比縮放貼齊
   const showBoard = !free && !jump && !carFocus && at === 4 && board;
   boardEls.forEach((el, i) => {
     el.classList.toggle('show', !!showBoard);
     if (!board) return;
+    if (stacked) { if (el.style.transform) { el.style.transform = ''; el.style.height = ''; } return; }   // 上圖下文：牌卡在下方面板，不貼板面
     const [tl, tr, , bl] = board.panels[i].map(v => {
       tmpV.copy(v); board.g.localToWorld(tmpV).project(stage.camera);
       return [(tmpV.x + 1) / 2 * innerWidth, (1 - tmpV.y) / 2 * innerHeight];

@@ -47,13 +47,14 @@ export function createStage({ view = 15, shadowSize = 9, shadowRes = 2048, backg
     renderer, scene, camera, controls, sun,
     view,        // 畫面高度可容納的世界單位
     shift: 0,    // 畫面水平偏移（佔畫面寬度比例，正值 = 內容往右）
+    shiftY: 0,   // 畫面垂直偏移（佔畫面高度比例，正值 = 內容往上；直式螢幕把主體推到卡片上方用）
     target: new THREE.Vector3(...target),
     // 依 view / shift 更新相機視野
     frame() {
       const a = innerWidth / innerHeight;
       const hh = this.view / 2, hw = hh * a;
-      const s = this.shift * 2 * hw;
-      Object.assign(camera, { left: -hw - s, right: hw - s, top: hh, bottom: -hh });
+      const s = this.shift * 2 * hw, sy = this.shiftY * 2 * hh;
+      Object.assign(camera, { left: -hw - s, right: hw - s, top: hh - sy, bottom: -hh - sy });
       camera.updateProjectionMatrix();
     },
     // 把相機擺到 target 的等角方向上（會重設旋轉）
