@@ -297,6 +297,17 @@
     font: 500 12px/1 var(--font-family); cursor: pointer; transition: background .2s, color .2s; }
   .seg button:hover { color: var(--text-primary); }
   .seg button[aria-pressed="true"] { background: var(--seg-on); color: var(--text-primary); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+  .tools [hidden] { display: none !important; }
+  /* 裝置切換：圖示按鈕 */
+  #deviceSeg button { width: 36px; padding: 0; display: grid; place-items: center; }
+  #deviceSeg svg { width: 18px; height: 18px; }
+  /* 材質：下拉選單（用原生 select，鍵盤、手機都好操作；外觀改成跟分段按鈕同一套） */
+  .select { position: relative; display: inline-flex; align-items: center; }
+  .select select { appearance: none; -webkit-appearance: none; height: 36px; padding: 0 30px 0 12px; border: 0; border-radius: var(--radius-btn);
+    background: var(--hover); color: var(--text-primary); font: 500 12px/1 var(--font-family); cursor: pointer; transition: background .2s, color .8s; }
+  .select select:hover { background: var(--sep); }
+  .select select:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+  .select svg { position: absolute; right: 9px; width: 14px; height: 14px; pointer-events: none; color: var(--text-secondary); }
   /* 全幅開關 */
   .switch { display: inline-flex; align-items: center; gap: 8px; padding: 0 8px 0 10px; height: 36px; font-size: 12px;
     color: var(--text-primary); cursor: pointer; user-select: none; }
@@ -341,6 +352,39 @@
   .drag-tip .ico svg { position: absolute; inset: 0; width: 100%; height: 100%; }
   .drag-tip .ico .hand { animation: tip-drag 1.6s ease-in-out infinite; color: var(--text-primary); }
   @keyframes tip-drag { 0%, 100% { transform: translateX(-7px); } 50% { transform: translateX(7px); } }
+
+  /* ---------- RWD 預覽：手機／平板 mockup（整個畫面中間放一台裝置，裡面用 iframe 開同一個網頁） ---------- */
+  .rwd { position: fixed; inset: 0; z-index: 40; display: grid; place-items: center; background: var(--bg);
+    padding: calc(var(--header-h) + 60px) 20px 48px; }
+  .rwd[hidden] { display: none; }
+  body.rwd .dock { z-index: 41; }                                           /* 工具列浮在 mockup 上方，隨時切回桌機 */
+  body.rwd .tools > :not(#deviceSeg) { display: none; }                     /* 預覽時只留裝置切換，其他設定在裝置裡面操作 */
+  body.rwd .free-panel { display: none; }
+  .rwd-stage { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+  .device { position: relative; flex: none; background: #1b1c1f; border-radius: var(--d-r); padding: var(--d-bezel);
+    box-shadow: 0 0 0 2px #3b3d42, 0 30px 80px rgba(0,0,0,.25); transform-origin: top center; }
+  .d-screen { position: relative; width: var(--d-w); height: var(--d-h); border-radius: var(--d-sr); overflow: hidden;
+    display: flex; flex-direction: column; background: var(--surface-page); }
+  .d-status { flex: none; height: var(--d-sb); display: flex; align-items: center; justify-content: space-between; padding: 0 var(--d-sp);
+    color: var(--text-primary); font: 600 var(--d-fs)/1 -apple-system, "SF Pro Text", var(--font-family); background: var(--surface-page);
+    transition: background-color .8s, color .8s; }
+  .d-icons { display: flex; align-items: center; gap: 6px; }
+  .d-icons svg { height: calc(var(--d-fs) * .8); width: auto; fill: currentColor; }
+  .d-island { position: absolute; top: 11px; left: 50%; width: 125px; height: 37px; margin-left: -62.5px; border-radius: 20px; background: #000; z-index: 2; }
+  .d-screen iframe { flex: 1; width: 100%; border: 0; display: block; background: var(--bg); }
+  .d-home { position: absolute; left: 50%; bottom: 8px; width: 134px; height: 5px; margin-left: -67px; border-radius: 3px; background: var(--text-primary); opacity: .85; z-index: 2; pointer-events: none; }
+  .d-cam { position: absolute; top: calc(var(--d-bezel) / 2 - 3px); left: 50%; width: 6px; height: 6px; margin-left: -3px; border-radius: 50%; background: #2a2c31; }
+  /* iPhone 16：393 × 852 pt，動態島、Home 條 */
+  .device.phone { --d-w: 393px; --d-h: 852px; --d-bezel: 12px; --d-r: 66px; --d-sr: 54px; --d-sb: 54px; --d-sp: 34px; --d-fs: 16px; }
+  .device.phone .d-cam { display: none; }
+  /* iPad（第 10 代）：820 × 1180 pt，沒有動態島，上方黑框中間是鏡頭 */
+  .device.tablet { --d-w: 820px; --d-h: 1180px; --d-bezel: 24px; --d-r: 44px; --d-sr: 20px; --d-sb: 26px; --d-sp: 22px; --d-fs: 13px; }
+  .device.tablet .d-island { display: none; }
+  .device.tablet .d-home { width: 300px; margin-left: -150px; }
+  .rwd-cap { margin: 0; font-size: 13px; color: var(--text-secondary); }
+  html.embed #deviceSeg, html.embed #deviceSeg + .sep { display: none !important; }      /* 裝置裡面的網頁不再顯示裝置切換 */
+  html.embed { scrollbar-width: none; }                                       /* 手機、平板的捲軸是浮動的，不佔寬度 */
+  html.embed::-webkit-scrollbar { display: none; }
 
   @media (max-width: 1100px) {
     .site-header .main-nav, .site-header .side-nav a:not(.btn) { display: none; }
@@ -564,18 +608,32 @@
 
 <div class="dock">
 <div class="tools">
-  <label class="switch" title="地圖全幅出血／左文右圖"><input type="checkbox" id="tFull" checked><span class="track"></span>全幅</label>
+  <div class="seg" id="deviceSeg" role="group" aria-label="RWD 預覽">
+    <button data-device="desktop" aria-pressed="true" aria-label="桌機" title="桌機">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="4" width="19" height="12.5" rx="2"/><path d="M8.5 20.5h7M12 16.5v4"/></svg>
+    </button>
+    <button data-device="tablet" aria-pressed="false" aria-label="平板（iPad）" title="平板（iPad）">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="2.5" width="15" height="19" rx="2.5"/><path d="M11 18.5h2"/></svg>
+    </button>
+    <button data-device="phone" aria-pressed="false" aria-label="手機（iPhone 16）" title="手機（iPhone 16）">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 5.5h2"/></svg>
+    </button>
+  </div>
   <span class="sep"></span>
-  <div class="seg" id="peopleSeg" role="group" aria-label="人物風格">
+  <!-- 全幅、人物風格切換：先隱藏（功能保留，之後要再打開把 hidden 拿掉） -->
+  <label class="switch" title="地圖全幅出血／左文右圖" hidden><input type="checkbox" id="tFull" checked><span class="track"></span>全幅</label>
+  <div class="seg" id="peopleSeg" role="group" aria-label="人物風格" hidden>
     <button data-people="illus" aria-pressed="true">插畫</button>
     <button data-people="chibi" aria-pressed="false">Q版</button>
   </div>
-  <span class="sep"></span>
-  <div class="seg" id="finishSeg" role="group" aria-label="材質">
-    <button data-finish="matte" aria-pressed="true">霧面</button>
-    <button data-finish="clay" aria-pressed="false">黏土</button>
-    <button data-finish="paper" aria-pressed="false">紙雕</button>
-  </div>
+  <label class="select" title="材質">
+    <select id="finishSel" aria-label="材質">
+      <option value="matte">霧面</option>
+      <option value="clay">黏土</option>
+      <option value="paper">紙雕</option>
+    </select>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+  </label>
   <span class="sep"></span>
   <button class="icon-btn" id="tNight" aria-pressed="false" aria-label="切換夜晚模式" title="白天／夜晚">
     <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
@@ -595,6 +653,29 @@
     <span></span><span style="color:var(--muted)">動過地圖後，按右下角「繼續觀看」往下看</span>
   </div>
 </div>
+</div>
+
+<!-- RWD 預覽：手機／平板 mockup -->
+<div class="rwd" id="rwd" hidden>
+  <div class="rwd-stage">
+    <div class="device phone" id="device">
+      <span class="d-cam"></span>
+      <div class="d-screen">
+        <div class="d-status">
+          <span>9:41</span>
+          <span class="d-icons" aria-hidden="true">
+            <svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5.5" width="3" height="6.5" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg>
+            <svg viewBox="0 0 16 12"><path d="M8 2.2c2.3 0 4.4.9 6 2.4l1.3-1.4A10.6 10.6 0 0 0 8 .3 10.6 10.6 0 0 0 .7 3.2L2 4.6a8.7 8.7 0 0 1 6-2.4zm0 3.8c1.3 0 2.5.5 3.4 1.3l1.3-1.4A6.8 6.8 0 0 0 8 4.1a6.8 6.8 0 0 0-4.7 1.8l1.3 1.4C5.5 6.5 6.7 6 8 6zm0 3.6-2.1 2.2L8 12l2.1-2.2A3 3 0 0 0 8 9.6z"/></svg>
+            <svg viewBox="0 0 27 12"><rect x=".5" y=".5" width="22" height="11" rx="3" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="19" height="8" rx="2"/><path d="M24 4v4a2 2 0 0 0 0-4z" opacity=".4"/></svg>
+          </span>
+        </div>
+        <span class="d-island"></span>
+        <iframe id="rwdFrame" title="RWD 預覽畫面"></iframe>
+        <span class="d-home"></span>
+      </div>
+    </div>
+    <p class="rwd-cap" id="rwdCap"></p>
+  </div>
 </div>
 
 <button class="continue" id="continueBtn" aria-label="往下看下一段">
@@ -2225,9 +2306,10 @@ function setFinish(name) {
     m.specularIntensity = f.paper ? 0.35 : 1;   // 紙張幾乎不反光
   });
   paperU.value = f.paper;
-  document.querySelectorAll('#finishSeg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.finish === name)));
+  finishSel.value = name;
 }
-document.querySelectorAll('#finishSeg button').forEach(b => { b.onclick = () => setFinish(b.dataset.finish); });
+const finishSel = document.getElementById('finishSel');
+finishSel.onchange = () => setFinish(finishSel.value);
 setFinish(FINISH[new URLSearchParams(location.search).get('finish')] ? new URLSearchParams(location.search).get('finish') : 'matte');   // 網址加 ?finish=clay / paper 直接用該材質打開
 
 // ============ 白天／夜晚 ============
@@ -2317,6 +2399,47 @@ logosReady.then(() => requestAnimationFrame(() => requestAnimationFrame(() => {
   if (window.__load) { window.__load.caption = '準備完成'; window.__load.done = true; }
 })));
 addEventListener('loader:hide', () => { anim.replay(); showDragTip(); scheduleAutoLayout(); }, { once: true });
+
+// ============ RWD 預覽（手機／平板 mockup） ============
+// 切到手機或平板時，畫面中間放一台裝置，裡面用 iframe 開同一個網頁（網址加 embed=1，裡面就不再出現裝置切換）
+// 目前的夜晚、材質、人物設定會一起帶進去；預覽期間外面的地圖暫停繪製，省效能
+const embed = params.get('embed') === '1';
+if (embed) document.documentElement.classList.add('embed');
+const DEVICES = {
+  phone:  { name: 'iPhone 16', w: 393, h: 852, cls: 'phone' },
+  tablet: { name: 'iPad', w: 820, h: 1180, cls: 'tablet' },
+};
+const rwd = document.getElementById('rwd'), device = document.getElementById('device'), rwdFrame = document.getElementById('rwdFrame');
+let deviceMode = 'desktop', rwdSrc = '';
+function fitDevice() {
+  if (deviceMode === 'desktop') return;
+  const cs = getComputedStyle(rwd);
+  const availW = innerWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+  const availH = innerHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - 30;   // 30：下方裝置名稱
+  const s = Math.min(1, availW / device.offsetWidth, availH / device.offsetHeight);
+  device.style.transform = `scale(${s})`;
+  device.style.marginBottom = `${device.offsetHeight * (s - 1)}px`;   // 縮小後把多出來的高度收掉，名稱才會貼著裝置
+}
+function setDevice(mode) {
+  deviceMode = mode;
+  document.querySelectorAll('#deviceSeg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.device === mode)));
+  const on = mode !== 'desktop';
+  rwd.hidden = !on;
+  body.classList.toggle('rwd', on);
+  document.documentElement.style.overflow = on ? 'hidden' : '';     // 預覽時外面的頁面不能捲
+  if (!on) return;
+  const d = DEVICES[mode];
+  device.className = 'device ' + d.cls;
+  document.getElementById('rwdCap').textContent = `${d.name} · ${d.w} × ${d.h}`;
+  // 每次打開都帶入當下的設定；設定沒變就不重新載入（平板 ↔ 手機切換時網頁直接跟著改尺寸）
+  const q = new URLSearchParams({ embed: '1', night: nightTarget ? '1' : '0', people: personStyle,
+    finish: finishSel.value });
+  const src = location.pathname + '?' + q;
+  if (src !== rwdSrc) { rwdSrc = src; rwdFrame.src = src; }
+  fitDevice();
+}
+document.querySelectorAll('#deviceSeg button').forEach(b => { b.onclick = () => setDevice(b.dataset.device); });
+addEventListener('resize', fitDevice);
 window.__debug = { stage, people, pets, about, openTraffic };
 // 網址加上 ?focus=x,y,z,zoom 會直接進入自由檢視並把鏡頭對準該位置（方便檢查細節或分享特定畫面）
 // 網址加上 ?night=1 會直接用夜晚模式打開
@@ -2349,6 +2472,7 @@ const fadeA = document.querySelector('.fade-a'), panelB = document.querySelector
 let last = performance.now();
 
 stage.renderer.setAnimationLoop(() => {
+  if (deviceMode !== 'desktop') return;   // RWD 預覽中：外面的地圖被 mockup 蓋住，不用畫
   const now = performance.now(), dt = Math.min((now - last) / 16.7, 3); last = now;
   const max = document.documentElement.scrollHeight - innerHeight;
   const p = max > 0 ? scrollY / max : 0;
