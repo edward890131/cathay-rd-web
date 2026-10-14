@@ -3314,15 +3314,15 @@ const BGM_KEY = 'cnrd-bgm', BGM_VOL = 0.2, BGM_FADE = 1.5;   // 記憶用的 key
 const bgm = { ctx: null, master: null, src: null, on: false, pending: false };
 const musicBtn = document.getElementById('musicBtn');
 
-// 合成音源：鋼琴旋律 ＋ 木吉他分解和弦（80 BPM，8 小節循環）；第二輪鋼琴只彈每小節第一個音，讓耳朵休息、不搶主題
+// 合成音源：輕柔的鋼琴旋律（80 BPM，8 小節循環）＋ 城市環境音（遠方車流、路過的車、風、樹葉、腳步、偶爾狗叫）
+// 環境音全部用雜訊即時調出來，不用音檔；隨機事件的間隔都拉長，只當背景質感，不搶主題
 function makeSynthSource(ctx, out) {
   const BPM = 80, BEAT = 60 / BPM, BAR = BEAT * 4, SR = ctx.sampleRate;
   const hz = m => 440 * 2 ** ((m - 69) / 12);                 // MIDI 音高轉頻率
-  // 和弦（吉他五條弦的音，由低到高）：Cmaj7 → Am7 → Fmaj7 → G → Cmaj7 → Em7 → Fmaj7 → G
-  const C = [48,55,59,64,67], Am = [45,52,55,60,64], F = [41,48,52,57,64], G = [43,50,55,59,62], Em = [40,47,50,55,62];
-  const CHORDS = [C, Am, F, G, C, Em, F, G];
-  const PICK = [0,2,3,4,1,3,2,3];                              // 指彈順序：每個八分音符撥哪條弦（0 = 低音弦）
-  // 鋼琴旋律：[第幾拍開始, MIDI 音高, 長度（拍）]
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  // 鋼琴左手：每小節一個柔和和弦 Cmaj7 → Am7 → Fmaj7 → G → Cmaj7 → Em7 → Fmaj7 → G
+  const CHORDS = [[48,55,59,64], [45,52,55,60], [41,48,52,57], [43,50,55,59], [48,55,59,64], [40,47,50,55], [41,48,52,57], [43,50,55,59]];
+  // 鋼琴右手旋律：[第幾拍開始, MIDI 音高, 長度（拍）]
   const MEL = [
     [[0,76,1.5],[1.5,74,.5],[2,72,1],[3,67,1]],
     [[0,69,1.5],[1.5,72,.5],[2,76,2]],
@@ -3333,74 +3333,117 @@ function makeSynthSource(ctx, out) {
     [[0,72,1],[1,74,.5],[1.5,76,.5],[2,77,1],[3,81,1]],
     [[0,79,2.5],[3,74,1]],
   ];
-  // 殘響：用漸弱的雜訊當脈衝響應（像在木頭小房間裡彈）
+  // 殘響：用漸弱的雜訊當脈衝響應
   const ir = ctx.createBuffer(2, SR * 2.2, SR);
   for (let c = 0; c < 2; c++) { const d = ir.getChannelData(c); for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length) ** 3.5; }
   const verb = ctx.createConvolver(); verb.buffer = ir;
   const verbGain = ctx.createGain(); verbGain.gain.value = 0.3;
   const dry = ctx.createGain(); dry.gain.value = 0.9;
-  const bus = ctx.createGain();
+  const bus = ctx.createGain();                                // 鋼琴、事件音效走這條（有殘響）
   bus.connect(dry); bus.connect(verb); verb.connect(verbGain); verbGain.connect(out); dry.connect(out);
+  const amb = ctx.createGain(); amb.connect(out);              // 連續的環境底噪直接出去（不加殘響，比較乾淨）
+  const pan = (node, v) => { const p = ctx.createStereoPanner?.(); if (!p) return node; p.pan.value = v; node.connect(p); return p; };
 
-  // 吉他：Karplus-Strong 撥弦演算法（一小段雜訊在「弦長」的延遲裡來回、越來越柔），每個音高只算一次存起來
-  const gtrCache = new Map();
-  const gtrBuf = m => {
-    if (gtrCache.has(m)) return gtrCache.get(m);
-    const len = Math.floor(SR * 2.4), buf = ctx.createBuffer(1, len, SR), y = buf.getChannelData(0);
-    const d = SR / hz(m) - 0.5, N = Math.floor(d), fr = d - N;  // 小數延遲：音才準
-    let prev = 0, lp = 0, peak = 0;
-    for (let n = 0; n < len; n++) {
-      let x = 0;
-      if (n < N) { lp += ((Math.random() * 2 - 1) - lp) * 0.35; x = lp; }   // 激發：柔化過的雜訊＝尼龍弦、指腹撥
-      const a = n - N >= 0 ? y[n - N] : 0, b = n - N - 1 >= 0 ? y[n - N - 1] : 0;
-      const s = (1 - fr) * a + fr * b;
-      y[n] = x + 0.996 * 0.5 * (s + prev); prev = s;
-      peak = Math.max(peak, Math.abs(y[n]));
-    }
-    for (let n = 0; n < len; n++) y[n] /= peak || 1;
-    gtrCache.set(m, buf); return buf;
+  // 雜訊素材：白噪音（嘶嘶聲，做樹葉、腳步）、棕噪音（低沉的轟轟聲，做車流、風）
+  const noiseBuf = (sec, brown) => {
+    const buf = ctx.createBuffer(1, SR * sec, SR), d = buf.getChannelData(0); let last = 0;
+    for (let i = 0; i < d.length; i++) { const w = Math.random() * 2 - 1; d[i] = brown ? (last = (last + 0.02 * w) / 1.02) * 3.5 : w; }
+    return buf;
   };
-  const guitar = (m, t, vol) => {
-    const s = ctx.createBufferSource(), g = ctx.createGain(), p = ctx.createStereoPanner?.();
-    s.buffer = gtrBuf(m); g.gain.value = vol;
-    if (p) { p.pan.value = -0.25; s.connect(g); g.connect(p); p.connect(bus); } else { s.connect(g); g.connect(bus); }  // 吉他偏左、鋼琴偏右
-    s.start(t);
+  const WHITE = noiseBuf(3, false), BROWN = noiseBuf(5, true);
+  const loops = [];                                            // 開著不停的音源，關掉時要一起停
+  const noise = (buf, t, dur) => { const s = ctx.createBufferSource(); s.buffer = buf; s.loop = !dur; s.start(t, rnd(0, buf.duration - 0.5)); if (dur) s.stop(t + dur); else loops.push(s); return s; };
+  const filt = (type, f, q = 0.7) => { const n = ctx.createBiquadFilter(); n.type = type; n.frequency.value = f; n.Q.value = q; return n; };
+
+  // ── 連續底噪 ──
+  // 遠方車流：低頻轟轟聲
+  const hum = filt('lowpass', 220), humG = ctx.createGain(); humG.gain.value = 0.18;
+  // 風：中低頻雜訊，頻率和音量隨陣風慢慢起伏
+  const wind = filt('bandpass', 450, 0.6), windG = ctx.createGain(); windG.gain.value = 0.05;
+  // 樹葉：高頻沙沙聲，跟著陣風變大變小
+  const leaf = filt('highpass', 3200), leaf2 = filt('lowpass', 7500), leafG = ctx.createGain(); leafG.gain.value = 0.004;
+  const gust = t => {                                          // 每隔幾秒換一個陣風強度
+    const k = rnd(0.2, 1);
+    windG.gain.setTargetAtTime(0.03 + k * 0.07, t, 1.6);
+    wind.frequency.setTargetAtTime(300 + k * 500, t, 2);
+    leafG.gain.setTargetAtTime(0.002 + k * k * 0.014, t, 0.8);
   };
+
   // 鋼琴：幾個泛音疊成的音色＋兩支微微走音的振盪器（比較溫暖），亮度隨時間變暗、音量指數衰減
-  const pianoWave = ctx.createPeriodicWave(new Float32Array([0,0,0,0,0,0,0]), new Float32Array([0,1,.45,.25,.12,.07,.04]));
-  const piano = (m, t, dur, vol) => {
-    const g = ctx.createGain(), f = ctx.createBiquadFilter(), p = ctx.createStereoPanner?.();
-    f.type = 'lowpass'; f.Q.value = 0.5;
-    f.frequency.setValueAtTime(Math.min(hz(m) * 8, 6000), t); f.frequency.exponentialRampToValueAtTime(Math.max(hz(m) * 2, 600), t + 1.2);
-    const end = t + dur + 0.6;
+  const pianoWave = ctx.createPeriodicWave(new Float32Array(7), new Float32Array([0,1,.45,.25,.12,.07,.04]));
+  const piano = (m, t, dur, vol, p = 0.15) => {
+    const g = ctx.createGain(), f = filt('lowpass', 1, 0.5);
+    f.frequency.setValueAtTime(Math.min(hz(m) * 8, 6000), t); f.frequency.exponentialRampToValueAtTime(Math.max(hz(m) * 2, 500), t + 1.2);
     g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + 0.005);
     g.gain.setTargetAtTime(vol * 0.25, t + 0.005, 0.5);                  // 按著時慢慢變小
-    g.gain.setTargetAtTime(0.0001, t + dur, 0.18);                      // 放開：制音器壓下
+    g.gain.setTargetAtTime(0.0001, t + dur, 0.2);                       // 放開：制音器壓下
     [0, 3].forEach(cents => {
       const o = ctx.createOscillator(); o.setPeriodicWave(pianoWave); o.frequency.value = hz(m); o.detune.value = cents;
-      o.connect(f); o.start(t); o.stop(end);
+      o.connect(f); o.start(t); o.stop(t + dur + 1);
     });
-    f.connect(g);
-    if (p) { p.pan.value = 0.2; g.connect(p); p.connect(bus); } else g.connect(bus);
+    f.connect(g); pan(g, p).connect(bus);
+  };
+
+  // ── 偶發事件 ──
+  // 路過的車：一團低沉雜訊從一邊滑到另一邊，越近越亮越大聲
+  const car = t => {
+    const dur = rnd(4, 7), dir = Math.random() < 0.5 ? -1 : 1, peak = rnd(0.12, 0.28);
+    const s = noise(BROWN, t, dur), f = filt('lowpass', 250), g = ctx.createGain(), p = ctx.createStereoPanner?.();
+    f.frequency.setValueAtTime(250, t); f.frequency.linearRampToValueAtTime(rnd(700, 1100), t + dur / 2); f.frequency.linearRampToValueAtTime(250, t + dur);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + dur / 2); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    s.connect(f); f.connect(g);
+    if (p) { p.pan.setValueAtTime(-0.8 * dir, t); p.pan.linearRampToValueAtTime(0.8 * dir, t + dur); g.connect(p); p.connect(amb); } else g.connect(amb);
+  };
+  // 腳步聲：一個人走過，6～10 步，每步是一小段悶悶的雜訊，左右腳輕重略有不同
+  const steps = t => {
+    const n = Math.floor(rnd(6, 11)), gap = rnd(0.45, 0.58), p0 = rnd(-0.6, 0.6), dp = rnd(-0.06, 0.06), vol = rnd(0.12, 0.2);
+    for (let i = 0; i < n; i++) {
+      const tt = t + i * gap + rnd(-0.02, 0.02), s = noise(WHITE, tt, 0.09), f = filt('bandpass', rnd(500, 800), 1.2), g = ctx.createGain();
+      const v = vol * (i % 2 ? 0.8 : 1) * Math.sin(Math.PI * (i + 1) / (n + 1));   // 由遠而近再走遠
+      g.gain.setValueAtTime(0, tt); g.gain.linearRampToValueAtTime(v, tt + 0.006); g.gain.exponentialRampToValueAtTime(0.0001, tt + 0.08);
+      s.connect(f); f.connect(g); pan(g, p0 + dp * i).connect(bus);
+    }
+  };
+  // 狗叫：遠方的「汪、汪」，音高往下掉的鋸齒波＋共鳴濾波；放得很小聲、走殘響，像隔一條街
+  const dog = t => {
+    const n = Math.random() < 0.6 ? 2 : 3, p = rnd(-0.7, 0.7), base = rnd(380, 520);
+    for (let i = 0; i < n; i++) {
+      const tt = t + i * rnd(0.26, 0.34), o = ctx.createOscillator(), f = filt('bandpass', rnd(800, 1100), 2), lp = filt('lowpass', 1800), g = ctx.createGain();
+      o.type = 'sawtooth'; o.frequency.setValueAtTime(base * 1.15, tt); o.frequency.exponentialRampToValueAtTime(base * 0.7, tt + 0.16);
+      g.gain.setValueAtTime(0, tt); g.gain.linearRampToValueAtTime(0.05, tt + 0.015); g.gain.exponentialRampToValueAtTime(0.0001, tt + 0.18);
+      o.connect(f); f.connect(lp); lp.connect(g); pan(g, p).connect(bus); o.start(tt); o.stop(tt + 0.2);
+    }
   };
 
   const scheduleBar = (bar, t0) => {
-    const ch = CHORDS[bar % 8], sparse = Math.floor(bar / 8) % 2 === 1;
-    PICK.forEach((k, i) => {
-      const swing = i % 2 ? BEAT * 0.04 : 0;                        // 一點點搖擺感，比較像人在彈
-      guitar(ch[k], t0 + i * BEAT / 2 + swing, k === 0 ? 0.32 : 0.2);
-    });
-    MEL[bar % 8].forEach(([b, m, d], i) => {
-      if (sparse && i > 0) return;
-      piano(m, t0 + b * BEAT, d * BEAT, sparse ? 0.11 : 0.15);
-    });
+    const sparse = Math.floor(bar / 8) % 2 === 1;                // 第二輪鋼琴只彈每小節第一個音，讓環境音多露一點
+    CHORDS[bar % 8].forEach((m, i) => piano(m, t0 + i * 0.03, BAR * 0.95, 0.045, -0.15));   // 左手輕輕琶音
+    MEL[bar % 8].forEach(([b, m, d], i) => { if (!(sparse && i > 0)) piano(m, t0 + b * BEAT, d * BEAT, sparse ? 0.09 : 0.12); });
   };
-  // 排程器：每 0.5 秒檢查一次，提前 1.5 秒把音符排進音訊時鐘（比 setTimeout 直接發聲準）
-  let bar = 0, next = 0, timer = 0;
-  const tick = () => { while (next < ctx.currentTime + 1.5) { scheduleBar(bar++, next); next += BAR; } };
+  // 排程器：每 0.5 秒檢查一次，提前 1.5 秒把音符、事件排進音訊時鐘
+  let bar = 0, next = 0, timer = 0, ev = {};
+  const tick = () => {
+    const ahead = ctx.currentTime + 1.5;
+    while (next < ahead) { scheduleBar(bar++, next); next += BAR; }
+    if (ev.gust < ahead) { gust(ev.gust); ev.gust += rnd(2, 5); }
+    if (ev.car < ahead) { car(ev.car); ev.car += rnd(9, 20); }
+    if (ev.steps < ahead) { steps(ev.steps); ev.steps += rnd(14, 30); }
+    if (ev.dog < ahead) { dog(ev.dog); ev.dog += rnd(30, 60); }
+  };
   return {
-    start() { bar = 0; next = ctx.currentTime + 0.1; tick(); timer = setInterval(tick, 500); },
-    stop() { clearInterval(timer); bus.disconnect(); setTimeout(() => { try { dry.disconnect(); verb.disconnect(); } catch {} }, 4000); },
+    start() {
+      const t = ctx.currentTime + 0.1;
+      noise(BROWN, t).connect(hum); hum.connect(humG); humG.connect(amb);
+      noise(BROWN, t).connect(wind); wind.connect(windG); windG.connect(amb);
+      noise(WHITE, t).connect(leaf); leaf.connect(leaf2); leaf2.connect(leafG); leafG.connect(amb);
+      bar = 0; next = t; ev = { gust: t, car: t + rnd(2, 6), steps: t + rnd(5, 10), dog: t + rnd(12, 25) };
+      tick(); timer = setInterval(tick, 500);
+    },
+    stop() {
+      clearInterval(timer); bus.disconnect(); amb.disconnect();
+      loops.forEach(s => { try { s.stop(); } catch {} });
+      setTimeout(() => { try { dry.disconnect(); verb.disconnect(); } catch {} }, 4000);
+    },
   };
 }
 // 音檔音源（日後換真實音檔用）：<audio loop> 接進同一條增益節點，淡入淡出、暫停邏輯完全不用改
