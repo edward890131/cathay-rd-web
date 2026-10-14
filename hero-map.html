@@ -3396,7 +3396,7 @@ function makeSynthSource(ctx, out) {
   };
   // 腳步聲：一個人走過，6～10 步，每步是一小段悶悶的雜訊，左右腳輕重略有不同
   const steps = t => {
-    const n = Math.floor(rnd(6, 11)), gap = rnd(0.45, 0.58), p0 = rnd(-0.6, 0.6), dp = rnd(-0.06, 0.06), vol = rnd(0.12, 0.2);
+    const n = Math.floor(rnd(6, 11)), gap = rnd(0.45, 0.58), p0 = rnd(-0.6, 0.6), dp = rnd(-0.06, 0.06), vol = rnd(0.4, 0.6);
     for (let i = 0; i < n; i++) {
       const tt = t + i * gap + rnd(-0.02, 0.02), s = noise(WHITE, tt, 0.09), f = filt('bandpass', rnd(500, 800), 1.2), g = ctx.createGain();
       const v = vol * (i % 2 ? 0.8 : 1) * Math.sin(Math.PI * (i + 1) / (n + 1));   // 由遠而近再走遠
@@ -3410,7 +3410,7 @@ function makeSynthSource(ctx, out) {
     for (let i = 0; i < n; i++) {
       const tt = t + i * rnd(0.26, 0.34), o = ctx.createOscillator(), f = filt('bandpass', rnd(800, 1100), 2), lp = filt('lowpass', 1800), g = ctx.createGain();
       o.type = 'sawtooth'; o.frequency.setValueAtTime(base * 1.15, tt); o.frequency.exponentialRampToValueAtTime(base * 0.7, tt + 0.16);
-      g.gain.setValueAtTime(0, tt); g.gain.linearRampToValueAtTime(0.05, tt + 0.015); g.gain.exponentialRampToValueAtTime(0.0001, tt + 0.18);
+      g.gain.setValueAtTime(0, tt); g.gain.linearRampToValueAtTime(0.16, tt + 0.015); g.gain.exponentialRampToValueAtTime(0.0001, tt + 0.18);
       o.connect(f); f.connect(lp); lp.connect(g); pan(g, p).connect(bus); o.start(tt); o.stop(tt + 0.2);
     }
   };
