@@ -1505,6 +1505,24 @@ function personIllus({ shirt, pants, hair, long = false, thumb = true }) {   // 
   g.scale.setScalar(PERSON_SCALE);
   return { g, legL, legR, armL, armR, head, cloudY: 1.35 };
 }
+// 坐姿（插畫版）：把原本直直的兩條腿換成「大腿往前平放＋小腿垂直往下」，整個人往下移到座面上
+// 回傳人物要放的高度（世界座標）：屁股底部剛好貼在座面 seatTop
+function sitDown(p, { pants }, seatTop) {
+  const S = PERSON_SCALE, HIP = 1.76;                                       // 臀部底緣在人物自己的座標裡約 1.76
+  const y = seatTop - HIP * S;
+  const floor = -y / S;                                                     // 地板在人物座標裡的高度
+  p.legL.visible = false; p.legR.visible = false;
+  const legs = new THREE.Group();
+  [-0.22, 0.22].forEach(x => {
+    const thigh = cyl(0.21, 0.21, 0.9, pants, x, 1.92, 0.4, 16); thigh.rotation.x = Math.PI / 2; legs.add(thigh);   // 大腿：往前平放
+    legs.add(ball(0.21, pants, x, 1.92, 0.85));                             // 膝蓋（圓角接起來）
+    const shinTop = 1.92, shinBot = floor + 0.3;
+    legs.add(cyl(0.19, 0.19, shinTop - shinBot, pants, x, (shinTop + shinBot) / 2, 0.88, 16));   // 小腿：垂直往下
+    legs.add(box(0.44, 0.34, 0.64, M.dark, x, floor + 0.17, 0.98, 0.14));   // 鞋子貼地
+  });
+  p.g.add(mergeParts(legs));
+  return y;
+}
 // ============ 一起從這裡起步：牌卡上的兩個角色 ============
 // 用跟地圖一樣的插畫公仔，再各自換裝、加道具，兩個人的髮型、身形、配件都不一樣
 function personBiz() {
@@ -2211,19 +2229,18 @@ function build(variantId, { replay = true } = {}) {
   // 座標是各場景自己的座標（跟 scenes/*.js 的家具位置對齊），人物掛在場景底下，場景浮起、掉落時一起動
   // kind：type 用電腦打字、point 對著白板／投影幕講解、read 低頭看桌上的資料、chat 圍著討論（頭上冒對話雲）
   const INSIDERS = {
-    office: [   // 辦公研發空間：一人在桌前用電腦、一人在白板前寫想法
-      { kind: 'type', x: 0.7, z: 0.72, face: Math.PI },               // 站在桌子和椅子中間，面對螢幕
+    // seat：坐在椅子上（座面高度，對齊場景裡那張椅子）；沒有 seat 的站著
+    office: [   // 辦公研發空間：一人坐在人體工學椅上用電腦、一人在白板前寫想法
+      { kind: 'type', x: 0.6, z: 1.3, face: Math.PI, seat: 1.27 },
       { kind: 'point', x: -2.3, z: -3.3, face: Math.PI + 0.35 },
     ],
-    cowork: [   // 跨院系研發中心：三個人圍著圓桌討論（站在椅子之間）
-      { kind: 'chat', x: 0.8 + Math.sin(0.85) * 1.55, z: 0.7 + Math.cos(0.85) * 1.55 },
-      { kind: 'chat', x: 0.8 + Math.sin(2.45) * 1.55, z: 0.7 + Math.cos(2.45) * 1.55 },
-      { kind: 'chat', x: 0.8 + Math.sin(4.05) * 1.55, z: 0.7 + Math.cos(4.05) * 1.55 },
+    cowork: [   // 跨院系研發中心：三個人坐在圓桌旁的椅子上討論（前面那張空著，不擋視線）
+      ...[Math.PI * 1.5 + 0.1, Math.PI + 0.12, Math.PI * 0.5 - 0.1].map(a => ({ kind: 'chat', x: 0.8 + Math.sin(a) * 1.85, z: 0.7 + Math.cos(a) * 1.85, seat: 1.35 })),
     ],
-    exchange: [ // 產學合作空間：一人對著投影幕簡報、兩人在長桌兩側看資料
+    exchange: [ // 產學合作空間：一人對著投影幕簡報、兩人坐在長桌兩側看資料
       { kind: 'point', x: -0.1, z: -3.4, face: Math.PI - 0.6 },
-      { kind: 'read', x: 2.3, z: -1.95, face: 0 },
-      { kind: 'read', x: 2.3, z: 0.15, face: Math.PI },
+      { kind: 'read', x: 1.3, z: -2.3, face: 0, seat: 1.2 },
+      { kind: 'read', x: 3.3, z: 0.5, face: Math.PI, seat: 1.2 },
     ],
   };
   (current.spaces ?? []).forEach((sp, si) => {
@@ -2235,10 +2252,11 @@ function build(variantId, { replay = true } = {}) {
       root.add(l); spaceLights.push(l);
     });
     INSIDERS[sp.id]?.forEach((d, k, list) => {
-      const pp = person(OUTFITS[(outfit++ + si) % OUTFITS.length]);
+      const fit = OUTFITS[(outfit++ + si) % OUTFITS.length];
+      const pp = person(fit);
       // 沒給朝向的（圍桌討論）面向圓桌中心
       pp.g.rotation.y = d.face ?? Math.atan2(0.8 - d.x, 0.7 - d.z);
-      pp.g.position.set(d.x, 0, d.z);
+      pp.g.position.set(d.x, d.seat && personStyle === 'illus' ? sitDown(pp, fit, d.seat) : 0, d.z);
       pp.g.userData.baseScale = pp.g.scale.x; pp.g.userData.delay = 0;   // delay：對話雲判斷「站穩了沒」用
       pp.g.scale.setScalar(0.001); pp.g.visible = false;
       root.add(pp.g);
