@@ -2302,16 +2302,40 @@ function openTraffic() {
   trModal.hidden = false;
   document.documentElement.style.overflow = 'hidden';                 // 交通資訊不在捲動軸上：滾輪改成「往下＝下一段、往上＝回到活動消息」
 }
-// 交通資訊開著時的滾輪：往下滾 → 一起從這裡起步；往上滾 → 關掉、回到活動消息（說明卡裡面的內容可以自己捲，不觸發）
-let trWheelLock = 0;
-addEventListener('wheel', e => {
-  if (trModal.hidden || joinOn || performance.now() < trWheelLock) return;
-  const panel = trModal.querySelector('.tr-body');
-  if (e.target instanceof Node && panel.contains(e.target) && panel.scrollHeight > panel.clientHeight + 2) return;
-  if (Math.abs(e.deltaY) < 24) return;
-  trWheelLock = performance.now() + 1200;
-  e.deltaY > 0 ? goJoin() : closeTraffic();
+// ===== 捲到底之後的「往下／往上」：活動消息 → 交通資訊 → 一起從這裡起步 =====
+// 交通資訊和一起從這裡起步不在捲動軸上，所以用滾輪、觸控滑動、鍵盤的方向來切換：
+//   活動消息（頁面已經捲到底）往下 → 交通資訊；交通資訊往下 → 一起從這裡起步、往上 → 回到原本的畫面
+// 交通資訊卡裡面的內容還能捲的時候，讓它先捲，不切換
+let navLock = 0, atBottomSince = 0;
+const atBottom = () => scrollY >= document.documentElement.scrollHeight - innerHeight - 4;
+addEventListener('scroll', () => { if (!atBottom()) atBottomSince = 0; else if (!atBottomSince) atBottomSince = performance.now(); }, { passive: true });
+function stepGesture(dir, target) {
+  if (joinOn || performance.now() < navLock) return;
+  if (!trModal.hidden) {
+    const panel = trModal.querySelector('.tr-body');
+    if (target instanceof Node && panel.contains(target) && panel.scrollHeight > panel.clientHeight + 2) return;
+    navLock = performance.now() + 1200;
+    return dir > 0 ? goJoin() : closeTraffic();
+  }
+  // 剛捲到底的那一下（滑鼠、觸控板的慣性）不算，停在底部 0.4 秒後再往下才前往交通資訊
+  if (dir > 0 && !free && !carFocus && !glide && atBottom() && atBottomSince && performance.now() - atBottomSince > 400) {
+    navLock = performance.now() + 1200;
+    goTraffic();
+  }
+}
+addEventListener('wheel', e => { if (Math.abs(e.deltaY) >= 24) stepGesture(Math.sign(e.deltaY), e.target); }, { passive: true });
+let touchY0 = null;
+addEventListener('touchstart', e => { touchY0 = e.touches.length === 1 ? e.touches[0].clientY : null; }, { passive: true });
+addEventListener('touchend', e => {
+  if (touchY0 === null) return;
+  const dy = touchY0 - e.changedTouches[0].clientY; touchY0 = null;   // 手指往上滑 = 往下看
+  if (Math.abs(dy) > 50) stepGesture(Math.sign(dy), e.target);
 }, { passive: true });
+addEventListener('keydown', e => {
+  if (e.target.closest?.('input, select, textarea')) return;
+  if (['ArrowDown', 'PageDown', ' '].includes(e.key)) stepGesture(1, e.target);
+  else if (['ArrowUp', 'PageUp'].includes(e.key) && !trModal.hidden) stepGesture(-1, e.target);
+});
 // 進入交通資訊：鏡頭先飛到離目前畫面最近的小汽車，停在車頭正前方拉近（車子繼續開，鏡頭跟著），再打開彈窗
 let carFocus = null;                                   // { car, t0, from }
 const CAR_FLY = 1800;
