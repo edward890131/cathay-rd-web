@@ -229,9 +229,12 @@
   /* 錨點列最寬 40vw，超過就可以左右捲動（隱藏捲軸）；兩側淡出提示還有內容 */
   .sec-nav { max-width: 40vw; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; }
   .sec-nav::-webkit-scrollbar { display: none; }
-  .sec-nav.fade-l { -webkit-mask-image: linear-gradient(90deg, transparent, #000 32px); mask-image: linear-gradient(90deg, transparent, #000 32px); }
-  .sec-nav.fade-r { -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 32px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 32px), transparent); }
-  .sec-nav.fade-l.fade-r { -webkit-mask-image: linear-gradient(90deg, transparent, #000 32px, #000 calc(100% - 32px), transparent); mask-image: linear-gradient(90deg, transparent, #000 32px, #000 calc(100% - 32px), transparent); }
+  /* 兩側淡出：底色不動，只在邊緣疊一層「跟底色同色」的漸層，讓超出的項目看起來淡掉（sticky 讓漸層固定在可視範圍的邊緣） */
+  .sec-nav::before, .sec-nav::after { content: ""; position: sticky; z-index: 3; flex: none; width: 36px; align-self: stretch; margin: -6px 0;
+    pointer-events: none; opacity: 0; transition: opacity .2s; }
+  .sec-nav::before { left: -6px; margin-right: -40px; background: linear-gradient(90deg, var(--panel), transparent); border-radius: var(--radius-panel) 0 0 var(--radius-panel); }
+  .sec-nav::after { right: -6px; margin-left: -40px; background: linear-gradient(270deg, var(--panel), transparent); border-radius: 0 var(--radius-panel) var(--radius-panel) 0; }
+  .sec-nav.fade-l::before, .sec-nav.fade-r::after { opacity: 1; }
   .sec-nav button:hover { color: var(--text-primary); }
   /* 橡皮筋滑塊（參考 React Bits「Rubber Segment」）：切換時前緣先衝過去、整條被拉長，後緣再追上並稍微壓過頭後回彈 */
   .sec-thumb { position: absolute; z-index: 2; top: 6px; height: var(--nav-btn); left: 0; width: 0; border-radius: var(--radius-btn);
@@ -432,60 +435,9 @@
 
   @media (max-width: 1100px) {
     .site-header .main-nav, .site-header .side-nav a:not(.btn) { display: none; }
-    .sec-nav { max-width: calc(100vw - var(--gutter) * 3 - 320px); }   /* 錨點列可以用到工具列左邊為止，不再限制 40vw */
-  }
-  @media (max-width: 900px) {
-    #deviceSeg, #deviceSeg + .sep { display: none !important; }        /* 手機、平板本身不需要 RWD 預覽切換 */
-    .sec-nav { max-width: calc(100vw - var(--gutter) * 3 - 230px); }
-  }
-
-  /* ---------- 上圖下文：手機、直式平板 ----------
-     直式螢幕寬度不夠「左文右圖」：左欄的牌卡只剩約 250px、文字一直換行，右邊地圖也被裁掉。
-     改成地圖在上半部、文字在下方全寬；鏡頭用 shiftY 把主體推到卡片上方的空白區（程式用同一組條件判斷，見 STACKED_MQ） */
-  @media (max-width: 760px), (max-width: 1100px) and (max-aspect-ratio: 10/11) {
-    .panel-b { display: none; }
-    .fade-a, body[data-layout="b"] .fade-a { background: linear-gradient(0deg, var(--bg) 0%, color-mix(in srgb, var(--bg) 82%, transparent) 30%, transparent 55%); }   /* 漸層改成從下往上，墊在文字底下 */
-    .hero-main, body[data-layout="b"] .hero-main { --slogan: clamp(56px, 11vw, 104px); --gap: 28px; --card-w: min(560px, 100%);
-      left: var(--gutter); right: var(--gutter); bottom: 5vh; }
-    .drag-tip, body[data-layout="b"] .drag-tip { --tip-x: 50%; top: 30%; }     /* 放在上半部的地圖中間 */
-    /* 布告欄：貼在 3D 板面上會縮到看不清楚（手機約 0.35 倍），改成畫面下方的原尺寸面板，上方鏡頭照常看布告欄 */
-    .board-sheet { position: fixed; z-index: 2; left: var(--gutter); right: calc(var(--gutter) * 2 + 88px); bottom: var(--gutter);
-      display: grid; grid-template-columns: 1fr 1fr; gap: 12px; pointer-events: none; }
-    /* 交通資訊：說明卡改到下方全寬（右邊讓出圓形按鈕），小汽車在卡片上方的空白區；--tr-h 是卡片高度（vh，程式也會讀） */
-    :root { --tr-h: 50; }
-    .tr-modal { left: var(--gutter); right: calc(var(--gutter) * 2 + 88px); width: auto; top: auto; bottom: var(--gutter); height: calc(var(--tr-h) * 1vh); }
-    .board-sheet .board-panel { position: relative; width: auto; height: auto; align-self: stretch; box-shadow: 0 10px 30px rgba(0,0,0,.14); }
-    /* 牌卡用原尺寸排版：活動兩欄 grid（minmax(0, 1fr) 才不會被長標題撐寬、切掉右邊那欄），文字超過一行就換行 */
-    .board-sheet .events { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .board-sheet .ev .img { flex: none; aspect-ratio: 16 / 9; min-height: 0; }
-    .board-sheet .ev time, .board-sheet .ev small, .board-sheet .ev b, .board-sheet .news b { white-space: normal; overflow: visible; }
-    /* 最新消息跟園區活動等高（stretch），三則消息平分高度 */
-    .board-sheet .news li { flex: 1 1 0; }
-  }
-  @media (max-width: 760px) {
-    :root { --header-h: 60px; }
-    :root { --gutter: 16px; }
-    .site-header .btn { height: 40px; padding: 0 14px; font-size: 14px; }
-    /* 手機：牌卡跟右下角的圓形箭頭按鈕並排（牌卡右邊讓出按鈕的寬度），底部對齊 */
-    :root { --continue: 52px; }
-    .hero-main, body[data-layout="b"] .hero-main { --gap: 20px; --card-w: 100%; bottom: var(--gutter); right: calc(var(--gutter) + var(--continue) + 10px); }
-    .card { width: 100%; padding: 16px; gap: 12px; }
-    .card .copy { gap: 8px; }
-    .card h2 { font-size: 16px; }
-    .card p { font-size: 13px; }
-    .tag { padding: 4px 12px; font-size: 12px; }
-    .caption { right: calc(var(--gutter) + var(--continue) + 10px); width: auto; bottom: var(--gutter); }
-    .caption h3 { font-size: 20px; }
-    .about-copy h4 { font-size: 16px; }
-    .about-copy p { font-size: 13px; }
-    /* 圓形按鈕縮小、只留箭頭（提示往下看的閱讀順序）；文字仍保留給螢幕閱讀器 */
-    .continue { width: var(--continue); height: var(--continue); box-shadow: 0 6px 18px rgba(0,0,0,.18); }
-    .continue #continueLabel { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
-    .continue svg { width: 20px; height: 20px; }
-    /* 選單：Logo 左邊的按鈕，從左側滑出（Header 的入口＋顯示設定）；工具列搬進選單裡，錨點列往上補到工具列原本的位置 */
-    .site-header { gap: 4px; }
+    /* 平板、手機：Header 的入口和 English 收起來了，改由 Logo 左邊的選單按鈕從左側滑出（手機另外把工具列也搬進選單） */
+    .site-header { gap: 8px; }
     .site-header .menu-btn { display: grid; margin-left: -10px; }
-    .dock { display: none; }
     .drawer { position: fixed; z-index: 6; top: var(--header-h); bottom: 0; left: 0; width: min(320px, 80vw); display: flex; flex-direction: column;
       padding: 8px var(--gutter) calc(var(--gutter) + 16px); overflow-y: auto; background: var(--surface-page); border-right: 1px solid var(--border-default);
       box-shadow: 12px 0 40px rgba(0,0,0,.12); transform: translateX(-104%); visibility: hidden;
@@ -503,6 +455,61 @@
     .drawer .tools, .drawer .free-panel { box-shadow: none; backdrop-filter: none; background: var(--hover); }
     .drawer .tools { align-self: flex-start; }
     .drawer .select select { background: var(--surface-page); }
+    .drawer-title:has(+ #drawerTools:empty) { display: none; }       /* 平板的顯示設定還在右上角，選單裡不顯示這個標題 */
+    .sec-nav { max-width: calc(100vw - var(--gutter) * 3 - 320px); }   /* 錨點列可以用到工具列左邊為止，不再限制 40vw */
+  }
+  @media (max-width: 900px) {
+    #deviceSeg, #deviceSeg + .sep { display: none !important; }        /* 手機、平板本身不需要 RWD 預覽切換 */
+    .sec-nav { max-width: calc(100vw - var(--gutter) * 3 - 230px); }
+  }
+
+  /* ---------- 上圖下文：手機、直式平板 ----------
+     直式螢幕寬度不夠「左文右圖」：左欄的牌卡只剩約 250px、文字一直換行，右邊地圖也被裁掉。
+     改成地圖在上半部、文字在下方全寬；鏡頭用 shiftY 把主體推到卡片上方的空白區（程式用同一組條件判斷，見 STACKED_MQ） */
+  @media (max-width: 760px), (max-width: 1100px) and (max-aspect-ratio: 10/11) {
+    .panel-b { display: none; }
+    .fade-a, body[data-layout="b"] .fade-a { background: linear-gradient(0deg, var(--bg) 0%, color-mix(in srgb, var(--bg) 82%, transparent) 30%, transparent 55%); }   /* 漸層改成從下往上，墊在文字底下 */
+    .hero-main, body[data-layout="b"] .hero-main { --slogan: clamp(56px, 11vw, 104px); --gap: 28px; --card-w: min(560px, 100%);
+      left: var(--gutter); right: var(--gutter); bottom: 5vh; }
+    .drag-tip, body[data-layout="b"] .drag-tip { --tip-x: 50%; top: 30%; }     /* 放在上半部的地圖中間 */
+    /* 布告欄：貼在 3D 板面上會縮到看不清楚（手機約 0.35 倍），改成畫面下方的原尺寸面板，上方鏡頭照常看布告欄 */
+    .board-sheet { position: fixed; z-index: 2; left: var(--gutter); right: var(--gutter);
+      top: calc(var(--header-h) + var(--gutter) + var(--nav-btn) + 24px); bottom: calc(var(--gutter) + 88px + 12px);   /* 跟手機一樣在畫面中間；下方讓出圓形按鈕 */
+      display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-content: center; gap: 12px; pointer-events: none; }   /* 兩張等寬 */
+    /* 交通資訊：說明卡改到下方全寬（右邊讓出圓形按鈕），小汽車在卡片上方的空白區；--tr-h 是卡片高度（vh，程式也會讀） */
+    :root { --tr-h: 64; }   /* 卡片佔畫面高度 64%，上方留給小汽車 */
+    .tr-modal { left: var(--gutter); right: calc(var(--gutter) * 2 + 88px); width: auto; top: auto; bottom: var(--gutter); height: calc(var(--tr-h) * 1vh); }
+    .tr-map { height: 20vh; }
+    .board-sheet .board-panel { position: relative; width: auto; height: auto; align-self: stretch; box-shadow: 0 10px 30px rgba(0,0,0,.14); }
+    /* 牌卡用原尺寸排版：活動兩欄 grid（minmax(0, 1fr) 才不會被長標題撐寬、切掉右邊那欄），文字超過一行就換行 */
+    .board-sheet .events { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .board-sheet .ev .img { flex: none; aspect-ratio: 16 / 9; min-height: 0; }
+    .board-sheet .ev time, .board-sheet .ev small, .board-sheet .ev b, .board-sheet .news b { white-space: normal; overflow: visible; }
+    /* 最新消息跟園區活動等高（stretch），三則消息平分高度 */
+    .board-sheet .news li { flex: 1 1 0; }
+  }
+  @media (max-width: 760px) {
+    :root { --header-h: 60px; }
+    :root { --gutter: 16px; }
+    .site-header .side-nav .btn { height: 40px; min-width: 0; padding: 0 12px; gap: 4px; font-size: 14px; }   /* 手機：按鈕寬度跟著文字，不用桌機的最小寬度 156px */
+    /* 手機：牌卡跟右下角的圓形箭頭按鈕並排（牌卡右邊讓出按鈕的寬度），底部對齊 */
+    :root { --continue: 52px; }
+    .hero-main, body[data-layout="b"] .hero-main { --gap: 20px; --card-w: 100%; bottom: var(--gutter); right: calc(var(--gutter) + var(--continue) + 10px); }
+    .card { width: 100%; padding: 16px; gap: 12px; }
+    .card .copy { gap: 8px; }
+    .card h2 { font-size: 16px; }
+    .card p { font-size: 13px; }
+    .tag { padding: 4px 12px; font-size: 12px; }
+    .caption { right: calc(var(--gutter) + var(--continue) + 10px); width: auto; bottom: var(--gutter); }
+    .caption h3 { font-size: 20px; }
+    .about-copy h4 { font-size: 16px; }
+    .about-copy p { font-size: 13px; }
+    /* 圓形按鈕縮小、只留箭頭（提示往下看的閱讀順序）；文字仍保留給螢幕閱讀器 */
+    .continue { width: var(--continue); height: var(--continue); box-shadow: 0 6px 18px rgba(0,0,0,.18); }
+    .continue #continueLabel { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .continue svg { width: 20px; height: 20px; }
+    /* 手機：工具列搬進選單（選單本身的樣式在 1100px 區塊，平板也用得到） */
+    .dock { display: none; }
     .sec-nav { top: calc(var(--header-h) + var(--gutter)); max-width: calc(100vw - var(--gutter) * 2); }
     .sec-nav button, .sec-thumb .clone span.btn-like { padding: 0 10px; }
     .sec-nav button span, .sec-thumb .clone span.btn-like span { display: none; }
@@ -537,6 +544,7 @@
   /* ---------- 觸控裝置（手機、平板）：沒有 hover、手指比滑鼠粗，按鈕點擊區至少 44px ---------- */
   @media (pointer: coarse) {
     :root { --tools-h: 56px; --nav-btn: 44px; }
+    #deviceSeg, #deviceSeg + .sep { display: none !important; }        /* 橫式平板也是觸控裝置，不需要 RWD 預覽切換 */
     .icon-btn, #deviceSeg button { width: 44px; height: 44px; }
     .select select { height: 44px; font-size: 13px; }
     .free-panel .help-mouse { display: none; }
@@ -2153,12 +2161,11 @@ function stopAt(i, Lc, stacked) {
     const o = current.office;
     return { target: stopTarget.clone().set(o.x, o.y + 2.4, o.z), view: ZOOM_VIEW, shift: 0, dir: ISO_DIR, sy: stacked ? areaSY(stackArea.caption) : 0 };
   }
-  if (i === 3 && lightbox) return { target: lightbox.center, view: stacked ? (innerWidth < 760 ? 10 : 8) : 7, shift: stacked ? 0 : 0.16, dir: lightbox.dir, sy: stacked ? areaSY(stackArea.tenants) : 0 };
+  if (i === 3 && lightbox) return { target: lightbox.center, view: stacked ? 10 : 7, shift: stacked ? 0 : 0.16, dir: lightbox.dir, sy: stacked ? areaSY(stackArea.tenants) : 0 };
   if (i === 4 && board) {                         // 布告欄寬度佔畫面約 78%，高度也要放得下
-    if (stacked) {                                // 上圖下文：牌卡改在下方面板，鏡頭把布告欄放進上方空白區
+    if (stacked) {                                // 上圖下文：牌卡疊在畫面中間，鏡頭把布告欄板面對準牌卡
       const a = stackArea.board, h = Math.max(a[1] - a[0], 0.2);
-      if (innerWidth < 760) return { target: board.center, view: board.height * 0.75 / h, shift: 0, dir: board.dir, sy: areaSY(a) };   // 手機：板面比牌卡高約 1.25 倍，上下露出布告欄的框
-      return { target: board.center, view: Math.max(board.width / 0.94 / aspect, board.height * 1.15 / h), shift: 0, dir: board.dir, sy: areaSY(a) };
+      return { target: board.center, view: board.height * 0.75 / h, shift: 0, dir: board.dir, sy: areaSY(a) };   // 板面比牌卡高約 1.25 倍，上下露出布告欄的框
     }
     return { target: board.center, view: Math.max(board.width / 0.9 / aspect, board.height / 0.86), shift: 0, dir: board.dir };   // 兩塊板面佔畫面寬約 90%
   }
@@ -2826,18 +2833,16 @@ function measureStackArea() {
   // 交通資訊卡飛到車子前才打開（還量不到），所以用 CSS 的卡片高度 --tr-h 推算卡片上緣
   const trH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--tr-h')) || 50;
   stackArea.traffic = [navB / H, 1 - trH / 100 - (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--gutter')) + 8) / H];
-  stackArea.board = innerWidth < 760 ? [top(boardEls[0]) / H, bottom(boardEls[0]) / H]   // 手機：牌卡在畫面中間，板面對準牌卡
-    : [navB / H, (top(boardSheet) - 8) / H];
+  stackArea.board = [top(boardEls[0]) / H, bottom(boardEls[0]) / H];   // 手機、直式平板：牌卡在畫面中間，板面對準牌卡
 }
 // 首屏：整張地圖的寬度放進畫面寬度，高度放進文字上方的空白區，取比較大的那個
 const STACK_HOME = new THREE.Vector3(0, 0, 0);
 function stackedHome() {
-  const a = stackArea.hero, h = Math.max(a[1] - a[0], 0.2);
+  const a = stackArea.hero;
   const v = fitView(LAYOUT.a, true);
-  const mapH = current ? (current.L.W + current.L.D) * 0.72 * 0.58 : 0;   // 等角視角下地圖在畫面上的高度（約寬度的 0.58）
   // 手機：地圖放大到約 1.9 倍、填滿寬度（左右超出沒關係），中央綠地落在 Header 與大標之間
   if (innerWidth < 760) return { home: STACK_HOME, view: v / 1.9, shift: 0, sy: areaSY(a) - 0.05 };   // 往下一點，讓地圖下緣墊在大標後面
-  return { home: STACK_HOME, view: Math.max(v, mapH / h), shift: 0, sy: areaSY(a) };
+  return { home: STACK_HOME, view: v / 1.5, shift: 0, sy: areaSY(a) - 0.04 };   // 直式平板：一樣拉近、左右可以超出畫面
 }
 function smooth(t) { return t * t * (3 - 2 * t); }   // 用 function 宣告：程式一開始就能用（夜晚模式初始化會用到）
 function lerp(a, b, t) { return a + (b - a) * t; }
