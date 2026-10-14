@@ -219,7 +219,13 @@
     transition: background .2s, color .2s; }
   .sec-nav button b { font: 700 11px/1 var(--font-display); color: var(--muted); }
   .sec-nav { position: fixed; }   /* 滑塊以錨點列為定位基準 */
-  .sec-nav button { position: relative; z-index: 1; }
+  .sec-nav button { position: relative; z-index: 1; flex: none; }
+  /* 錨點列最寬 40vw，超過就可以左右捲動（隱藏捲軸）；兩側淡出提示還有內容 */
+  .sec-nav { max-width: 40vw; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; }
+  .sec-nav::-webkit-scrollbar { display: none; }
+  .sec-nav.fade-l { -webkit-mask-image: linear-gradient(90deg, transparent, #000 32px); mask-image: linear-gradient(90deg, transparent, #000 32px); }
+  .sec-nav.fade-r { -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 32px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 32px), transparent); }
+  .sec-nav.fade-l.fade-r { -webkit-mask-image: linear-gradient(90deg, transparent, #000 32px, #000 calc(100% - 32px), transparent); mask-image: linear-gradient(90deg, transparent, #000 32px, #000 calc(100% - 32px), transparent); }
   .sec-nav button:hover { color: var(--text-primary); }
   /* 橡皮筋滑塊（參考 React Bits「Rubber Segment」）：切換時前緣先衝過去、整條被拉長，後緣再追上並稍微壓過頭後回彈 */
   .sec-thumb { position: absolute; z-index: 2; top: 6px; height: 36px; left: 0; width: 0; border-radius: var(--radius-btn);
@@ -229,6 +235,46 @@
   .sec-thumb .clone span.btn-like { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px;
     color: var(--text-on-fill); font: 500 13px/1 var(--font-family); white-space: nowrap; }
   .sec-thumb .clone b { font: 700 11px/1 var(--font-display); color: var(--color-primary); }
+
+  /* ---------- 交通資訊彈窗 ---------- */
+  .tr-modal { position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; padding: var(--gutter); }
+  .tr-modal[hidden] { display: none; }
+  .tr-backdrop { position: absolute; inset: 0; background: rgba(15,18,24,.45); backdrop-filter: blur(4px); animation: tr-fade .3s ease; }
+  .tr-dialog { position: relative; width: min(1120px, 100%); max-height: calc(100vh - var(--gutter) * 2); overflow: auto;
+    display: flex; flex-direction: column; gap: 24px; padding: 32px; border-radius: var(--radius-card); background: var(--surface-page);
+    color: var(--text-primary); box-shadow: 0 30px 80px rgba(0,0,0,.25); animation: tr-pop .4s cubic-bezier(.2,.8,.2,1); }
+  @keyframes tr-fade { from { opacity: 0; } }
+  @keyframes tr-pop { from { opacity: 0; transform: translateY(16px) scale(.98); } }
+  .tr-head { display: flex; align-items: center; justify-content: space-between; }
+  .tr-head h2 { margin: 0; font-size: 32px; font-weight: 700; line-height: 1.3; color: var(--card-title); }
+  .tr-body { display: grid; grid-template-columns: minmax(0, 600px) minmax(0, 1fr); gap: 48px; }
+  .tr-map { height: 480px; border: 1px solid var(--border-default); border-radius: var(--radius-sm); overflow: hidden; background: #eef0f3; }
+  .tr-map iframe { display: block; width: 100%; height: 100%; border: 0; }
+  .tr-info { display: flex; flex-direction: column; gap: 24px; min-width: 0; }
+  .tr-addr { display: flex; align-items: center; gap: 16px; }
+  .tr-addr p { flex: 1; margin: 0; font-size: 20px; font-weight: 700; line-height: 1.6; }
+  .tr-nav { width: 44px; height: 44px; flex: none; display: grid; place-items: center; border: 1px solid var(--text-secondary); border-radius: 50%; transition: background .2s; }
+  .tr-nav:hover { background: var(--hover); }
+  body.night .tr-nav img { filter: invert(1); }
+  /* Pill Tabs：選中＝主要按鈕（深底白字），其餘＝次要（白底灰框） */
+  .tr-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+  .tr-tabs button { height: 44px; padding: 0 20px; border-radius: var(--radius-btn); border: 1px solid #8c959f; background: var(--surface-page);
+    color: var(--text-primary); font: 400 16px/1.6 var(--font-family); cursor: pointer; transition: background .2s, color .2s; }
+  .tr-tabs button:hover { background: var(--hover); }
+  .tr-tabs button[aria-selected="true"] { background: var(--fill-button); border-color: var(--fill-button); color: var(--text-on-fill); }
+  .tr-panel { display: flex; flex-direction: column; gap: 16px; animation: tr-fade .25s ease; }
+  .tr-panel[hidden] { display: none; }
+  .tr-group { display: flex; flex-direction: column; gap: 4px; font-size: 16px; line-height: 1.6; }
+  .tr-group b { font-weight: 700; }
+  .tr-group p { margin: 0; }
+  .tr-group a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+  .tr-group a:hover { color: var(--color-primary); }
+  @media (max-width: 900px) {
+    .tr-body { grid-template-columns: 1fr; gap: 24px; }
+    .tr-map { height: 280px; }
+    .tr-dialog { padding: 20px; }
+    .tr-head h2 { font-size: 24px; }
+  }
 
   /* ---------- 右上角：工具列 + 操作說明 ---------- */
   .dock { position: fixed; z-index: 4; top: calc(var(--header-h) + var(--gutter)); right: var(--gutter);
@@ -278,6 +324,7 @@
   .continue svg { width: 22px; height: 22px; animation: nudge 1.6s ease-in-out infinite; }
   .continue:hover { background: var(--fill-hover); }
   body.show-continue .continue { opacity: 1; transform: none; pointer-events: auto; }   /* 每個章節都有；載入中不顯示 */
+  body.tr-open .continue { z-index: 31; }                                             /* 交通資訊彈窗開著時浮在彈窗上方 */
   .continue.up svg { transform: rotate(180deg); animation: none; }                       /* 最後一章：回到總覽（箭頭朝上） */
   body.focus .continue { display: none; }
   @keyframes nudge { 50% { transform: translateY(3px); } }
@@ -309,7 +356,7 @@
     .caption { right: var(--gutter); width: auto; bottom: calc(var(--gutter) + 88px); }
     .free-panel { display: none; }   /* 手機不顯示滑鼠操作說明 */
     .continue { width: 76px; height: 76px; }
-    .sec-nav { top: calc(var(--header-h) + var(--gutter) + 58px); }   /* 手機：放在工具列下方 */
+    .sec-nav { top: calc(var(--header-h) + var(--gutter) + 58px); max-width: calc(100vw - var(--gutter) * 2); }   /* 手機：放在工具列下方，寬度用整個螢幕 */
     .sec-nav button, .sec-thumb .clone span.btn-like { padding: 0 10px; }
     .sec-nav button span, .sec-thumb .clone span.btn-like span { display: none; }
     .drag-tip { --tip-x: 50% !important; top: 42%; font-size: 14px; }
@@ -459,8 +506,52 @@
   <button data-stop="2"><b>03</b><span>辦公研發空間</span></button>
   <button data-stop="3"><b>04</b><span>進駐企業</span></button>
   <button data-stop="4"><b>05</b><span>活動消息</span></button>
+  <button data-action="traffic"><b>06</b><span>交通資訊</span></button>
   <div class="sec-thumb" id="secThumb" aria-hidden="true"><div class="clone"></div></div>
 </nav>
+
+<!-- 交通資訊彈窗（WF 81:1949、狀態卡 227:1163）：點地圖上的小汽車打開；左邊內嵌 Google 地圖、右邊地址＋交通方式切換 -->
+<div class="tr-modal" id="trModal" role="dialog" aria-modal="true" aria-labelledby="trTitle" hidden>
+  <div class="tr-backdrop" data-close></div>
+  <section class="tr-dialog">
+    <header class="tr-head">
+      <h2 id="trTitle">交通資訊</h2>
+      <button class="icon-btn" data-close aria-label="關閉交通資訊">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </header>
+    <div class="tr-body">
+      <div class="tr-map"><iframe id="trMap" title="國泰產研中心位置（Google 地圖）" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe></div>
+      <div class="tr-info">
+        <div class="tr-addr">
+          <p>104382台北市中山區建國北路二段69號</p>
+          <a class="tr-nav" href="https://www.google.com/maps/dir/?api=1&destination=104382台北市中山區建國北路二段69號" target="_blank" rel="noopener" aria-label="導航（另開 Google 地圖）">
+            <img src="assets/icon-navigation.svg" width="24" height="24" alt="" />
+          </a>
+        </div>
+        <div class="tr-tabs" role="tablist" aria-label="交通方式">
+          <button role="tab" data-tr="mrt" aria-selected="true">捷運</button>
+          <button role="tab" data-tr="bus" aria-selected="false">公車</button>
+          <button role="tab" data-tr="drive" aria-selected="false">自行前往</button>
+        </div>
+        <div class="tr-panel" data-tr="mrt" role="tabpanel">
+        <div class="tr-group"><b>中和新蘆線</b><p>至「<a href="https://www.google.com/maps/search/?api=1&query=捷運行天宮站" target="_blank" rel="noopener">行天宮</a>」站，由2號出口前往，步行約9分鐘。</p><p>至「<a href="https://www.google.com/maps/search/?api=1&query=捷運松江南京站" target="_blank" rel="noopener">松江南京</a>」站，由6號出口前往，步行約12分鐘。</p></div>
+        <div class="tr-group"><b>文湖線</b><p>至「<a href="https://www.google.com/maps/search/?api=1&query=捷運南京復興站" target="_blank" rel="noopener">南京復興</a>」站，由1號出口前往，步行約10分鐘。</p><p>至「<a href="https://www.google.com/maps/search/?api=1&query=捷運中山國中站" target="_blank" rel="noopener">中山國中</a>」站，步行約13分鐘。</p></div>
+        <div class="tr-group"><b>松山新店線</b><p>至「<a href="https://www.google.com/maps/search/?api=1&query=捷運南京復興站" target="_blank" rel="noopener">南京復興</a>」站，由1號出口前往，步行約10分鐘。</p><p>至「<a href="https://www.google.com/maps/search/?api=1&query=捷運松江南京站" target="_blank" rel="noopener">松江南京</a>」站，由6號出口前往，步行約12分鐘。</p></div>
+        </div>
+        <div class="tr-panel" data-tr="bus" role="tabpanel" hidden>
+        <div class="tr-group"><p>搭乘12、298、638、紅57 至「<a href="https://www.google.com/maps/search/?api=1&query=臺北大學(臺北校區)公車站" target="_blank" rel="noopener">臺北大學(臺北校區)</a>」站下車。</p><p>搭乘5、277、505、612、638、680、943、945、民生幹線至「<a href="https://www.google.com/maps/search/?api=1&query=合江街口公車站" target="_blank" rel="noopener">合江街口</a>」站下車，步行約4分鐘。</p></div>
+        </div>
+        <div class="tr-panel" data-tr="drive" role="tabpanel" hidden>
+        <div class="tr-group"><b>機車　B1</b><p>一般車位331個、50元/次。</p><p>身心障礙者車位7個，30元/次。</p></div>
+        <div class="tr-group"><b>汽車　B1</b><p>一般車位63個，臨停60元/時、月租12,000元/月。</p><p>孕婦及育有6歲以下兒童者車位2個，臨停60元/時。</p><p>充電樁車位13個，60元/時，電費7元/度。</p><p>身心障礙者車位3個，臨停40元/時。</p></div>
+        <div class="tr-group"><b>汽車　B2</b><p>一般車位116個，臨停60元/時、月租12,000元/月。</p></div>
+        <div class="tr-group"><b>YouBike</b><p><a href="https://www.google.com/maps/search/?api=1&query=YouBike 興安合江路口" target="_blank" rel="noopener">興安合江路口</a></p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
 
 <!-- 進場提示：拖曳可轉動地圖 -->
 <div class="drag-tip" id="dragTip" role="status" aria-live="polite">
@@ -1584,14 +1675,19 @@ function build(variantId, { replay = true } = {}) {
     pets.push({ kind: 'cat', ...c, phase: rand() * 6 });
   }
 
-  // 小汽車：沿著整張地圖最外圈的街道慢慢繞
+  // 小汽車（黃、橘兩台）：沿著整張地圖最外圈的街道慢慢繞
   // 最外圈道路從街區邊往外 6；散步的人走在離街區 1.4 的位置，所以車走在 3.6，不會撞到人
+  // 兩台同樣速度、相隔半圈出發，永遠不會撞在一起
   {
     const OUT = 3.6;
-    const car = toyCar();
-    addItem(car.g, 0, 0, { delay: 2.3, baseY: 0.1, drop: 3, liftAmount: 0.35 });
-    car.g.userData.labelEl = hotspotLabel(car.g, '交通資訊', 2.1);
-    cars.push({ ...car, rect: { x0: -L.W / 2 - OUT, x1: L.W / 2 + OUT, z0: -L.D / 2 - OUT, z1: L.D / 2 + OUT }, s: L.W * 1.5, speed: 0.055 });
+    const rect = { x0: -L.W / 2 - OUT, x1: L.W / 2 + OUT, z0: -L.D / 2 - OUT, z1: L.D / 2 + OUT };
+    const lap = 2 * (rect.x1 - rect.x0 + rect.z1 - rect.z0);          // 繞一圈的長度
+    [[M.yellow, L.W * 1.5, 2.3], [M.accent, L.W * 1.5 + lap / 2, 2.45]].forEach(([color, s0, delay]) => {
+      const car = toyCar(color);
+      addItem(car.g, 0, 0, { delay, baseY: 0.1, drop: 3, liftAmount: 0.35 });
+      car.g.userData.labelEl = hotspotLabel(car.g, '交通資訊', 2.1);
+      cars.push({ ...car, rect, s: s0, speed: 0.055, stop: 'traffic', label: car.g.userData.labelEl });   // 點了打開交通資訊彈窗
+    });
   }
 
   current = { L, office: placed.find(p => p.id === 'office') };
@@ -1599,12 +1695,12 @@ function build(variantId, { replay = true } = {}) {
 }
 
 // 沿矩形周長取位置與朝向
-// 可愛小汽車（車頭朝 +z）：圓角黃色車身、玻璃車廂、白色車頂、四個輪子、車燈（晚上會亮）
-function toyCar() {
+// 可愛小汽車（車頭朝 +z）：圓角車身（黃色或橘色）、玻璃車廂、白色車頂、四個輪子、車燈（晚上會亮）
+function toyCar(color = M.yellow) {
   const g = new THREE.Group();
   const bodyG = new THREE.Group();                                      // 車身（開車時會輕輕上下彈）
   g.add(bodyG);
-  bodyG.add(box(0.95, 0.42, 1.75, M.yellow, 0, 0.42, 0, 0.16));       // 下半車身
+  bodyG.add(box(0.95, 0.42, 1.75, color, 0, 0.42, 0, 0.16));          // 下半車身（黃色或橘色）
   bodyG.add(box(0.8, 0.34, 0.95, M.window, 0, 0.78, -0.1, 0.12));     // 車窗（一圈玻璃）
   bodyG.add(box(0.86, 0.1, 1.0, M.white, 0, 0.98, -0.1, 0.05));       // 白色車頂
   bodyG.add(box(0.98, 0.1, 0.14, M.white, 0, 0.3, 0.88, 0.05));       // 前保險桿
@@ -1804,13 +1900,55 @@ canvas.addEventListener('pointerleave', () => hotPtr.set(9, 9));
 canvas.addEventListener('pointerdown', e => { downAt = [e.clientX, e.clientY]; });
 function pickHotspot(ptr) {                          // 滑鼠位置底下是布告欄還是燈箱
   hotRay.setFromCamera(ptr, stage.camera);
-  return [board, lightbox, computer].find(h => h && hotRay.intersectObject(h.g, true).some(i => i.object.isMesh)) ?? null;
+  return [board, lightbox, computer, ...cars].find(h => h && hotRay.intersectObject(h.g, true).some(i => i.object.isMesh)) ?? null;
 }
 canvas.addEventListener('click', e => {
   if (!downAt || Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) > 5) return;
   const hit = pickHotspot(new THREE.Vector2(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1));   // 點擊當下重新判斷，不靠上一幀
-  if (hit) goStop(hit.stop);
+  if (hit) hit.stop === 'traffic' ? goTraffic(hit) : goStop(hit.stop);
 });
+// ===== 交通資訊彈窗 =====
+const trModal = document.getElementById('trModal'), trMap = document.getElementById('trMap');
+let trLastFocus = null;
+function openTraffic() {
+  body.classList.add('tr-open');                      // 彈窗開著：右下角按鈕浮在彈窗上方，變成「繼續瀏覽」
+  // Google 地圖等第一次打開才載入（不影響首頁載入速度）；iframe 嵌入的地圖無法改配色，會標出大樓位置
+  if (!trMap.src) trMap.src = 'https://www.google.com/maps?q=' + encodeURIComponent('104382台北市中山區建國北路二段69號') + '&hl=zh-TW&z=17&output=embed';
+  trLastFocus = document.activeElement;
+  trModal.hidden = false;
+  document.documentElement.style.overflow = 'hidden';                 // 開著彈窗時不能捲動後面的頁面
+  trModal.querySelector('.tr-head [data-close]').focus();
+}
+// 進入交通資訊：鏡頭先飛到離目前畫面最近的小汽車，停在車頭正前方拉近（車子繼續開，鏡頭跟著），再打開彈窗
+let carFocus = null;                                   // { car, t0, from }
+const CAR_FLY = 1800;
+let carFocusTimer;
+function goTraffic(car) {
+  if (reduceMotion || !cars.length) return openTraffic();
+  exitFree();
+  if (glide) { cancelAnimationFrame(glide.raf); glide = null; }
+  jump = null;
+  car ??= cars.reduce((a, c) => (c.g.position.distanceTo(camLook) < a.g.position.distanceTo(camLook) ? c : a));
+  carFocus = { car, t0: performance.now(), from: { target: camLook.clone(), dir: camDir.clone(), view: stage.view, shift: stage.shift, dist: camDistNow } };
+  clearTimeout(carFocusTimer);
+  carFocusTimer = setTimeout(openTraffic, CAR_FLY - 150);
+}
+function closeTraffic() {
+  trModal.hidden = true;
+  body.classList.remove('tr-open');
+  if (carFocus) { startJump(); carFocus = null; }       // 關掉彈窗：鏡頭從車前面平順飛回原本的畫面
+  document.documentElement.style.overflow = '';
+  trLastFocus?.focus?.();
+}
+trModal.querySelectorAll('[data-close]').forEach(el => { el.onclick = closeTraffic; });
+addEventListener('keydown', e => { if (e.key === 'Escape' && !trModal.hidden) closeTraffic(); });
+// 交通方式切換：地圖、地址、版面不變，只換下面這段文字
+const trTabs = [...trModal.querySelectorAll('.tr-tabs button')];
+trTabs.forEach(b => { b.onclick = () => {
+  trTabs.forEach(x => x.setAttribute('aria-selected', String(x === b)));
+  trModal.querySelectorAll('.tr-panel').forEach(pn => { pn.hidden = pn.dataset.tr !== b.dataset.tr; });
+}; });
+
 // ===== 慢慢捲到指定位置（取代瀏覽器內建的 smooth scroll：內建的太快、而且不能控制節奏）=====
 // 時間依距離決定：近的約 2.5 秒、遠的最長約 4.5 秒
 // 速度曲線：前 30% 慢慢加速 → 中段「等速」前進（不會一下衝過去）→ 最後 30% 慢慢停下；鏡頭跟著捲動，所以也是平穩地飛過去
@@ -1837,7 +1975,8 @@ function glideTo(y) {
 // ===== 跨章節直飛：記下現在的鏡頭 → 捲動位置直接跳到目的地 → 鏡頭從原本的位置平順飛過去（不經過中間的章節）=====
 let jump = null;                                        // { t0, dur, target, dir, view, shift, dist }
 let heroE = 0, diveViaJump = false;                      // Hero 文字目前的收合程度；是否正在直飛進理念與使命
-const camLook = new THREE.Vector3(); let camDistNow = 120;   // 每一幀記下鏡頭看哪裡、離多遠（給直飛當起點）
+const camLook = new THREE.Vector3(); let camDistNow = 120;
+const carTarget = new THREE.Vector3(), carFront = new THREE.Vector3();   // 交通資訊：小汽車前方的鏡頭位置   // 每一幀記下鏡頭看哪裡、離多遠（給直飛當起點）
 const JUMP_DUR = 2800;
 function startJump() {
   jump = { t0: performance.now(), dur: JUMP_DUR, target: camLook.clone(), dir: camDir.clone(), view: stage.view, shift: stage.shift, dist: camDistNow };
@@ -1863,13 +2002,42 @@ function goStop(n) {                                  // 回到原本視角，�
     scrollTo({ top: innerHeight * STOP_S[n], behavior: 'instant' });
   }
 }
-// 右下角圓形按鈕：每個章節都有，點了到下一章（最後一章回到總覽）；操作地圖時是「繼續觀看」
+// 右下角圓形按鈕：每個章節都有，點了到下一章（05 之後是交通資訊彈窗；彈窗開著時是「繼續瀏覽」）；操作地圖時是「繼續觀看」
 let currentChapter = 0;
 const continueBtn = document.getElementById('continueBtn');
-continueBtn.onclick = () => goStop(free ? Math.min(currentChapter + 1, 4) : currentChapter >= 4 ? 0 : currentChapter + 1);
+continueBtn.onclick = () => {
+  if (!trModal.hidden) return trafficToOverview();                    // 交通資訊彈窗開著：先暫時回到總覽（之後補上後面的段落再接下去）
+  if (free) return goStop(Math.min(currentChapter + 1, 4));
+  if (currentChapter >= 4) return goTraffic();                        // 05 → 06 交通資訊（鏡頭飛到小汽車前面 → 彈窗）
+  goStop(currentChapter + 1);
+};
 const continueLabel = document.getElementById('continueLabel');
+// 交通資訊 → 回到總覽：關掉彈窗，鏡頭從車子前面直接飛回首屏全景（不經過中間章節）
+function trafficToOverview() {
+  trModal.hidden = true; body.classList.remove('tr-open');
+  document.documentElement.style.overflow = '';
+  carFocus = null; clearTimeout(carFocusTimer);
+  userNav(-1);
+  if (glide) { cancelAnimationFrame(glide.raf); glide = null; }
+  startJump();
+  scrollTo({ top: 0, behavior: 'instant' });
+}
 const secBtns = [...document.querySelectorAll('#secNav button')];
-secBtns.forEach(b => { b.onclick = () => goStop(Number(b.dataset.stop)); });
+secBtns.forEach(b => { b.onclick = () => (b.dataset.action === 'traffic' ? goTraffic() : goStop(Number(b.dataset.stop))); });   // 06 交通資訊：鏡頭飛到小汽車前面再打開彈窗
+// 錨點列可以左右捲動：依目前捲動位置決定兩側要不要淡出；滑鼠在錨點列上滾滾輪 → 改成左右捲動錨點列
+const secNav = document.getElementById('secNav');
+const updateNavFade = () => {
+  secNav.classList.toggle('fade-l', secNav.scrollLeft > 2);
+  secNav.classList.toggle('fade-r', secNav.scrollLeft < secNav.scrollWidth - secNav.clientWidth - 2);
+};
+secNav.addEventListener('scroll', updateNavFade, { passive: true });
+addEventListener('resize', updateNavFade);
+secNav.addEventListener('wheel', e => {
+  if (secNav.scrollWidth <= secNav.clientWidth || Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+  e.preventDefault(); e.stopPropagation();
+  secNav.scrollLeft += e.deltaY;
+}, { passive: false });
+requestAnimationFrame(updateNavFade);
 
 // ===== 錨點列的橡皮筋滑塊 =====
 // 滑塊的左右兩個邊緣各自用彈簧追目標：往哪邊移動，那一側的邊緣（前緣）比較硬、先衝到；
@@ -1889,6 +2057,11 @@ function setSecActive(i, instant = false) {
   rubber.dir = rubber.active < 0 ? 0 : Math.sign(i - rubber.active);
   rubber.active = i; rubber.tl = tl; rubber.tr = tr;
   secBtns.forEach((b, k) => b.setAttribute('aria-current', k === i ? 'true' : 'false'));
+  // 目前章節的那一格如果被藏在捲動範圍外，就把錨點列捲到讓它完整露出來（置中）
+  const nav = secThumb.parentElement, b = secBtns[i];
+  if (b.offsetLeft < nav.scrollLeft + 8 || b.offsetLeft + b.offsetWidth > nav.scrollLeft + nav.clientWidth - 8) {
+    nav.scrollTo({ left: b.offsetLeft - (nav.clientWidth - b.offsetWidth) / 2, behavior: instant ? 'instant' : 'smooth' });
+  }
   if (instant) { rubber.l = tl; rubber.r = tr; rubber.vl = rubber.vr = 0; drawThumb(); return; }
   if (!rubber.running) { rubber.running = true; rubber.last = performance.now(); requestAnimationFrame(stepRubber); }
 }
@@ -1908,7 +2081,7 @@ function stepRubber(now) {
     if (rubber.dir < 0 && rubber.r < rubber.tr - 3) { rubber.r = rubber.tr - 3; rubber.vr = Math.max(rubber.vr, 0); }
   }
   // 保險：滑塊不能跑出錨點列，也不能左右顛倒
-  const navW = secThumb.parentElement.clientWidth;
+  const navW = secThumb.parentElement.scrollWidth;              // 可以捲動時用整條的寬度
   rubber.l = Math.min(Math.max(rubber.l, 0), navW); rubber.r = Math.min(Math.max(rubber.r, rubber.l), navW);
   drawThumb();
   const settled = Math.abs(rubber.tl - rubber.l) + Math.abs(rubber.tr - rubber.r) < 0.3 && Math.abs(rubber.vl) + Math.abs(rubber.vr) < 2;
@@ -2148,7 +2321,7 @@ logosReady.then(() => requestAnimationFrame(() => requestAnimationFrame(() => {
   if (window.__load) { window.__load.caption = '準備完成'; window.__load.done = true; }
 })));
 addEventListener('loader:hide', () => { anim.replay(); showDragTip(); scheduleAutoLayout(); }, { once: true });
-window.__debug = { stage, people, pets, about };
+window.__debug = { stage, people, pets, about, openTraffic };
 // 網址加上 ?focus=x,y,z,zoom 會直接進入自由檢視並把鏡頭對準該位置（方便檢查細節或分享特定畫面）
 // 網址加上 ?night=1 會直接用夜晚模式打開
 // 網址加 ?night=1 / ?night=0 可以強制夜晚／白天（檢查畫面用），否則依當地時間
@@ -2196,7 +2369,7 @@ stage.renderer.setAnimationLoop(() => {
   const inAbout = sv >= ABOUT_IN && sv < ABOUT_OUT;                  // 在螢幕裡：只畫幻燈片
   // 離開首屏的進度（控制 Hero 文字收合）：平順跟隨；跨章節直飛途中、或直飛進理念與使命的途中都保持收起
   if (sv >= ABOUT_IN || sv < 0.02) diveViaJump = false;
-  const eTarget = jump || diveViaJump ? 1 : seg === TIMELINE[0] ? k : 1;
+  const eTarget = jump || diveViaJump || carFocus ? 1 : seg === TIMELINE[0] ? k : 1;   // 飛向小汽車時也收起
   heroE += (eTarget - heroE) * Math.min(0.2 * dt, 1);
   const e = heroE;
   const atRaw = seg.kind === 'about' ? 1 : k > 0.97 ? seg.to : k < 0.03 ? seg.from : -1;
@@ -2245,6 +2418,21 @@ stage.renderer.setAnimationLoop(() => {
       camDistNow = d;
       if (jk >= 1) jump = null;
     } else camDistNow = camDist;
+    if (carFocus) {                                                   // 交通資訊：鏡頭飛到小汽車車頭正前方，之後跟著車子走
+      const c = carFocus.car, yaw = c.yaw ?? c.g.rotation.y;
+      carTarget.set(c.g.position.x, 0.9, c.g.position.z);
+      carFront.set(Math.sin(yaw), 0.45, Math.cos(yaw)).normalize();  // 車頭朝向（稍微從上往下看）
+      const fk = glideEase(Math.min((now - carFocus.t0) / CAR_FLY, 1)), F = carFocus.from;
+      tmp.lerpVectors(F.target, carTarget, fk);
+      camDir.lerpVectors(F.dir, carFront, fk).normalize();
+      stage.view = Math.exp(lerp(Math.log(F.view), Math.log(6), fk)) * (1 + 0.5 * Math.sin(Math.PI * fk));
+      stage.shift = lerp(F.shift, 0, fk);
+      const d = Math.exp(lerp(Math.log(F.dist), Math.log(30), fk));
+      stage.lookAt(tmp);
+      stage.camera.position.copy(tmp).addScaledVector(camDir, d);
+      stage.camera.lookAt(tmp);
+      camDistNow = d;
+    }
     camLook.copy(tmp);
     if (returning) {                                                  // 從操作模式平滑轉回等角視角
       const k = smooth(Math.min((now - returning.t0) / 800, 1));
@@ -2283,8 +2471,8 @@ stage.renderer.setAnimationLoop(() => {
   fadeA.style.transformOrigin = '0 50%';
   fadeA.style.transform = `scaleX(${1 - collapse})`;
   if (sv > 0.02 || free) { if (dragTip.classList.contains('show')) hideDragTip(); }   // 捲動或拖曳地圖就收起提示
-  caption.classList.toggle('show', !free && !jump && at === 2);
-  capTenants.classList.toggle('show', !free && !jump && at === 3);
+  caption.classList.toggle('show', !free && !jump && !carFocus && at === 2);
+  capTenants.classList.toggle('show', !free && !jump && !carFocus && at === 3);
   updateAboutUI(sv, inAbout, now);
   // 燈箱跑馬燈：慢慢往左捲，約 3 秒移動一個 Logo
   lbTex.offset.x = (now / 3000 / TENANTS.length) % 1;
@@ -2417,9 +2605,15 @@ stage.renderer.setAnimationLoop(() => {
   if (!aboutFade.classList.contains('loop')) aboutFade.style.opacity = Math.max(fadeIn, fadeOut);
   if (inAbout && !free) {
     // 理念與使命：只畫電腦螢幕裡的 3D 小劇場，地圖不用畫（省效能）
-    const { flash } = about.update(...aboutFrame(now));
+    const { flash, inside } = about.update(...aboutFrame(now));
     aboutFlash.style.opacity = flash;
+    // 夜晚：03 進到大樓室內後，當成「晚上開著燈的辦公室」，只套用約三成的夜晚程度（室外 01、02 維持完整夜景）
+    // 地圖和幻燈片共用材質，所以環境反射只在畫室內這一幀暫時調亮，畫完馬上還原
+    const nightIn = inside ? nightT * 0.3 : nightT;
+    about.setNight(nightIn);
+    if (inside && nightT > 0) baseEnv.forEach((v, m) => { m.envMapIntensity = v * lerp(DAY.env, NIGHT.env, nightIn); });
     stage.renderer.render(about.scene, about.camera);
+    if (inside && nightT > 0) baseEnv.forEach((v, m) => { m.envMapIntensity = v * lerp(DAY.env, NIGHT.env, nightT); });
     labels.domElement.style.visibility = 'hidden';
   } else {
     aboutFlash.style.opacity = 0;
@@ -2450,7 +2644,7 @@ stage.renderer.setAnimationLoop(() => {
     el.classList.toggle('show', intro || el === hoverEl);
   }
   // 布告欄牌卡：把兩塊板面的四個角投影到螢幕上，HTML 牌卡等比縮放貼齊
-  const showBoard = !free && !jump && at === 4 && board;
+  const showBoard = !free && !jump && !carFocus && at === 4 && board;
   boardEls.forEach((el, i) => {
     el.classList.toggle('show', !!showBoard);
     if (!board) return;
@@ -2469,15 +2663,16 @@ stage.renderer.setAnimationLoop(() => {
   body.classList.toggle('in-sections', !free && e > 0.6);
   const navId = id => (id === 'screen' ? 1 : id);
   const activeStop = seg.kind === 'about' ? 1 : navId(k > 0.5 ? seg.to : seg.from);   // 轉場過一半就切到下一站
-  // 右下角按鈕：依目前章節換文字（首屏「開始體驗」、中間「繼續體驗」、最後「回到總覽」）
+  // 右下角按鈕：依目前章節換文字（首屏「開始體驗」、其他章節「繼續體驗」、交通資訊彈窗開著時「繼續瀏覽」）
   currentChapter = activeStop;
   body.classList.toggle('show-continue', !document.getElementById('loader'));
-  const lastChapter = !free && activeStop >= 4;
-  continueLabel.textContent = free ? '繼續觀看' : activeStop === 0 ? '開始體驗' : lastChapter ? '回到總覽' : '繼續體驗';
-  continueBtn.classList.toggle('up', lastChapter);
-  continueBtn.setAttribute('aria-label', lastChapter ? '回到總覽' : '前往下一個章節');
+  const trOpen = !trModal.hidden;                                   // 交通資訊彈窗開著：「繼續瀏覽」（關掉彈窗、回到原本的位置）
+  continueLabel.textContent = trOpen ? '繼續瀏覽' : free ? '繼續觀看' : activeStop === 0 ? '開始體驗' : '繼續體驗';
+  continueBtn.classList.remove('up');
+  continueBtn.setAttribute('aria-label', trOpen ? '關閉交通資訊，回到總覽' : '前往下一個章節');
   // 錨點列還沒出現時直接定位（不播動畫），出現後才用橡皮筋效果切換
-  setSecActive(activeStop, !body.classList.contains('in-sections') && rubber.active !== activeStop);
+  const navActive = trOpen ? 5 : activeStop;                         // 交通資訊開著時，錨點滑塊停在「06 交通資訊」
+  setSecActive(navActive, !body.classList.contains('in-sections') && rubber.active !== navActive);
 });
 </script>
 </body>
