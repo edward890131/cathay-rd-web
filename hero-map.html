@@ -228,6 +228,7 @@
   .ev .badge { position: absolute; left: 6px; top: 6px; padding: 2px 6px; border-radius: 4px; background: #1f2328; color: #fff; font-size: 10px; }
   .ev time, .ev small { font-size: 10px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .ev b { font-size: 12px; line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  html[lang="en"] .ev b { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }   /* 英文活動標題比較長：最多兩行，不再被截成一行 */
   .news { list-style: none; margin: 0; padding: 12px; flex: 1; display: flex; flex-direction: column; gap: 10px; }
   .news li { flex: 1; }
   .news a { height: 100%; display: flex; flex-direction: column; justify-content: center; gap: 4px; padding: 8px 12px; border-radius: var(--radius-sm);
@@ -769,7 +770,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
       </button>
     </div>
-    <a href="#" lang="en">EN</a>
+    <a href="#" class="lang-toggle" lang="en" data-i18n-skip>EN</a>
     <a class="btn" href="#">產研媒合平台 →</a>
   </nav>
 </header>
@@ -781,7 +782,7 @@
     <a href="#">產學合作</a>
     <a href="#">最新消息</a>
     <a href="#" target="_blank" rel="noopener">研究發展處<img src="assets/icon-external-link.svg" width="16" height="16" alt="另開新視窗" /></a>
-    <a href="#" lang="en">English</a>
+    <a href="#" class="lang-toggle" lang="en" data-i18n-skip>English</a>
   </nav>
   <p class="drawer-title">顯示設定</p>
   <div id="drawerTools"></div>
@@ -1114,6 +1115,7 @@ import { M } from './shared/materials.js';
 import { box, cyl, ball, tree, lamp } from './shared/kit.js';
 import { createStage, createAnimator, SUN_DIR, ISO_DIR } from './shared/stage.js';
 import { createAboutSlides, ABOUT_COPY, ABOUT_TIMING } from './shared/slides.js';   // 「關於這個計畫」電腦螢幕裡的 3D 幻燈片（動態 session 製作）
+let lang = 'zh', dict = null;   // 目前語系、英文對照表（放在最前面：選單、按鈕初始化時就會用到 tr()）
 
 // 回報載入進度給載入畫面（只會往前，不會倒退）
 const progress = (v, caption) => {
@@ -2586,14 +2588,14 @@ let spaceShown = 0, spaceTimer;
 const capCopy = document.getElementById('capCopy');
 const capSteps = [...document.querySelectorAll('.cap-steps button')];
 capSteps.forEach(b => { b.onclick = () => goStop(2 + Number(b.dataset.step)); });   // 01～03 → 站點 2～4、04 → 站點 5（媒合平台）
-function setSpaceCopy(i, instant = false) {
-  if (i === spaceShown) return;
+function setSpaceCopy(i, instant = false, force = false) {
+  if (i === spaceShown && !force) return;
   spaceShown = i;
   const fill = () => {
     const c = SPACE_COPY[i];
-    document.getElementById('capTag').textContent = c.tag;
-    document.getElementById('capTitle').textContent = c.title;
-    document.getElementById('capDesc').textContent = c.desc;
+    document.getElementById('capTag').textContent = tr(c.tag);
+    document.getElementById('capTitle').textContent = tr(c.title);
+    document.getElementById('capDesc').textContent = tr(c.desc);
     capSteps.forEach(b => b.setAttribute('aria-current', String(Number(b.dataset.step) === i)));
     capCopy.classList.remove('swap');
   };
@@ -2723,7 +2725,9 @@ const trModal = document.getElementById('trModal'), trMap = document.getElementB
 function openTraffic() {
   body.classList.add('tr-open');                      // 交通資訊開著：右下角按鈕變成「繼續瀏覽」（到一起從這裡起步）
   // Google 地圖等第一次打開才載入（不影響首頁載入速度）；iframe 嵌入的地圖無法改配色，會標出大樓位置
-  if (!trMap.src) trMap.src = 'https://www.google.com/maps?q=' + encodeURIComponent('104382台北市中山區建國北路二段69號') + '&hl=zh-TW&z=17&output=embed';
+  // 地圖介面語言跟著網站語系（切換語系後下一次打開會重新載入）
+  const mapSrc = 'https://www.google.com/maps?q=' + encodeURIComponent('104382台北市中山區建國北路二段69號') + `&hl=${lang === 'en' ? 'en' : 'zh-TW'}&z=17&output=embed`;
+  if (trMap.src !== mapSrc) trMap.src = mapSrc;
   trModal.hidden = false;
   document.documentElement.style.overflow = 'hidden';                 // 交通資訊不在捲動軸上：滾輪改成「往下＝下一段、往上＝回到活動消息」
 }
@@ -3241,7 +3245,7 @@ const isNightHour = () => { const h = new Date().getHours(); return h < 8 || h >
 const menuBtn = document.getElementById('menuBtn'), dockEl = document.getElementById('dock'), drawer = document.getElementById('drawer');
 const setMenu = open => {
   body.classList.toggle('menu-open', open);
-  menuBtn.setAttribute('aria-expanded', String(open)); menuBtn.setAttribute('aria-label', open ? '關閉選單' : '開啟選單');
+  menuBtn.setAttribute('aria-expanded', String(open)); menuBtn.setAttribute('aria-label', tr(open ? '關閉選單' : '開啟選單'));
   drawer.inert = !open;                                   // 收起時不能被 Tab 鍵選到
 };
 setMenu(false);
@@ -3278,6 +3282,7 @@ peopleBtns.forEach(b => b.onclick = () => {
   personStyle = b.dataset.people; markPeople();
   build(currentVariant, { replay: false });
   applyNight(nightT);
+  if (lang === 'en') translateDOM();                                    // 重建後的地圖標籤也換成英文
 });
 // 全部載入完、畫出第一個畫面後，載入畫面跑到 100% 並淡出；進場掉落動畫等載入畫面開始淡出才播，第一眼就看得到
 progress(0, '正在載入進駐企業…');
@@ -3348,6 +3353,65 @@ function setDevice(mode) {
 }
 document.querySelectorAll('#deviceSeg button').forEach(b => { b.onclick = () => setDevice(b.dataset.device); });
 addEventListener('resize', fitDevice);
+// ============ 語系切換（中文 ↔ 英文） ============
+// 英文對照表 i18n/en.json：key = 中文原文、value = 英文（翻譯 session 產出）。第一次切到英文才下載
+// 做法：①頁面上所有文字節點和 aria-label／title／alt，記住中文原文後換成英文，切回中文時還原
+//       ②程式每幀或動態寫入的文字（右下按鈕、計畫亮點牌卡…）用 tr() 查表
+// Header 的切換鈕：中文版顯示「EN」、英文版顯示「ZH」；選擇會記在瀏覽器，網址加 ?lang=en 也可以直接開英文版
+function tr(zh) { return lang === 'en' && dict?.[zh] || zh; }   // 取名 tr：迴圈裡已經有一個代表時間的 t
+const I18N_ATTRS = ['aria-label', 'title', 'alt', 'placeholder'];
+const zhText = new WeakMap(), zhAttr = new WeakMap();
+const hasZh = str => /[㐀-鿿＀-￯]/.test(str);
+function translateDOM(root = document.body) {
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode: n => n.parentElement?.closest('script, style, [data-i18n-skip]') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT,
+  });
+  for (let n; (n = walker.nextNode());) {
+    if (!zhText.has(n)) { if (!hasZh(n.nodeValue)) continue; zhText.set(n, n.nodeValue); }
+    const zh = zhText.get(n), key = zh.trim();
+    const en = lang === 'en' && dict?.[key];
+    n.nodeValue = en ? zh.replace(key, en) : zh;                          // 保留前後的空白
+  }
+  root.querySelectorAll('[aria-label], [title], [alt], [placeholder]').forEach(el => {
+    if (el.closest('[data-i18n-skip]')) return;
+    let saved = zhAttr.get(el);
+    I18N_ATTRS.forEach(a => {
+      const v = el.getAttribute(a); if (v == null) return;
+      if (!saved?.[a]) { if (!hasZh(v)) return; saved ??= {}; saved[a] = v; zhAttr.set(el, saved); }
+      el.setAttribute(a, lang === 'en' && trAttr(saved[a]) || saved[a]);
+    });
+  });
+}
+// 屬性文字有時是「編號＋名稱」組起來的（例如理念與使命步驟線「01 資產活化」），整句查不到就只翻空白後面那段
+function trAttr(zh) {
+  if (dict?.[zh]) return dict[zh];
+  const m = zh.match(/^(\S+)\s+(.+)$/);
+  return m && dict?.[m[2]] ? `${m[1]} ${dict[m[2]]}` : null;
+}
+async function setLang(next) {
+  if (next === 'en' && !dict) {
+    try { dict = await (await fetch('i18n/en.json', { cache: 'no-store' })).json(); }
+    catch { console.warn('找不到英文對照表 i18n/en.json'); return; }
+  }
+  lang = next;
+  document.documentElement.lang = lang === 'en' ? 'en' : 'zh-Hant';
+  try { localStorage.setItem('cnrd-lang', lang); } catch {}
+  translateDOM();
+  document.querySelectorAll('.lang-toggle').forEach(a => {                 // 切換鈕顯示「另一個」語言
+    const header = !a.closest('.drawer');
+    a.textContent = lang === 'en' ? (header ? 'ZH' : '中文') : (header ? 'EN' : 'English');
+    a.lang = lang === 'en' ? 'zh-Hant' : 'en';
+  });
+  setSpaceCopy(spaceShown, true, true);                                   // 計畫亮點牌卡重新套一次文字
+}
+document.querySelectorAll('.lang-toggle').forEach(a => a.addEventListener('click', e => {
+  e.preventDefault(); setMenu(false); setLang(lang === 'en' ? 'zh' : 'en');
+}));
+{
+  let saved = new URLSearchParams(location.search).get('lang');
+  if (!saved) { try { saved = localStorage.getItem('cnrd-lang'); } catch {} }
+  if (saved === 'en') setLang('en');
+}
 window.__debug = { stage, people, pets, about, openTraffic, platScreen };
 // 網址加上 ?focus=x,y,z,zoom 會直接進入自由檢視並把鏡頭對準該位置（方便檢查細節或分享特定畫面）
 // 網址加上 ?night=1 會直接用夜晚模式打開
@@ -3793,9 +3857,9 @@ stage.renderer.setAnimationLoop(() => {
   currentChapter = activeStop;
   body.classList.toggle('show-continue', !document.getElementById('loader'));
   const trOpen = !trModal.hidden;                                   // 交通資訊彈窗開著：「繼續瀏覽」（關掉彈窗、回到原本的位置）
-  continueLabel.textContent = joinOn ? '回到總覽' : trOpen ? '繼續瀏覽' : free ? '繼續觀看' : activeStop === 0 ? '開始體驗' : '繼續體驗';
+  continueLabel.textContent = tr(joinOn ? '回到總覽' : trOpen ? '繼續瀏覽' : free ? '繼續觀看' : activeStop === 0 ? '開始體驗' : '繼續體驗');
   continueBtn.classList.toggle('up', joinOn);                       // 回到總覽：箭頭朝上
-  continueBtn.setAttribute('aria-label', joinOn ? '回到總覽，從頭開始體驗' : trOpen ? '前往下一段：一起從這裡起步' : '前往下一個章節');
+  continueBtn.setAttribute('aria-label', tr(joinOn ? '回到總覽，從頭開始體驗' : trOpen ? '前往下一段：一起從這裡起步' : '前往下一個章節'));
   // 錨點列還沒出現時直接定位（不播動畫），出現後才用橡皮筋效果切換
   const navActive = trOpen || carFocus ? 5 : STOP_CH[activeStop];   // 交通資訊（含鏡頭飛向小汽車的途中）停在「06」，不會先閃到 05；計畫亮點 4 站都停在 03
   setSecActive(navActive, !body.classList.contains('in-sections') && rubber.active !== navActive);
