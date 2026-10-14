@@ -19,6 +19,7 @@
     --text-on-fill: #fff;
     --border-default: #c9ced6;
     --surface-page: #fff;
+    --surface-subtle: #eef0f3;           /* 頁尾底色 */
     --bg: #f2f2f2;                       /* 主視覺背景 */
     --card-bg: rgba(255,255,255,.8);
     --chip-bg: rgba(0,0,0,.06);
@@ -113,11 +114,12 @@
   /* slogan 跟著畫面等比縮放：1440 × 800 時約 96px；同時看寬和高，取比較小的，避免矮螢幕上大標壓到牌卡 */
   .hero-main { --slogan: max(48px, min(6.67vw, 12vh)); --gap: 5vh; --card-w: 500px;
     bottom: 9vh; left: 4.86vw; display: flex; flex-direction: column; gap: var(--gap);   /* 不貼邊距，往內往上留呼吸空間（設計稿：left 70 / 1440） */
-    transition: opacity .2s; }
+    margin-bottom: var(--cookie-push, 0px);                                              /* 手機／直式平板：Cookie 條在底部時整組往上讓位 */
+    transition: opacity .2s, margin-bottom .45s cubic-bezier(.2,.8,.2,1); }
   .hero-main .slogan { font-size: var(--slogan); }
   .hero-main .card { width: var(--card-w); transition: background-color .8s, border-color .8s; }
   /* 只有切換全幅的那 1 秒有過渡（拖動視窗大小時字級要立刻跟上，不要慢半拍） */
-  body.layout-switching .hero-main { transition: opacity .2s, gap .9s cubic-bezier(.4,0,.2,1); }
+  body.layout-switching .hero-main { transition: opacity .2s, gap .9s cubic-bezier(.4,0,.2,1), margin-bottom .45s cubic-bezier(.2,.8,.2,1); }
   body.layout-switching .hero-main .slogan { transition: font-size .9s cubic-bezier(.4,0,.2,1); }
   body.layout-switching .hero-main .card { transition: width .9s cubic-bezier(.4,0,.2,1), background-color .8s, border-color .8s; }
   body[data-layout="b"] .hero-main { --slogan: max(44px, min(5.2vw, 9.5vh)); --gap: 40px; --card-w: calc(var(--panel-w) * 1vw - 4.86vw * 2); }   /* 左文右圖：字小一點；牌卡放進左側底色區塊，左右留一樣的距離 */
@@ -256,7 +258,7 @@
     --panel: rgba(22,26,35,.86); --hover: rgba(255,255,255,.08); --sep: rgba(255,255,255,.12);
     --seg-on: rgba(255,255,255,.16); --track: rgba(255,255,255,.22);
     --fill-button: #ebedf2; --text-on-fill: #1f2328; --fill-hover: #fff;
-    --surface-page: #151922; --border-default: rgba(255,255,255,.08); }
+    --surface-page: #151922; --border-default: rgba(255,255,255,.08); --surface-subtle: #12161e; }
 
   /* ---------- 左上角：段落錨點 ---------- */
   .sec-nav { position: fixed; z-index: 4; top: calc(var(--header-h) + var(--gutter)); left: var(--gutter); display: flex; gap: 4px; padding: 6px;
@@ -331,6 +333,51 @@
   .tr-group a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
   .tr-group a:hover { color: var(--color-primary); }
 
+  /* ---------- 頁尾（WF 81:1983）：在「一起從這裡起步」再往下滑，從畫面底部往上出現，蓋住一部分地圖；上面的牌卡跟著往上 ---------- */
+  .site-footer { position: fixed; z-index: 4; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; gap: 32px;
+    padding: 56px 80px 32px; background: var(--surface-subtle); color: var(--text-secondary); font-size: 14px; line-height: 1.6;
+    transform: translateY(105%); transition: transform .8s cubic-bezier(.2,.8,.2,1), background-color .8s; }   /* 跟牌卡往上的速度一致 */
+  body.footer-open .site-footer { transform: none; }
+  body.footer-open { --join-lift: calc(var(--footer-h, 0px) + 12px); }               /* 牌卡和「再看一次」整組往上推（大小不變，像頁面往下捲） */
+  .ft-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 40px; }
+  .ft-left { display: flex; align-items: flex-start; gap: 56px; }
+  .ft-logo { flex: none; font-size: 18px; font-weight: 700; line-height: 44px; color: var(--text-primary); text-decoration: none; }
+  .ft-info { display: grid; grid-template-columns: auto 1fr; gap: 10px 20px; margin: 0; }
+  .ft-info dd { margin: 0; }
+  .ft-info a, .ft-terms a { color: var(--text-primary); text-decoration: none; }
+  .ft-info a:hover, .ft-terms a:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .ft-social { display: flex; gap: 12px; flex: none; }
+  .ft-social a, .ft-social .ft-top { width: 44px; height: 44px; display: grid; place-items: center; padding: 0; border: 1px solid var(--text-secondary); border-radius: 50%;
+    background: transparent; cursor: pointer; transition: background .2s; }
+  .ft-social a:hover, .ft-social .ft-top:hover { background: var(--hover); }
+  .ft-top img { filter: invert(1); }                                                    /* 圖示原本是白色箭頭：白天反成深色，跟社群圖示一樣 */
+  body.night .ft-top img { filter: none; }
+  .ft-note { margin: 0; padding-top: 28px; border-top: 1px solid var(--border-default); font-size: 12px; line-height: 1.8; }
+  .ft-bottom { display: flex; align-items: center; justify-content: space-between; gap: 16px; font-size: 12px; }
+  .ft-terms { display: flex; gap: 24px; }
+  body.night .ft-social a img { filter: invert(1); }
+  /* ---------- Cookie 同意（WF 81:1984）：桌機浮在地圖下方中間；手機、直式平板貼在畫面最底下，Hero 文字和箭頭按鈕往上讓位，關掉後再回原位 ---------- */
+  .cookie { position: fixed; z-index: 45; bottom: var(--gutter); left: calc(var(--panel-w) * 1vw + (100vw - var(--panel-w) * 1vw) / 2); width: min(600px, max(340px, calc(100vw - var(--panel-w) * 1vw - (var(--gutter) + 104px) * 2)));   /* 兩側讓出右下角圓形按鈕的寬度，不會疊到 */
+    display: flex; align-items: center; gap: 20px; padding: 14px 14px 14px 20px; border-radius: var(--radius-panel); background: var(--surface-page);
+    border: 1px solid var(--border-default); box-shadow: 0 10px 30px rgba(0,0,0,.14); color: var(--text-primary); font-size: 14px; line-height: 1.6;
+    transform: translate(-50%, 0); transition: opacity .35s, transform .45s cubic-bezier(.2,.8,.2,1), background-color .8s; }
+  .cookie[hidden] { display: none; }
+  .cookie.out { opacity: 0; transform: translate(-50%, 16px); pointer-events: none; }
+  .cookie p { flex: 1; margin: 0; }
+  .cookie p a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+  .cookie button { flex: none; height: 44px; padding: 0 20px; border: 0; border-radius: var(--radius-btn); background: var(--fill-button); color: var(--text-on-fill);
+    font: 500 15px/1 var(--font-family); cursor: pointer; transition: background .2s; }
+  .cookie button:hover { background: var(--fill-hover); }
+  body[data-layout="a"] .cookie { left: 50%; width: min(600px, calc(100vw - (var(--gutter) + 104px) * 2)); }   /* 全幅（進場時）：放在畫面正中間 */
+  @media (max-width: 900px) {
+    .site-footer { padding: 40px var(--gutter) 28px; gap: 28px; }
+    .ft-row { flex-direction: column; gap: 28px; }
+    .ft-left { flex-direction: column; gap: 20px; }
+    .ft-info { gap: 8px 16px; }
+    .ft-note { padding-top: 24px; }
+    .ft-bottom { flex-direction: column; align-items: flex-start; gap: 12px; }
+  }
+
   /* ---------- 右上角：工具列 + 操作說明 ---------- */
   .dock { position: fixed; z-index: 4; top: calc(var(--header-h) + var(--gutter)); right: var(--gutter);
     display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
@@ -383,7 +430,8 @@
     display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
     background: var(--fill-button); color: var(--text-on-fill); font: 600 12px/1.3 var(--font-family); cursor: pointer;
     box-shadow: 0 10px 30px rgba(0,0,0,.18); opacity: 0; transform: scale(.6); pointer-events: none;
-    transition: opacity .25s, transform .3s cubic-bezier(.3,1.6,.5,1), background .8s, color .8s; }
+    margin-bottom: var(--cookie-push, 0px);
+    transition: opacity .25s, transform .3s cubic-bezier(.3,1.6,.5,1), background .8s, color .8s, margin-bottom .45s cubic-bezier(.2,.8,.2,1); }
   .continue svg { width: 22px; height: 22px; animation: nudge 1.6s ease-in-out infinite; }
   .continue:hover { background: var(--fill-hover); }
   body.show-continue .continue { opacity: 1; transform: none; pointer-events: auto; }   /* 每個章節都有；載入中不顯示 */
@@ -391,6 +439,10 @@
   .continue.up svg { transform: rotate(180deg); animation: none; }                       /* 最後一章：回到總覽（箭頭朝上） */
   body.focus .continue { display: none; }
   @keyframes nudge { 50% { transform: translateY(3px); } }
+  .continue .cue { display: none; }
+  /* 箭頭 → 文字 → 箭頭 → 文字：一個完全淡出後，另一個才淡入（不會疊在一起），位置不動 */
+  @keyframes cue-arrow { 0%, 38% { opacity: 1; } 46%, 92% { opacity: 0; } 100% { opacity: 1; } }
+  @keyframes cue-text { 0%, 46% { opacity: 0; } 54%, 84% { opacity: 1; } 92%, 100% { opacity: 0; } }
   .card-wrap { display: flex; flex-direction: column; gap: 12px; }
   /* 進場提示彈窗：物件掉落時出現在地圖上方，5 秒後淡出（使用者先拖曳或捲動就提早消失） */
   .drag-tip { position: fixed; z-index: 3; top: 50%; left: var(--tip-x, 62%); display: flex; align-items: center; gap: 12px;
@@ -439,14 +491,21 @@
   html.embed::-webkit-scrollbar { display: none; }
 
   /* ---------- 一起從這裡起步：交通資訊之後，鏡頭拉回遠景，畫面中間淡入一張大牌卡（背後看得到整張地圖） ---------- */
-  .join { position: fixed; inset: 0; z-index: 3; display: grid; background: rgba(0,0,0,.4);   /* 40% 黑色遮罩壓暗地圖；層級在 Header、工具列、右下按鈕底下，只蓋地圖 */
-    place-items: center; padding: calc(var(--header-h) + var(--gutter) + 68px) var(--gutter) calc(var(--gutter) + 100px);   /* 上方讓出右上工具列 */
+  .join { position: fixed; inset: 0; z-index: 3; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px;
+    background: rgba(0,0,0,.4);   /* 40% 黑色遮罩壓暗地圖；層級在 Header、工具列底下，只蓋地圖 */
+    padding: calc(var(--header-h) + var(--gutter) + 68px) var(--gutter) calc(var(--gutter) + 8px);   /* 上方讓出右上工具列 */
     pointer-events: none; opacity: 0; transition: opacity .7s ease; }
   .join[hidden] { display: none; }
   body.join-open .join { opacity: 1; }
-  body.join-open .join-card { pointer-events: auto; transform: none; }
+  body.join-open .join-card, body.join-open .join-again { pointer-events: auto; transform: translateY(calc(-1 * var(--join-lift, 0px))); }
+  body.join-open .continue { opacity: 0 !important; pointer-events: none !important; }   /* 這段改用牌卡下方置中的「再看一次」 */
+  .join-again { flex: none; display: inline-flex; align-items: center; gap: 8px; height: 48px; padding: 0 28px; border: 0; border-radius: var(--radius-btn);
+    background: var(--fill-button); color: var(--text-on-fill); font: 600 15px/1 var(--font-family); cursor: pointer;
+    box-shadow: 0 10px 30px rgba(0,0,0,.18); transform: translateY(16px); transition: transform .8s cubic-bezier(.2,.8,.2,1), background .2s; }
+  .join-again:hover { background: var(--fill-hover); }
+  .join-again svg { width: 18px; height: 18px; }
   body.join-open .sec-nav { opacity: 0 !important; pointer-events: none !important; }   /* 這段不在錨點裡 */
-  .join-card { width: min(1040px, 100%); max-height: 100%; overflow: auto; padding: 48px; border-radius: var(--radius-card);
+  .join-card { width: min(1040px, 100%); min-height: 0; flex: 0 1 auto; overflow: auto; overscroll-behavior: contain; padding: 48px; border-radius: var(--radius-card);
     background: var(--card-bg); border: 1px solid var(--card-border); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
     box-shadow: 0 20px 60px rgba(0,0,0,.12); transform: translateY(16px); transition: transform .8s cubic-bezier(.2,.8,.2,1), background-color .8s; }
   .join-card > h2 { margin: 0; text-align: center; font-size: 32px; font-weight: 700; line-height: 1.4; color: var(--card-title); }
@@ -510,6 +569,9 @@
      直式螢幕寬度不夠「左文右圖」：左欄的牌卡只剩約 250px、文字一直換行，右邊地圖也被裁掉。
      改成地圖在上半部、文字在下方全寬；鏡頭用 shiftY 把主體推到卡片上方的空白區（程式用同一組條件判斷，見 STACKED_MQ） */
   @media (max-width: 760px), (max-width: 1100px) and (max-aspect-ratio: 10/11) {
+    .cookie, body[data-layout="a"] .cookie { left: 0; right: 0; bottom: 0; width: auto; transform: none; border-radius: 0; border-width: 1px 0 0;
+      padding: 14px var(--gutter) calc(14px + env(safe-area-inset-bottom)); font-size: 13px; box-shadow: 0 -6px 24px rgba(0,0,0,.08); }
+    .cookie.out { transform: translateY(16px); }
     .panel-b { display: none; }
     .fade-a, body[data-layout="b"] .fade-a { background: linear-gradient(0deg, var(--bg) 0%, color-mix(in srgb, var(--bg) 82%, transparent) 30%, transparent 55%); }   /* 漸層改成從下往上，墊在文字底下 */
     .hero-main, body[data-layout="b"] .hero-main { --slogan: clamp(56px, 11vw, 104px); --gap: 28px; --card-w: min(560px, 100%);
@@ -551,6 +613,9 @@
     .continue { width: var(--continue); height: var(--continue); box-shadow: 0 6px 18px rgba(0,0,0,.18); }
     .continue #continueLabel { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
     .continue svg { width: 20px; height: 20px; }
+    /* 箭頭和「Scroll」字樣輪流出現，提示可以往下滑 */
+    .continue .cue { display: block; position: absolute; font: 700 9px/1 var(--font-display); letter-spacing: 0; animation: cue-text 4s ease-in-out infinite; }
+    .continue:not(.up) svg { animation: cue-arrow 4s ease-in-out infinite; }
     /* 手機：工具列搬進選單（選單本身的樣式在 1100px 區塊，平板也用得到） */
     .dock { display: none; }
     .sec-nav { top: calc(var(--header-h) + var(--gutter)); max-width: calc(100vw - var(--gutter) * 2); }
@@ -575,8 +640,8 @@
     .tr-map { height: 14vh; }
     .tr-body { gap: 16px; }
     .tr-addr p { font-size: 15px; }
-    /* 一起從這裡起步：上方不用讓工具列（收在選單裡），下方讓出圓形按鈕；角色插圖縮小 */
-    .join { padding: calc(var(--header-h) + var(--gutter)) var(--gutter) calc(var(--gutter) + var(--continue) + 16px); }
+    /* 一起從這裡起步：上方不用讓工具列（收在選單裡）；角色插圖縮小 */
+    .join { padding: calc(var(--header-h) + var(--gutter)) var(--gutter) var(--gutter); gap: 14px; }
     .join-card { padding: 20px 16px; }
     .join-card > h2 { font-size: 20px; }
     .join-card > p { font-size: 13px; line-height: 1.7; }
@@ -972,11 +1037,46 @@
       </article>
     </div>
   </div>
+  <button class="join-again" id="joinAgain" type="button">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+    再看一次
+  </button>
 </section>
+
+<!-- 頁尾（WF 81:1983）：只在「一起從這裡起步」再往下滑時出現 -->
+<footer class="site-footer" id="siteFooter" aria-hidden="true">
+  <div class="ft-row">
+    <div class="ft-left">
+      <a class="ft-logo" href="#">CNRD</a>
+      <dl class="ft-info">
+        <dt>營業時間</dt><dd>週一至週五 08:00 ~ 18:00（商場依店家營業時間）</dd>
+        <dt>聯絡電話</dt><dd><a href="tel:0289780808">02-8978-0808</a></dd>
+        <dt>聯絡信箱</dt><dd><a href="mailto:contact@cathayrd.com.tw">contact@cathayrd.com.tw</a></dd>
+      </dl>
+    </div>
+    <div class="ft-social">
+      <a href="#" aria-label="Instagram"><img src="assets/icon-instagram.svg" width="24" height="24" alt="" /></a>
+      <a href="#" aria-label="Threads"><img src="assets/icon-threads.svg" width="24" height="24" alt="" /></a>
+      <button class="ft-top" id="ftTop" type="button" aria-label="回到頂端"><img src="assets/icon-arrow-up.svg" width="24" height="24" alt="" /></button>
+    </div>
+  </div>
+  <p class="ft-note">註：國泰金控暨旗下子公司國泰人壽、國泰世華銀行、國泰產險、國泰證券、國泰投信等，在台灣及世界各國提供全面性且多元化的金融服務與解決方案，與國泰航空集團互不隷屬亦非關係企業。</p>
+  <div class="ft-bottom">
+    <span>© 國泰產業研發中心股份有限公司</span>
+    <nav class="ft-terms" aria-label="條款"><a href="#">服務條款</a><a href="#">隱私權政策</a></nav>
+  </div>
+</footer>
+
+<!-- Cookie 同意（WF 81:1984）：同意後記住，不再出現 -->
+<div class="cookie out" id="cookieBar" role="region" aria-label="Cookie 使用說明" hidden>
+  <p>本網站使用 Cookie 改善瀏覽體驗與分析流量，繼續使用即表示您同意。詳見 <a href="#">隱私權政策</a></p>
+  <button type="button" id="cookieOk">同意</button>
+</div>
 
 <button class="continue" id="continueBtn" aria-label="往下看下一段">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg>
   <span id="continueLabel">開始體驗</span>
+  <span class="cue" aria-hidden="true">Scroll</span>
 </button>
 
 <div class="scroll-space"></div>
@@ -2613,7 +2713,14 @@ let navLock = 0, atBottomSince = 0;
 const atBottom = () => scrollY >= document.documentElement.scrollHeight - innerHeight - 4;
 addEventListener('scroll', () => { if (!atBottom()) atBottomSince = 0; else if (!atBottomSince) atBottomSince = performance.now(); }, { passive: true });
 function stepGesture(dir, target) {
-  if (joinOn || performance.now() < navLock) return;
+  if (performance.now() < navLock) return;
+  if (joinOn) {                                                        // 一起從這裡起步：往下 → 頁尾滑上來（最底了）；往上 → 先收頁尾，再回到交通資訊
+    const card = join.querySelector('.join-card');
+    if (target instanceof Node && card.contains(target) && (dir > 0 ? card.scrollTop + card.clientHeight < card.scrollHeight - 2 : card.scrollTop > 2)) return;   // 牌卡內容還能捲就先捲牌卡
+    if (dir > 0) { if (!footerOpen) { navLock = performance.now() + 700; setFooter(true); } return; }
+    navLock = performance.now() + (footerOpen ? 700 : 1200);
+    return footerOpen ? setFooter(false) : joinToTraffic();
+  }
   if (!trModal.hidden) {
     const panel = trModal.querySelector('.tr-body');
     if (target instanceof Node && panel.contains(target) && panel.scrollHeight > panel.clientHeight + 2) return;
@@ -2627,6 +2734,12 @@ function stepGesture(dir, target) {
   }
 }
 addEventListener('wheel', e => { if (Math.abs(e.deltaY) >= 24) stepGesture(Math.sign(e.deltaY), e.target); }, { passive: true });
+// 交通資訊、一起從這裡起步開著時：後面的頁面完全不能被拖動（iOS 只靠 overflow: hidden 擋不住），只有卡片內容本身可以捲
+addEventListener('touchmove', e => {
+  if (!joinOn && trModal.hidden) return;
+  const sc = e.target.closest?.('.join-card, .tr-body, .site-footer');
+  if (!sc || sc.scrollHeight <= sc.clientHeight + 2) e.preventDefault();
+}, { passive: false });
 let touchY0 = null;
 addEventListener('touchstart', e => { touchY0 = e.touches.length === 1 ? e.touches[0].clientY : null; }, { passive: true });
 addEventListener('touchend', e => {
@@ -2648,6 +2761,15 @@ function goTraffic(car) {
   exitFree();
   if (glide) { cancelAnimationFrame(glide.raf); glide = null; }
   jump = null;
+  // 從螢幕裡（理念與使命的幻燈片、媒合平台）直接跳交通資訊：先離開螢幕，捲動位置移到活動消息（交通資訊的前一站），
+  // 背景才會換回地圖；用底色蓋一下再淡出，看不到切換的那一瞬間
+  const sv = scrollY / innerHeight;
+  if ((sv >= ABOUT_IN - 0.15 && sv < ABOUT_OUT + 0.15) || (sv >= PLAT_IN - 0.15 && sv < PLAT_OUT + 0.15)) {
+    userNav(-1);
+    aboutFade.classList.add('loop'); aboutFade.style.opacity = 1;
+    loopTimers.push(setTimeout(() => { aboutFade.style.opacity = 0; loopTimers.push(setTimeout(() => aboutFade.classList.remove('loop'), 520)); }, 60));
+    scrollTo({ top: innerHeight * STOP_S[LAST_STOP], behavior: 'instant' });
+  }
   car ??= cars.reduce((a, c) => (c.g.position.distanceTo(camLook) < a.g.position.distanceTo(camLook) ? c : a));
   carFocus = { car, t0: performance.now(), from: { target: camLook.clone(), dir: camDir.clone(), view: stage.view, shift: stage.shift, shiftY: stage.shiftY, dist: camDistNow } };
   clearTimeout(carFocusTimer);
@@ -2699,12 +2821,30 @@ const JUMP_DUR = 2800;
 function startJump() {
   jump = { t0: performance.now(), dur: JUMP_DUR, target: camLook.clone(), dir: camDir.clone(), view: stage.view, shift: stage.shift, shiftY: stage.shiftY, dist: camDistNow };
 }
+// 交通資訊、一起從這裡起步不在捲動軸上：從這兩段點錨點去別的段落時，先把它們收起來（鏡頭從車子前面／遠景直接飛過去）
+function leaveOverlays() {
+  let left = false;
+  if (joinOn) {
+    setFooter(false); clearTimeout(joinTimer);
+    body.classList.remove('join-open'); joinOn = false;
+    joinTimer = setTimeout(() => { join.hidden = true; }, 700);
+    left = true;
+  }
+  if (!trModal.hidden || carFocus) {
+    trModal.hidden = true; body.classList.remove('tr-open');
+    carFocus = null; clearTimeout(carFocusTimer);
+    left = true;
+  }
+  if (left) document.documentElement.style.overflow = '';
+  return left;
+}
 function goStop(n) {                                  // 回到原本視角，捲到第 n 站
   const from = currentChapter;
   const wasFree = free;
+  const fromOverlay = leaveOverlays();                // 從交通資訊／一起從這裡起步出發：一律用直飛
   exitFree();
   userNav(n === 1 ? 0 : -1);
-  if (wasFree || Math.abs(n - from) <= 1) { glideTo(innerHeight * STOP_S[n]); return; }   // 相鄰章節：照常慢慢捲過去
+  if (!fromOverlay && (wasFree || Math.abs(n - from) <= 1)) { glideTo(innerHeight * STOP_S[n]); return; }   // 相鄰章節：照常慢慢捲過去
   if (glide) { cancelAnimationFrame(glide.raf); glide = null; }
   startJump();
   if (from === 1) {                                     // 從螢幕裡跳出去：先用底色蓋住，再淡出露出地圖
@@ -2749,7 +2889,38 @@ function goJoin() {
   clearTimeout(joinTimer);
   joinTimer = setTimeout(() => body.classList.add('join-open'), reduceMotion ? 0 : JUMP_DUR - 900);   // 鏡頭快拉到遠景時才淡入
 }
+// 頁尾：開的時候量高度，讓牌卡往上讓出一樣的距離
+const siteFooter = document.getElementById('siteFooter');
+let footerOpen = false;
+function setFooter(on) {
+  footerOpen = on;
+  document.documentElement.style.setProperty('--footer-h', `${siteFooter.offsetHeight}px`);
+  body.classList.toggle('footer-open', on);
+  siteFooter.setAttribute('aria-hidden', String(!on));
+}
+document.getElementById('ftTop').onclick = () => joinToOverview();   // 回頂端：回到總覽
+// Header、頁尾的 Logo：回到最一開始的首屏（不管現在在哪一段：一起從這裡起步、交通資訊、螢幕裡、地圖各站）
+// 原本只是 href="#"，瀏覽器只會捲到頂端；但這幾段鎖住了捲動或狀態還留著，所以看起來沒反應
+document.querySelectorAll('.site-header .logo, .ft-logo').forEach(a => a.addEventListener('click', e => {
+  e.preventDefault();
+  setMenu?.(false);
+  if (joinOn) return joinToOverview();
+  if (!trModal.hidden || carFocus) return trafficToOverview();
+  goStop(0);
+}));
+addEventListener('resize', () => { if (footerOpen) document.documentElement.style.setProperty('--footer-h', `${siteFooter.offsetHeight}px`); });   // 換尺寸時頁尾高度會變
+// 一起從這裡起步 → 往上滑：回到上一段交通資訊（鏡頭飛回小汽車前面）
+function joinToTraffic() {
+  setFooter(false);
+  clearTimeout(joinTimer);
+  body.classList.remove('join-open');
+  joinOn = false;
+  joinTimer = setTimeout(() => { join.hidden = true; }, 700);
+  goTraffic();
+}
+document.getElementById('joinAgain').onclick = () => joinToOverview();   // 再看一次：回到總覽，從頭開始
 function joinToOverview() {
+  setFooter(false);
   clearTimeout(joinTimer);
   body.classList.remove('join-open');
   joinOn = false;
@@ -3089,7 +3260,29 @@ progress(0, '正在載入進駐企業…');
 logosReady.then(() => requestAnimationFrame(() => requestAnimationFrame(() => {
   if (window.__load) { window.__load.caption = '準備完成'; window.__load.done = true; }
 })));
-addEventListener('loader:hide', () => { anim.replay(); showDragTip(); scheduleAutoLayout(); }, { once: true });
+addEventListener('loader:hide', () => { anim.replay(); showDragTip(); scheduleAutoLayout(); showCookie(); }, { once: true });
+// ===== Cookie 同意 =====
+// 進場後從底部浮上來；按「同意」後記在瀏覽器，下次不再出現（瀏覽器不讓存就只在這次關掉）
+// 手機、直式平板：Cookie 條貼在最底下，用 --cookie-push 讓 Hero 文字和右下角箭頭往上讓位，關掉後滑回原位
+const cookieBar = document.getElementById('cookieBar');
+const COOKIE_KEY = 'cnrd-cookie-ok';
+const cookieAccepted = () => { try { return localStorage.getItem(COOKIE_KEY) === '1'; } catch { return false; } };
+function updateCookiePush() {
+  const on = !cookieBar.hidden && !cookieBar.classList.contains('out') && STACKED_MQ.matches;
+  document.documentElement.style.setProperty('--cookie-push', on ? `${cookieBar.offsetHeight}px` : '0px');
+}
+function showCookie() {
+  if (cookieAccepted() || embed) return;
+  cookieBar.hidden = false;
+  requestAnimationFrame(() => { cookieBar.classList.remove('out'); updateCookiePush(); });
+}
+document.getElementById('cookieOk').onclick = () => {
+  try { localStorage.setItem(COOKIE_KEY, '1'); } catch {}
+  cookieBar.classList.add('out');
+  updateCookiePush();
+  setTimeout(() => { cookieBar.hidden = true; }, 450);
+};
+addEventListener('resize', updateCookiePush);
 
 // ============ RWD 預覽（手機／平板 mockup） ============
 // 切到手機或平板時，畫面中間放一台裝置，裡面用 iframe 開同一個網頁（網址加 embed=1，裡面就不再出現裝置切換）
@@ -3566,7 +3759,8 @@ stage.renderer.setAnimationLoop(() => {
   // 段落錨點：離開首屏後顯示；轉場過一半就切換到下一站的按鈕
   body.classList.toggle('in-sections', !free && e > 0.6);
   const navId = id => (id === 'screen' ? 1 : id === 'pscreen' ? 5 : id);
-  const activeStop = seg.kind === 'about' ? 1 : seg.kind === 'plat' ? 5 : navId(k > 0.5 ? seg.to : seg.from);   // 轉場過一半就切到下一站
+  // 直飛進理念與使命時，捲動位置會先停在「首屏 → 螢幕」的半路（navId 會算成 01），這段期間直接當成 02，錨點不會先跳回 01
+  const activeStop = diveViaJump || seg.kind === 'about' ? 1 : seg.kind === 'plat' ? 5 : navId(k > 0.5 ? seg.to : seg.from);   // 轉場過一半就切到下一站
   // 右下角按鈕：依目前章節換文字（首屏「開始體驗」、其他章節「繼續體驗」、交通資訊彈窗開著時「繼續瀏覽」）
   currentChapter = activeStop;
   body.classList.toggle('show-continue', !document.getElementById('loader'));
@@ -3575,7 +3769,7 @@ stage.renderer.setAnimationLoop(() => {
   continueBtn.classList.toggle('up', joinOn);                       // 回到總覽：箭頭朝上
   continueBtn.setAttribute('aria-label', joinOn ? '回到總覽，從頭開始體驗' : trOpen ? '前往下一段：一起從這裡起步' : '前往下一個章節');
   // 錨點列還沒出現時直接定位（不播動畫），出現後才用橡皮筋效果切換
-  const navActive = trOpen ? 5 : STOP_CH[activeStop];               // 交通資訊開著時，錨點滑塊停在「06 交通資訊」；計畫亮點 4 站都停在 03
+  const navActive = trOpen || carFocus ? 5 : STOP_CH[activeStop];   // 交通資訊（含鏡頭飛向小汽車的途中）停在「06」，不會先閃到 05；計畫亮點 4 站都停在 03
   setSecActive(navActive, !body.classList.contains('in-sections') && rubber.active !== navActive);
 });
 </script>
