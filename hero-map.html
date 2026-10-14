@@ -3400,6 +3400,7 @@ let layoutT = body.dataset.layout === 'b' ? 1 : 0;
 const fadeA = document.querySelector('.fade-a'), panelB = document.querySelector('.panel-b');
 let last = performance.now();
 const FREE_MIN_VIEW = 14;   // 自由操作時最多放大到「畫面高度 = 14 個世界單位」
+const FREE_MAX_VIEW = 66;   // 電腦版最多縮小到「畫面高度 = 66 個世界單位」
 
 stage.renderer.setAnimationLoop(() => {
   if (deviceMode !== 'desktop') return;   // RWD 預覽中：外面的地圖被 mockup 蓋住，不用畫
@@ -3509,7 +3510,10 @@ stage.renderer.setAnimationLoop(() => {
     if (stage.camera.near !== 0.1) { stage.camera.near = 0.1; stage.camera.updateProjectionMatrix(); }
     // 放大上限：畫面高度最少要看得到 14 個單位（約 CNRD 立體字佔畫面寬度兩成的大小），再近就不給放大
     ctl.maxZoom = stage.view / FREE_MIN_VIEW;
+    // 縮小下限（電腦版）：畫面高度最多看到 66 個單位（約整張地圖佔右側區塊、上下還留一點空），再遠就不給縮
+    ctl.minZoom = stacked ? 0.5 : Math.min(1, stage.view / FREE_MAX_VIEW);
     if (stage.camera.zoom > ctl.maxZoom) { stage.camera.zoom = ctl.maxZoom; stage.camera.updateProjectionMatrix(); }
+    if (stage.camera.zoom < ctl.minZoom) { stage.camera.zoom = ctl.minZoom; stage.camera.updateProjectionMatrix(); }
     ctl.update();
     stage.sun.target.position.copy(ctl.target);                      // 陰影範圍跟著視點走
     stage.sun.position.copy(ctl.target).addScaledVector(SUN_DIR, 80);
