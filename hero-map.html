@@ -628,16 +628,30 @@
     .sec-nav button, .sec-thumb .clone span.btn-like { padding: 0 10px; }
     .sec-nav button span, .sec-thumb .clone span.btn-like span { display: none; }
     .drag-tip, body[data-layout="b"] .drag-tip { font-size: 14px; }
-    /* 布告欄：園區活動在上、最新消息在下（不再整塊左右滑，避免背景跟著被拖動）；活動卡片在牌卡裡面左右滑 */
-    .board-sheet { left: var(--gutter); right: var(--gutter); top: calc(var(--header-h) + var(--gutter) + var(--nav-btn) + 20px); bottom: calc(var(--gutter) + var(--continue) + 10px);
-      display: flex; flex-direction: column; justify-content: center; gap: 12px; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; }
-    .board-sheet::-webkit-scrollbar, .board-sheet .events::-webkit-scrollbar { display: none; }
+    /* 布告欄（手機，Figma 241:1317）：放在錨點列和圓形按鈕之間（上下各多留一點空），裡面不能上下捲
+       ── 最新消息：每則固定高度、標題超過一行用「…」
+       ── 園區活動：文字區高度固定，封面圖高度 = 剩下的高度，但最高 16vh；卡片寬度跟著封面高度等比（16:9）
+       ── 兩張加起來比空間矮時，整組垂直置中 */
+    .board-sheet { left: var(--gutter); right: var(--gutter); top: calc(var(--header-h) + var(--gutter) + var(--nav-btn) + clamp(20px, 4.2vh, 36px)); bottom: calc(var(--gutter) + var(--continue) + clamp(16px, 3.3vh, 28px));   /* 上下留白：畫面矮時自動縮一點 */
+      display: flex; flex-direction: column; justify-content: center; gap: 12px; overflow: hidden; container-type: size; }
+    .board-sheet .events::-webkit-scrollbar { display: none; }
     .board-sheet:has(.show) { pointer-events: auto; }
     .board-sheet .board-panel { flex: none; }
-    .board-sheet .events { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding: 0 12px; overscroll-behavior-x: contain; scrollbar-width: none; }
-    .board-sheet .ev { flex: 0 0 64%; scroll-snap-align: start; }        /* 露出下一張的邊緣，提示可以滑 */
-    .board-sheet .news { gap: 8px; }
-    .board-sheet .news li { flex: none; }
+    .board-sheet .events { flex: none; display: flex; gap: 10px; padding: 10px;
+      overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; scroll-padding: 0 10px; overscroll-behavior-x: contain; scrollbar-width: none; }
+    /* 固定高度合計約 400px（實測）：最新消息整張 246 + 間距 12 + 園區活動標題列 40 + 內距 20 + 卡片文字區與內距 74 */
+    .board-sheet { --cover-h: max(24px, min(16vh, calc(100cqh - 400px))); }
+    .board-sheet .ev { flex: none; width: clamp(160px, calc(var(--cover-h) * 16 / 9 + 24px), 82%); padding: 8px 12px; scroll-snap-align: start; }   /* 內距跟最新消息的牌卡一樣 */
+    .board-sheet .ev .img { flex: none; height: var(--cover-h); aspect-ratio: auto; }
+    .board-sheet .ev time, .board-sheet .ev small, .board-sheet .ev b,
+    html[lang="en"] .board-sheet .ev b { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }   /* 標題超過一行用「…」 */
+    .board-sheet .news { flex: none; padding: 10px; gap: 6px; }
+    .board-sheet .news li { flex: none; height: 58px; }                                 /* 每則固定高度：第一行分類標籤＋時間、第二行標題 */
+    .board-sheet .news a { display: grid; grid-template-columns: auto 1fr; grid-template-areas: "tag time" "title title"; align-content: center; column-gap: 8px; row-gap: 4px; padding: 8px 12px; }
+    .board-sheet .news .ntag { grid-area: tag; }
+    .board-sheet .news time { grid-area: time; align-self: center; }
+    .board-sheet .news b { grid-area: title; min-width: 0; }
+    .board-sheet .news b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     /* 交通資訊：卡片在下方、跟圓形按鈕並排（高 48vh，上方約四分之一畫面留給小汽車），內嵌地圖 14vh */
     :root { --tr-h: 48; }
     .tr-modal { right: calc(var(--gutter) + var(--continue) + 10px); }
