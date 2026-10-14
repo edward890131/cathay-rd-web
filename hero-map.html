@@ -412,6 +412,8 @@
   /* 裝置切換：圖示按鈕 */
   #deviceSeg button, .icon-seg button { width: 36px; padding: 0; display: grid; place-items: center; }
   #deviceSeg svg, .icon-seg svg { width: 18px; height: 18px; }
+  #musicBtn .music-off { display: none; }                                   /* 背景音樂關閉時才畫斜線 */
+  #musicBtn[aria-pressed="false"] .music-off { display: inline; }
   /* 材質：下拉選單（用原生 select，鍵盤、手機都好操作；外觀改成跟分段按鈕同一套） */
   .select { position: relative; display: inline-flex; align-items: center; }
   .select select { appearance: none; -webkit-appearance: none; height: 36px; padding: 0 30px 0 12px; border: 0; border-radius: var(--radius-btn);
@@ -792,6 +794,11 @@
       </button>
       <button data-night="1" aria-pressed="false" aria-label="夜晚" title="夜晚">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
+    </div>
+    <div class="seg icon-seg" id="musicSeg" role="group" aria-label="背景音樂">
+      <button id="musicBtn" aria-pressed="false" aria-label="背景音樂" title="背景音樂">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/><path class="music-off" d="M3 3l18 18"/></svg>
       </button>
     </div>
     <a href="#" class="lang-toggle" lang="en" data-i18n-skip>EN</a>
@@ -3290,12 +3297,129 @@ dockEl.before(dockHome);
 // 白天／夜晚切換：平常在 Header（EN 左邊）；手機 Header 太擠，搬進選單的顯示設定
 const nightSegEl = document.getElementById('nightSeg'), nightHome = document.createComment('night');
 nightSegEl.before(nightHome);
+const musicSegEl = document.getElementById('musicSeg'), musicHome = document.createComment('music');
+musicSegEl.before(musicHome);                                // 背景音樂鈕跟著白天／夜晚切換一起搬
 const placeDock = () => {
-  if (PHONE_MQ.matches) { document.getElementById('drawerTools').append(dockEl); dockEl.querySelector('.tools').prepend(nightSegEl); }
-  else { dockHome.after(dockEl); nightHome.after(nightSegEl); setMenu(false); }
+  if (PHONE_MQ.matches) { document.getElementById('drawerTools').append(dockEl); const tl = dockEl.querySelector('.tools'); tl.prepend(musicSegEl); tl.prepend(nightSegEl); }
+  else { dockHome.after(dockEl); nightHome.after(nightSegEl); musicHome.after(musicSegEl); setMenu(false); }
 };
 placeDock();
 PHONE_MQ.addEventListener('change', placeDock);
+
+// ───────── 背景音樂（原型）─────────
+// 預設關閉；使用者按下開關才播放。記住的「開」也要等第一次點擊／按鍵之後才會出聲（瀏覽器不允許自動播放）。
+// 目前沒有音檔，用 Web Audio 即時合成一段 96 BPM 的五聲音階小曲；日後換真實音檔只要設定 BGM_FILE（見 makeFileSource）
+const BGM_FILE = null;                                       // 例：'assets/bgm.m4a'；null = 用程式合成
+const BGM_KEY = 'cnrd-bgm', BGM_VOL = 0.2, BGM_FADE = 1.5;   // 記憶用的 key、主音量、淡入淡出秒數
+const bgm = { ctx: null, master: null, src: null, on: false, pending: false };
+const musicBtn = document.getElementById('musicBtn');
+
+// 合成音源：C 大調五聲音階旋律（八音琴）＋ 低音 ＋ 柔和長音墊底；每 8 小節循環
+function makeSynthSource(ctx, out) {
+  const BPM = 96, BEAT = 60 / BPM, BAR = BEAT * 4;
+  const hz = m => 440 * 2 ** ((m - 69) / 12);                 // MIDI 音高轉頻率
+  // 和弦進行 C → Am → F → G（每小節一個），旋律只用 C D E G A，不容易出現不和諧音
+  const CHORDS = [
+    { bass: 36, pad: [60, 64, 67] }, { bass: 33, pad: [57, 60, 64] },
+    { bass: 41, pad: [57, 60, 65] }, { bass: 43, pad: [59, 62, 67] },
+  ];
+  // 旋律：每小節 8 個八分音符，0 = 休止；數字為 MIDI 音高
+  const MEL = [
+    [72,0,76,0,79,0,76,74], [72,0,76,0,81,0,79,76],
+    [77,0,81,0,84,0,81,79], [79,0,74,0,76,0,0,0],
+    [76,0,79,0,84,0,81,79], [76,0,72,0,76,0,79,81],
+    [84,0,81,0,79,0,76,74], [72,0,0,0,76,0,72,0],
+  ];
+  // 簡單的殘響：用漸弱的雜訊當脈衝響應
+  const ir = ctx.createBuffer(2, ctx.sampleRate * 2.4, ctx.sampleRate);
+  for (let c = 0; c < 2; c++) { const d = ir.getChannelData(c); for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length) ** 3; }
+  const verb = ctx.createConvolver(); verb.buffer = ir;
+  const verbGain = ctx.createGain(); verbGain.gain.value = 0.35;
+  const delay = ctx.createDelay(1); delay.delayTime.value = BEAT * 0.75;   // 附點八分音符回音
+  const fb = ctx.createGain(); fb.gain.value = 0.28; delay.connect(fb); fb.connect(delay);
+  const dry = ctx.createGain(); dry.gain.value = 0.9;
+  const bus = ctx.createGain();                                // 所有音色先進這條，再分到乾音／殘響／回音
+  bus.connect(dry); bus.connect(verb); bus.connect(delay);
+  verb.connect(verbGain); verbGain.connect(out); delay.connect(verbGain); dry.connect(out);
+
+  // 單一音符：起音快、尾音指數衰減
+  const note = (m, t, dur, type, vol, attack = 0.01) => {
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = type; o.frequency.value = hz(m);
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(vol, t + attack);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(bus); o.start(t); o.stop(t + dur + 0.05);
+  };
+  const scheduleBar = (bar, t0) => {
+    const ch = CHORDS[bar % 4], mel = MEL[bar % 8];
+    note(ch.bass, t0, BEAT * 1.8, 'triangle', 0.5); note(ch.bass, t0 + BEAT * 2, BEAT * 1.8, 'triangle', 0.35);
+    ch.pad.forEach(m => note(m - 12, t0, BAR * 0.98, 'sine', 0.09, 0.5));        // 柔和長音墊底
+    mel.forEach((m, i) => { if (m) {
+      note(m, t0 + i * BEAT / 2, BEAT * 1.4, 'triangle', 0.22);                  // 主音
+      note(m + 12, t0 + i * BEAT / 2, BEAT * 0.6, 'sine', 0.05);                 // 高八度泛音，像八音盒
+    } });
+  };
+  // 排程器：每 0.5 秒檢查一次，提前 1.5 秒把音符排進音訊時鐘（比 setTimeout 直接發聲準）
+  let bar = 0, next = 0, timer = 0;
+  const tick = () => { while (next < ctx.currentTime + 1.5) { scheduleBar(bar++, next); next += BAR; } };
+  return {
+    start() { bar = 0; next = ctx.currentTime + 0.1; tick(); timer = setInterval(tick, 500); },
+    stop() { clearInterval(timer); bus.disconnect(); setTimeout(() => { try { dry.disconnect(); verb.disconnect(); delay.disconnect(); } catch {} }, 4000); },
+  };
+}
+// 音檔音源（日後換真實音檔用）：<audio loop> 接進同一條增益節點，淡入淡出、暫停邏輯完全不用改
+function makeFileSource(ctx, out) {
+  const el = new Audio(BGM_FILE); el.loop = true; el.crossOrigin = 'anonymous';
+  const node = ctx.createMediaElementSource(el); node.connect(out);
+  return { start() { el.currentTime = 0; el.play().catch(() => {}); }, stop() { el.pause(); node.disconnect(); } };
+}
+const bgmSave = on => { try { localStorage.setItem(BGM_KEY, on ? '1' : '0'); } catch {} };
+const bgmRead = () => { try { return localStorage.getItem(BGM_KEY) === '1'; } catch { return false; } };
+const bgmFade = (to, sec) => {                               // 淡入淡出：從目前音量線性拉到目標，避免爆音
+  const g = bgm.master.gain, t = bgm.ctx.currentTime;
+  g.cancelScheduledValues(t); g.setValueAtTime(g.value, t); g.linearRampToValueAtTime(to, t + sec);
+};
+async function bgmStart() {
+  try {
+    if (navigator.audioSession) navigator.audioSession.type = 'playback';   // iOS 16.4+：靜音鍵打開時也能出聲
+    if (!bgm.ctx) {
+      bgm.ctx = new (window.AudioContext || window.webkitAudioContext)();
+      bgm.master = bgm.ctx.createGain(); bgm.master.gain.value = 0; bgm.master.connect(bgm.ctx.destination);
+    }
+    await bgm.ctx.resume();                                  // iOS 必須在點擊事件裡 resume
+    if (!bgm.on) return;                                     // 等 resume 的期間使用者又按掉了
+    bgm.src = (BGM_FILE ? makeFileSource : makeSynthSource)(bgm.ctx, bgm.master);
+    bgm.src.start(); bgmFade(BGM_VOL, BGM_FADE);
+  } catch { bgm.on = false; setMusicUI(false); }             // 瀏覽器不支援或被擋，就安靜地回到關閉
+}
+function bgmStop() {
+  if (!bgm.ctx || !bgm.src) return;
+  const src = bgm.src; bgm.src = null;
+  bgmFade(0, 0.8); setTimeout(() => { if (!bgm.src) src.stop(); }, 900);   // 淡出完才真的停
+}
+const setMusicUI = on => musicBtn.setAttribute('aria-pressed', String(on));
+function setMusic(on) {
+  bgm.on = on; bgm.pending = false; setMusicUI(on); bgmSave(on);
+  on ? bgmStart() : bgmStop();
+}
+musicBtn.onclick = () => setMusic(!bgm.on);
+// 分頁切到背景就暫停（省電、不干擾別的分頁）；回來再恢復
+document.addEventListener('visibilitychange', () => {
+  if (!bgm.ctx || !bgm.on) return;
+  if (document.hidden) { bgmFade(0, 0.3); setTimeout(() => { if (document.hidden) bgm.ctx.suspend(); }, 400); }
+  else bgm.ctx.resume().then(() => bgmFade(BGM_VOL, 0.8)).catch(() => {});
+});
+// 上次是開啟：按鈕先顯示為開，但要等使用者第一次點擊／按鍵才真的出聲
+if (bgmRead()) {
+  bgm.on = true; bgm.pending = true; setMusicUI(true);
+  const unlock = e => {
+    if (e.target.closest?.('#musicBtn')) return;             // 按的就是音樂鈕：交給它自己的 onclick
+    removeEventListener('pointerdown', unlock, true); removeEventListener('keydown', unlock, true);
+    if (bgm.on && bgm.pending) { bgm.pending = false; bgmStart(); }
+  };
+  addEventListener('pointerdown', unlock, true); addEventListener('keydown', unlock, true);
+}
 const freePanel = document.getElementById('freePanel'), helpBtn = document.getElementById('tHelp');
 helpBtn.onclick = () => {
   const open = freePanel.classList.toggle('collapsed') === false;
