@@ -68,7 +68,7 @@ badge = (
     f'pointer-events:none;white-space:nowrap">內部預覽，請勿外傳 · {stamp} 打包</div>'
 )
 html = html.replace("<body data-layout=\"a\">", "<body data-layout=\"a\">\n" + badge, 1)
-html = html.replace("<title>國泰產研 Hero 構圖</title>", "<title>國泰產研 Hero 構圖（內部預覽）</title>", 1)
+html = html.replace("<title>國泰產研中心平台</title>", "<title>國泰產研中心平台（內部預覽）</title>", 1)
 
 # 6. 輸出
 OUT_DIR.mkdir(exist_ok=True)

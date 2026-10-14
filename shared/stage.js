@@ -83,7 +83,10 @@ export function easeOutBounce(x) {
 
 // 進場掉落 + hover 浮起
 // items：每個 group 的 userData 需有 { delay, baseY, hoverable }
-export function createAnimator(stage, items, { drop = 7, dur = 0.75, lift = 0.35 } = {}) {
+// 減速落下：一開始快、落地前慢慢減速，輕輕停住（不回彈）
+export function easeOutCubic(x) { return 1 - (1 - x) ** 3; }
+
+export function createAnimator(stage, items, { drop = 7, dur = 0.65, lift = 0.35 } = {}) {
   const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const raycaster = new THREE.Raycaster();
   const pointer = new THREE.Vector2(9, 9);
@@ -116,7 +119,7 @@ export function createAnimator(stage, items, { drop = 7, dur = 0.75, lift = 0.35
         u.lift += ((g === hovered ? (u.liftAmount ?? lift) : 0) - u.lift) * 0.15;
         const p = reduceMotion ? 1 : Math.min(Math.max((t - u.delay) / dur, 0), 1);
         g.visible = p > 0;
-        g.position.y = (u.baseY ?? 0) + (1 - easeOutBounce(p)) * (u.drop ?? drop) + u.lift;
+        g.position.y = (u.baseY ?? 0) + (1 - easeOutCubic(p)) * (u.drop ?? drop) + u.lift;   // 減速落地、不回彈（easeOutBounce 保留給其他地方用）
       }
       stage.renderer.domElement.style.cursor = hovered ? 'pointer' : '';
     },

@@ -34,6 +34,8 @@ export const M = {
   retroShellDk: plastic('#cfc1a8', { roughness: 0.75, clearcoat: 0.1 }),   // 復古電腦：螢幕框、散熱孔、底座（比外殼深一階）
   crt:          plastic('#26352b', { roughness: 0.12, clearcoat: 1, emissive: '#4f8a5c', emissiveIntensity: 0.12 }),   // 復古電腦：映像管螢幕（之後放幻燈片）
   carTail:      plastic('#e8402a', { emissive: '#ff3b20', emissiveIntensity: 0 }),   // 小汽車尾燈（晚上亮紅光）
+  coatGray:     plastic('#b9bec6'),                                       // 人物（插畫版）白色系服裝改穿的淺灰外套
+  bagBrown:     plastic('#8a5a3c', { roughness: 0.6 }),                  // 人物（插畫版）咖啡色背包
   parkLawn: plastic('#3f8535', { roughness: 0.85, clearcoat: 0 }),  // 中央大綠地的底（比 grass 深，讓畫面中心有份量）
   treeTop:  plastic('#4bb04f'),                                       // 樹冠
   trunk:    plastic('#b98a5c', { roughness: 0.8 }),                   // 樹幹
