@@ -557,19 +557,22 @@
     .sec-nav button, .sec-thumb .clone span.btn-like { padding: 0 10px; }
     .sec-nav button span, .sec-thumb .clone span.btn-like span { display: none; }
     .drag-tip, body[data-layout="b"] .drag-tip { font-size: 14px; }
-    /* 布告欄：牌卡放在畫面中間、疊在 3D 布告欄上（鏡頭把板面對準牌卡）；兩張左右滑動切換（活動／消息），露出下一張的邊緣 */
-    .board-sheet { left: 0; right: 0; top: calc(var(--header-h) + var(--gutter) + var(--nav-btn) + 24px); bottom: calc(var(--gutter) + var(--continue) + 10px);
-      display: grid; grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 92%; align-content: center; padding: 0 var(--gutter);   /* 同一列的兩張牌卡等高，整列垂直置中 */
-      overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding: 0 var(--gutter); scrollbar-width: none; overscroll-behavior-x: contain; }
-    .board-sheet::-webkit-scrollbar { display: none; }
+    /* 布告欄：園區活動在上、最新消息在下（不再整塊左右滑，避免背景跟著被拖動）；活動卡片在牌卡裡面左右滑 */
+    .board-sheet { left: var(--gutter); right: var(--gutter); top: calc(var(--header-h) + var(--gutter) + var(--nav-btn) + 20px); bottom: calc(var(--gutter) + var(--continue) + 10px);
+      display: flex; flex-direction: column; justify-content: center; gap: 12px; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; }
+    .board-sheet::-webkit-scrollbar, .board-sheet .events::-webkit-scrollbar { display: none; }
     .board-sheet:has(.show) { pointer-events: auto; }
-    .board-sheet .board-panel { scroll-snap-align: start; }
-    /* 交通資訊：卡片在下方、跟圓形按鈕並排（高 62vh，上方留給小汽車），內嵌地圖 20vh */
-    :root { --tr-h: 62; }
+    .board-sheet .board-panel { flex: none; }
+    .board-sheet .events { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding: 0 12px; overscroll-behavior-x: contain; scrollbar-width: none; }
+    .board-sheet .ev { flex: 0 0 64%; scroll-snap-align: start; }        /* 露出下一張的邊緣，提示可以滑 */
+    .board-sheet .news { gap: 8px; }
+    .board-sheet .news li { flex: none; }
+    /* 交通資訊：卡片在下方、跟圓形按鈕並排（高 48vh，上方約四分之一畫面留給小汽車），內嵌地圖 14vh */
+    :root { --tr-h: 48; }
     .tr-modal { right: calc(var(--gutter) + var(--continue) + 10px); }
     .tr-dialog { padding: 20px 16px; gap: 14px; }
     .tr-head h2 { font-size: 20px; }
-    .tr-map { height: 20vh; }
+    .tr-map { height: 14vh; }
     .tr-body { gap: 16px; }
     .tr-addr p { font-size: 15px; }
     /* 一起從這裡起步：上方不用讓工具列（收在選單裡），下方讓出圓形按鈕；角色插圖縮小 */
@@ -3161,7 +3164,7 @@ function measureStackArea() {
   // 交通資訊卡飛到車子前才打開（還量不到），所以用 CSS 的卡片高度 --tr-h 推算卡片上緣
   const trH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--tr-h')) || 50;
   stackArea.traffic = [navB / H, 1 - trH / 100 - (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--gutter')) + 8) / H];
-  stackArea.board = [top(boardEls[0]) / H, bottom(boardEls[0]) / H];   // 手機、直式平板：牌卡在畫面中間，板面對準牌卡
+  stackArea.board = [top(boardEls[0]) / H, Math.max(bottom(boardEls[0]), bottom(boardEls[1])) / H];   // 手機、直式平板：牌卡在畫面中間，板面對準整組牌卡
 }
 // 首屏：整張地圖的寬度放進畫面寬度，高度放進文字上方的空白區，取比較大的那個
 const STACK_HOME = new THREE.Vector3(0, 0, 0);
@@ -3317,8 +3320,11 @@ stage.renderer.setAnimationLoop(() => {
   fadeA.style.transformOrigin = '0 50%';
   fadeA.style.transform = stacked ? '' : `scaleX(${1 - collapse})`;
   if (sv > 0.02 || free) { if (dragTip.classList.contains('show')) hideDragTip(); }   // 捲動或拖曳地圖就收起提示
-  caption.classList.toggle('show', !free && !jump && !carFocus && at >= 2 && at <= 4);
-  if (at >= 2 && at <= 4) setSpaceCopy(at - 2);
+  // 計畫亮點牌卡：在三個空間之間移動時一直留著（只換內容），離開這三站才收起
+  const inSp = id => id === 2 || id === 3 || id === 4;
+  const spaceNow = inSp(at) ? at : inSp(seg.from) && inSp(seg.to) ? (k > 0.5 ? seg.to : seg.from) : -1;
+  caption.classList.toggle('show', !free && !jump && !carFocus && spaceNow >= 0);
+  if (spaceNow >= 0) setSpaceCopy(spaceNow - 2);
   capTenants.classList.toggle('show', !free && !jump && !carFocus && at === 6);
   updateAboutUI(sv, inAbout, now);
   // 燈箱跑馬燈：慢慢往左捲，約 3 秒移動一個 Logo
