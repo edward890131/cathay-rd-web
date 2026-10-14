@@ -43,10 +43,10 @@
     --gutter: 20px;
     --panel-w: 40;                       /* 左文右圖：左側底色區塊寬度（單位 vw，程式也會讀這個數字） */
     /* 圓角：全站只用這四級 */
-    --radius-card: 20px;    /* 大卡片（Hero 卡、段落說明卡） */
-    --radius-panel: 16px;   /* 浮動面板（工具列、錨點列、操作說明） */
-    --radius-btn: 10px;     /* 按鈕（Header 主按鈕、面板內的按鈕） */
-    --radius-sm: 8px;       /* 小元件（牌卡、Logo 格、圖片） */
+    --radius-card: 12px;    /* 大卡片（Hero 卡、段落說明卡） */
+    --radius-panel: 12px;   /* 浮動面板（工具列、錨點列、操作說明） */
+    --radius-btn: 4px;      /* 按鈕（Header 主按鈕、面板內的按鈕） */
+    --radius-sm: 4px;       /* 小元件（牌卡、Logo 格、圖片） */
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; background: var(--bg); color: var(--text-primary); font-family: var(--font-family); }
@@ -145,7 +145,7 @@
   .caption .copy { gap: 10px; transition: opacity .25s, transform .25s; }
   .caption .copy.swap { opacity: 0; transform: translateY(6px); }                     /* 換空間時：先淡出、換字、再淡入 */
   .cap-tag { align-self: flex-start; padding: 4px 12px; border-radius: 99px; background: var(--chip-bg); font-size: 12px; font-weight: 600; color: var(--text-primary); }
-  .cap-cta { display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 20px; border-radius: var(--radius-btn); align-self: flex-end;
+  .cap-cta { display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 20px; border-radius: var(--radius-btn); align-self: flex-start;   /* 靠左對齊（媒合平台的「前往平台」另外設在右邊） */
     background: var(--fill-button); color: var(--text-on-fill); font: 600 14px/1 var(--font-family); text-decoration: none; transition: background .2s; }
   .cap-cta:hover { background: var(--fill-hover); }
 
@@ -222,7 +222,7 @@
   .ev { display: flex; flex-direction: column; gap: 2px; min-height: 0; padding: 8px; border-radius: var(--radius-sm); background: #fff;
     color: var(--text-primary); text-decoration: none; box-shadow: 0 1px 3px rgba(0,0,0,.08); transition: transform .2s; }
   .ev:hover { transform: translateY(-2px); }
-  .ev .img { position: relative; flex: 1; min-height: 40px; border-radius: 6px; margin-bottom: 4px;
+  .ev .img { position: relative; flex: 1; min-height: 40px; border-radius: var(--radius-sm); margin-bottom: 4px;
     background: #eeeff3 center / cover no-repeat; --ph: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' fill='none' stroke='%239aa0a8' stroke-width='1.6'%3E%3Crect x='2.5' y='2.5' width='15' height='15' rx='2'/%3E%3Ccircle cx='7.5' cy='7.5' r='1.5'/%3E%3Cpath d='M17.5 12.5l-4-4-9 9'/%3E%3C/svg%3E"); }
   .ev .badge { position: absolute; left: 6px; top: 6px; padding: 2px 6px; border-radius: 4px; background: #1f2328; color: #fff; font-size: 10px; }
   .ev time, .ev small { font-size: 10px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -391,7 +391,7 @@
   .icon-btn svg { width: 20px; height: 20px; }
   /* 材質切換（分段按鈕） */
   .seg { display: flex; gap: 2px; padding: 2px; border-radius: var(--radius-btn); background: var(--hover); }
-  .seg button { height: 32px; padding: 0 10px; border: 0; border-radius: 8px; background: transparent; color: var(--text-secondary);
+  .seg button { height: 32px; padding: 0 10px; border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--text-secondary);
     font: 500 12px/1 var(--font-family); cursor: pointer; transition: background .2s, color .2s; }
   .seg button:hover { color: var(--text-primary); }
   .seg button[aria-pressed="true"] { background: var(--seg-on); color: var(--text-primary); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
@@ -440,9 +440,6 @@
   body.focus .continue { display: none; }
   @keyframes nudge { 50% { transform: translateY(3px); } }
   .continue .cue { display: none; }
-  /* 箭頭 → 文字 → 箭頭 → 文字：一個完全淡出後，另一個才淡入（不會疊在一起），位置不動 */
-  @keyframes cue-arrow { 0%, 38% { opacity: 1; } 46%, 92% { opacity: 0; } 100% { opacity: 1; } }
-  @keyframes cue-text { 0%, 46% { opacity: 0; } 54%, 84% { opacity: 1; } 92%, 100% { opacity: 0; } }
   .card-wrap { display: flex; flex-direction: column; gap: 12px; }
   /* 進場提示彈窗：物件掉落時出現在地圖上方，5 秒後淡出（使用者先拖曳或捲動就提早消失） */
   .drag-tip { position: fixed; z-index: 3; top: 50%; left: var(--tip-x, 62%); display: flex; align-items: center; gap: 12px;
@@ -613,9 +610,12 @@
     .continue { width: var(--continue); height: var(--continue); box-shadow: 0 6px 18px rgba(0,0,0,.18); }
     .continue #continueLabel { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
     .continue svg { width: 20px; height: 20px; }
-    /* 箭頭和「Scroll」字樣輪流出現，提示可以往下滑 */
-    .continue .cue { display: block; position: absolute; font: 700 9px/1 var(--font-display); letter-spacing: 0; animation: cue-text 4s ease-in-out infinite; }
-    .continue:not(.up) svg { animation: cue-arrow 4s ease-in-out infinite; }
+    /* 箭頭和「下滑」字樣輪流出現，提示可以往下滑（中文用內文字體，12px 才看得清楚） */
+    /* 用同一個開關（.cue-on）切換：先淡出的那個 0.3 秒內消失，另一個等 0.3 秒後才淡入，所以永遠不會同時出現 */
+    .continue .cue { display: block; position: absolute; font: 600 12px/1 var(--font-family); letter-spacing: 0; opacity: 0; transition: opacity .3s ease 0s; }
+    .continue svg { animation: none; opacity: 1; transition: opacity .3s ease .3s; }
+    .continue.cue-on:not(.up) svg { opacity: 0; transition-delay: 0s; }
+    .continue.cue-on:not(.up) .cue { opacity: 1; transition-delay: .3s; }
     /* 手機：工具列搬進選單（選單本身的樣式在 1100px 區塊，平板也用得到） */
     .dock { display: none; }
     .sec-nav { top: calc(var(--header-h) + var(--gutter)); max-width: calc(100vw - var(--gutter) * 2); }
@@ -672,6 +672,23 @@
     .about-rail button::before { background: var(--track); }
     .bp-head { height: 44px; }
     .bp-head a { padding: 12px 0 12px 12px; }
+  }
+
+  /* ---------- 手機：按鈕統一規格（右下角的 Scroll 圓形按鈕不變）：高度一律 38px、字級一律 14px；放在最後，蓋過觸控裝置的 44px 設定 ---------- */
+  @media (max-width: 760px) {
+    :root { --nav-btn: 38px; --btn-h: 38px; }
+    /* 文字按鈕 */
+    .site-header .side-nav .btn, .cap-cta, .join-item .btn-fill, .join-again, .tr-tabs button, .cookie button {
+      height: var(--btn-h); padding: 0 16px; font-size: 14px; gap: 6px; }
+    .join-again svg { width: 16px; height: 16px; }
+    /* 圖示按鈕（選單、說明、交通導航、頁尾社群／回頂端） */
+    .icon-btn, #deviceSeg button, .tr-nav, .ft-social a, .ft-social .ft-top { width: var(--btn-h); height: var(--btn-h); }
+    .icon-btn svg, .tr-nav img, .ft-social img { width: 20px; height: 20px; }
+    /* 一排的切換按鈕（錨點列、計畫亮點 01～04、材質下拉） */
+    .sec-nav button b, .sec-thumb .clone span.btn-like b { font-size: 14px; }
+    .cap-steps button { min-width: 40px; height: var(--btn-h); font-size: 14px; }
+    .select select { height: var(--btn-h); font-size: 14px; }
+    .seg button { height: 34px; font-size: 14px; }                                    /* 外框 2px 內距＋34 = 整組 38 */
   }
 </style>
 <script type="importmap">
@@ -1076,7 +1093,7 @@
 <button class="continue" id="continueBtn" aria-label="往下看下一段">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg>
   <span id="continueLabel">開始體驗</span>
-  <span class="cue" aria-hidden="true">Scroll</span>
+  <span class="cue" aria-hidden="true">下滑</span>
 </button>
 
 <div class="scroll-space"></div>
@@ -2558,7 +2575,7 @@ function platScreen() {
 const SPACE_COPY = [
   { tag: '進駐企業', title: '辦公研發空間', desc: '開放企業進駐，就近找到研究夥伴與人才' },
   { tag: '北大師生', title: '跨院系研發中心', desc: '媒合研究計畫，推動新創育成' },
-  { tag: '共創場域', title: '產學合作空間（powered by hub）', desc: '北大團隊與企業共用的交流、會議、休憩⋯⋯等多功能空間' },
+  { tag: '共創場域', title: '產學合作空間', desc: '北大團隊與企業共用的交流、會議、休憩⋯⋯等多功能空間' },
 ];   // 04 產研媒合平台在電腦螢幕裡，進去後這張卡就收起來
 let spaceShown = 0, spaceTimer;
 const capCopy = document.getElementById('capCopy');
@@ -2874,6 +2891,8 @@ continueBtn.onclick = () => {
   goStop(currentChapter + 1);
 };
 const continueLabel = document.getElementById('continueLabel');
+// 手機：右下角按鈕的箭頭和「下滑」每 2 秒輪流（兩個用同一個開關，不會各跑各的而疊在一起）
+setInterval(() => { if (innerWidth <= 760) continueBtn.classList.toggle('cue-on'); }, 2000);
 // ===== 一起從這裡起步 =====
 // 交通資訊 → 關掉彈窗，鏡頭從車子前面飛回總覽，地圖置中、鋪滿整個畫面 → 畫面中間淡入大牌卡
 // 這段不在錨點列裡；牌卡開著時不能捲動，右下角按鈕變成「回到總覽」
