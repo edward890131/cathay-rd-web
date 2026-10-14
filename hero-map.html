@@ -51,7 +51,7 @@
   html, body { margin: 0; background: var(--bg); color: var(--text-primary); font-family: var(--font-family); }
   canvas { position: fixed; inset: 0; display: block; }
   /* 捲動距離：用來驅動鏡頭 */
-  .scroll-space { height: 1140vh; }   /* 首屏 → 理念與使命（鑽進螢幕＋3 步＋退出）→ 辦公研發空間 → 進駐企業 → 園區活動／最新消息 */
+  .scroll-space { height: 1840vh; }   /* 首屏 → 理念與使命（鑽進螢幕＋3 步＋退出）→ 計畫亮點三個空間 → 產研媒合平台（鑽進辦公室電腦）→ 進駐企業 → 園區活動／最新消息（時間軸總長 17.2 屏＋最後停留 1.2 屏） */
 
   /* ---------- 載入畫面 ---------- */
   html.loading, html.loading body { overflow: hidden; }   /* 載入中不能捲動 */
@@ -134,6 +134,18 @@
   .caption.show { opacity: 1; transform: none; }
   .caption small { color: var(--color-primary); font-family: var(--font-display); font-weight: 700; font-size: 13px; letter-spacing: .02em; }
   .caption h3 { margin: 0; font-size: 26px; font-weight: 700; line-height: 1.4; color: var(--card-title); }
+  .caption .cap-head { display: flex; align-items: center; justify-content: space-between; width: 100%; }
+  .cap-steps { display: flex; gap: 4px; }
+  .cap-steps button { min-width: 34px; height: 28px; padding: 0 8px; border: 0; border-radius: var(--radius-sm); background: var(--chip-bg); color: var(--text-secondary);
+    font: 700 11px/1 var(--font-display); cursor: pointer; transition: background .2s, color .2s; }
+  .cap-steps button:hover { color: var(--text-primary); }
+  .cap-steps button[aria-current="true"] { background: var(--fill-button); color: var(--text-on-fill); }
+  .caption .copy { gap: 10px; transition: opacity .25s, transform .25s; }
+  .caption .copy.swap { opacity: 0; transform: translateY(6px); }                     /* 換空間時：先淡出、換字、再淡入 */
+  .cap-tag { align-self: flex-start; padding: 4px 12px; border-radius: 99px; background: var(--chip-bg); font-size: 12px; font-weight: 600; color: var(--text-primary); }
+  .cap-cta { display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 20px; border-radius: var(--radius-btn); align-self: flex-end;
+    background: var(--fill-button); color: var(--text-on-fill); font: 600 14px/1 var(--font-family); text-decoration: none; transition: background .2s; }
+  .cap-cta:hover { background: var(--fill-hover); }
 
   /* 理念與使命卡：步驟線（可點）＋ 目前步驟的 01／02／03 內文，換步時淡出換字 */
   .about-card .copy p { margin: 0; }
@@ -153,6 +165,37 @@
   /* 鑽進／退出螢幕時接起兩個畫面的底色遮罩；穿過大門時的白光 */
   .about-fade, .about-flash { position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: 0; }
   .about-fade { background: var(--bg); }
+  /* ---------- 產研媒合平台（WF 81:1898）：鏡頭鑽進辦公室電腦，螢幕填滿畫面後淡入這個「平台畫面」 ---------- */
+  .plat { position: fixed; inset: 0; z-index: 3; display: grid; place-items: center; overflow-y: auto; opacity: 0; pointer-events: none;
+    padding: calc(var(--header-h) + var(--gutter) + 72px) var(--gutter) calc(var(--gutter) + 110px); background: var(--bg); transition: background-color .8s; }
+  .plat.live { pointer-events: auto; }
+  .plat-inner { width: min(1120px, 100%); display: flex; flex-direction: column; gap: 32px; }
+  .plat-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }   /* 標題在左、前往平台在右（不會跟右下角圓形按鈕重疊） */
+  .plat-head > div { display: flex; flex-direction: column; gap: 8px; }
+  .plat-head small { color: var(--color-primary); font-family: var(--font-display); font-weight: 700; font-size: 13px; letter-spacing: .02em; }
+  .plat-head h2 { margin: 0; font-size: 36px; font-weight: 700; line-height: 1.3; color: var(--card-title); }
+  .plat-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+  .plat-item { display: flex; flex-direction: column; gap: 10px; padding: 24px; border-radius: var(--radius-card); background: var(--surface-page);
+    border: 1px solid var(--border-default); opacity: 0; transform: translateY(14px); transition: opacity .5s ease, transform .6s cubic-bezier(.2,.8,.2,1), background-color .8s; }
+  .plat.on .plat-item { opacity: 1; transform: none; }
+  .plat.on .plat-item:nth-child(2) { transition-delay: .12s; }
+  .plat.on .plat-item:nth-child(3) { transition-delay: .24s; }
+  .plat-fig { width: 100%; aspect-ratio: 4 / 3; margin-bottom: 4px; border-radius: var(--radius-panel); background: var(--hover); overflow: hidden; }
+  .plat-fig canvas { position: static; display: block; width: 100%; height: 100%; animation: join-bob 3.4s ease-in-out infinite; }   /* 全站 canvas 預設全螢幕固定，這裡改回一般排版 */
+  .plat-item:nth-child(2) .plat-fig canvas { animation-delay: -1.1s; }
+  .plat-item:nth-child(3) .plat-fig canvas { animation-delay: -2.2s; }
+  .plat-item h3 { margin: 0; font-size: 22px; font-weight: 700; line-height: 1.4; color: var(--card-title); }
+  .plat-item p { margin: 0; font-size: 15px; line-height: 1.7; color: var(--text-secondary); }
+  .plat-cta { align-self: flex-end; flex: none; }
+  @media (max-width: 900px) {
+    .plat-grid { grid-template-columns: 1fr; gap: 12px; }
+    .plat-item { display: grid; grid-template-columns: 112px 1fr; grid-template-rows: auto auto 1fr; column-gap: 16px; row-gap: 6px; padding: 14px; align-items: start; }
+    .plat-fig { grid-row: 1 / 4; margin: 0; }
+    .plat-item .cap-tag { justify-self: start; }                       /* 標籤寬度跟著文字，不要撐滿整欄 */
+    .plat-head h2 { font-size: 24px; }
+    .plat-item h3 { font-size: 17px; }
+    .plat-item p { font-size: 13px; }
+  }
   .about-fade.loop { transition: opacity .5s ease; }
   .about-flash { background: #fff; }
 
@@ -546,6 +589,7 @@
     :root { --tools-h: 56px; --nav-btn: 44px; }
     #deviceSeg, #deviceSeg + .sep { display: none !important; }        /* 橫式平板也是觸控裝置，不需要 RWD 預覽切換 */
     .icon-btn, #deviceSeg button { width: 44px; height: 44px; }
+    .cap-steps button { min-width: 40px; height: 36px; }
     .select select { height: 44px; font-size: 13px; }
     .free-panel .help-mouse { display: none; }
     .free-panel .help-touch { display: grid; }
@@ -671,12 +715,24 @@
   </div>
 </section>
 
+<!-- 計畫亮點・國泰產研大樓（WF 81:1879）：鏡頭依序停在三個空間，說明卡跟著換內容 -->
 <section class="card caption" id="caption">
-  <div class="copy">
-    <small>SPACE 02</small>
-    <h3>辦公研發空間</h3>
-    <p>提供企業、人才專注工作與研究的場所。安靜、有效率的工作環境，是企業進駐與日常研究的基本單元。</p>
+  <div class="cap-head">
+    <small>計畫亮點</small>
+    <!-- 切換順序：01～03 國泰產研大樓三個空間、04 產研媒合平台（鑽進辦公室電腦） -->
+    <div class="cap-steps" role="group" aria-label="計畫亮點段落">
+      <button data-step="0" aria-current="true" title="辦公研發空間">01</button>
+      <button data-step="1" title="跨院系研發中心">02</button>
+      <button data-step="2" title="產學合作空間">03</button>
+      <button data-step="3" title="產研媒合平台">04</button>
+    </div>
   </div>
+  <div class="copy" id="capCopy">
+    <span class="cap-tag" id="capTag">進駐企業</span>
+    <h3 id="capTitle">辦公研發空間</h3>
+    <p id="capDesc">開放企業進駐，就近找到研究夥伴與人才</p>
+  </div>
+  <a class="cap-cta" href="#">更多園區空間 <span aria-hidden="true">→</span></a>
 </section>
 
 <!-- 理念與使命（WF 81:1859）：鏡頭鑽進廣場復古電腦的螢幕，螢幕裡播 3 段 3D 幻燈片 -->
@@ -692,6 +748,35 @@
   </div>
 </section>
 <div class="about-fade" id="aboutFade" aria-hidden="true"></div>
+<!-- 計畫亮點・產研媒合平台（WF 81:1898）：鏡頭鑽進辦公研發空間的電腦，螢幕裡就是平台畫面 -->
+<section class="plat" id="plat" aria-labelledby="platTitle">
+  <div class="plat-inner">
+    <header class="plat-head">
+      <div><small>計畫亮點・產研媒合平台</small><h2 id="platTitle">產研媒合平台</h2></div>
+      <a class="cap-cta plat-cta" href="#">前往平台 <span aria-hidden="true">→</span></a>
+    </header>
+    <div class="plat-grid">
+      <article class="plat-item">
+        <div class="plat-fig"><canvas id="figLaptop" role="img" aria-label="筆電與履歷"></canvas></div>
+        <span class="cap-tag">學生 × 企業</span>
+        <h3>實習媒合</h3>
+        <p>企業開職缺，學生線上投遞</p>
+      </article>
+      <article class="plat-item">
+        <div class="plat-fig"><canvas id="figScope" role="img" aria-label="顯微鏡"></canvas></div>
+        <span class="cap-tag">教授團隊 × 企業</span>
+        <h3>研究合作</h3>
+        <p>產業題目對接研究提案</p>
+      </article>
+      <article class="plat-item">
+        <div class="plat-fig"><canvas id="figTalk" role="img" aria-label="對話雲"></canvas></div>
+        <span class="cap-tag">師生 × 企業</span>
+        <h3>串連線下交流機會</h3>
+        <p>提供講座報名、產學合作空間預約</p>
+      </article>
+    </div>
+  </div>
+</section>
 <div class="about-flash" id="aboutFlash" aria-hidden="true"></div>
 
 <!-- 進駐企業：鏡頭拉近商業大樓前的燈箱（WF 81:1919） -->
@@ -730,9 +815,9 @@
 <nav class="sec-nav" id="secNav" aria-label="段落導覽">
   <button data-stop="0"><b>01</b><span>總覽</span></button>
   <button data-stop="1"><b>02</b><span>理念與使命</span></button>
-  <button data-stop="2"><b>03</b><span>辦公研發空間</span></button>
-  <button data-stop="3"><b>04</b><span>進駐企業</span></button>
-  <button data-stop="4"><b>05</b><span>活動消息</span></button>
+  <button data-stop="2"><b>03</b><span>計畫亮點</span></button>
+  <button data-stop="6"><b>04</b><span>進駐企業</span></button>
+  <button data-stop="7"><b>05</b><span>活動消息</span></button>
   <button data-action="traffic"><b>06</b><span>交通資訊</span></button>
   <div class="sec-thumb" id="secThumb" aria-hidden="true"><div class="clone"></div></div>
 </nav>
@@ -1049,6 +1134,7 @@ const labelEls = [];
 let heroColTop = Infinity;   // 上圖下文時改用 Hero 文字的上緣避讓（文字在下方全寬）
 let heroColRight = -1;   // 上一幀算出的 Hero 文字欄右緣（螢幕座標），對話雲用來避讓
 const lampLights = [];   // 夜晚模式的路燈光源與光暈
+const spaceLights = [];  // 計畫亮點三個空間的室內燈（夜晚打開，讓室內亮一點）
 
 function addItem(g, x, z, { delay = 0, baseY = 0, drop = 7, hoverable = true, liftAmount } = {}) {
   g.position.set(x, baseY, z);
@@ -1070,7 +1156,7 @@ const CURB_H = 0.4;          // 街區高出路面的高度
 const blockSize = n => n * SLOT - 1.5 + EDGE * 2;   // n 格街區的實際寬度
 
 const NAMES = {
-  office: '辦公研發空間', cowork: '創新共創空間', exchange: '產學交流共享空間', shop: '商業生活空間',
+  office: '辦公研發空間', cowork: '跨院系研發中心', exchange: '產學合作空間', shop: '商業生活空間',
   'plaza-a': '共創核心・圓形廣場', 'plaza-b': '綠地公共廣場', tower: '產業・商業大樓', university: '學界・大學建築',
 };
 const TYPE = { office: 'room', cowork: 'room', exchange: 'room', shop: 'shop', tower: 'tower', university: 'university', 'plaza-a': 'plaza-a', 'plaza-b': 'plaza-b' };
@@ -1442,6 +1528,85 @@ function personStudent() {
   p.armL.rotation.z = -2.5; p.armL.rotation.x = -0.15;                     // 舉手打招呼
   return p;
 }
+// ============ 產研媒合平台：三個亮點的立體插圖（用實體物件象徵，不畫人） ============
+function figLaptop() {                                                      // 實習媒合：筆電＋旁邊一張履歷卡
+  const g = new THREE.Group();
+  g.add(box(2.4, 0.12, 1.6, M.white, 0, 0.06, 0, 0.05));                   // 機身
+  g.add(box(2.06, 0.02, 0.72, M.keybase, 0, 0.13, -0.28, 0.01));          // 鍵盤區
+  g.add(box(0.7, 0.02, 0.4, M.keybase, 0, 0.13, 0.42, 0.01));             // 觸控板
+  const lid = new THREE.Group(); lid.position.set(0, 0.12, -0.78); lid.rotation.x = -0.28;
+  lid.add(box(2.4, 1.6, 0.08, M.dark, 0, 0.8, 0, 0.05));                   // 螢幕外框
+  lid.add(box(2.2, 1.4, 0.02, M.screen, 0, 0.8, 0.045, 0.01));             // 螢幕
+  lid.add(box(1.9, 0.18, 0.02, M.blue, 0, 1.33, 0.06, 0.01));              // 畫面上方的平台標題列
+  [[-0.55, 0.85], [0.55, 0.85]].forEach(([x, y]) => {                      // 兩張職缺卡
+    lid.add(box(0.9, 0.7, 0.02, M.white, x, y, 0.06, 0.03));
+    lid.add(box(0.5, 0.08, 0.02, M.line, x - 0.1, y + 0.18, 0.075, 0.01));
+    lid.add(box(0.7, 0.06, 0.02, M.line, x, y, 0.075, 0.01));
+    lid.add(box(0.36, 0.14, 0.02, M.accent, x + 0.12, y - 0.2, 0.075, 0.03));
+  });
+  g.add(lid);
+  const cv = new THREE.Group(); cv.position.set(1.55, 0.95, 0.35); cv.rotation.set(0, -0.5, 0.12);   // 飄在旁邊的履歷
+  cv.add(box(0.9, 1.15, 0.06, M.white, 0, 0, 0, 0.04));
+  cv.add(ball(0.16, M.accent, -0.2, 0.32, 0.05));                          // 大頭照
+  [0.3, 0.38].forEach((w, k) => cv.add(box(w, 0.06, 0.02, M.line, 0.15, 0.38 - k * 0.12, 0.04, 0.01)));
+  [-0.05, -0.2, -0.35].forEach(y => cv.add(box(0.66, 0.05, 0.02, M.line, 0, y, 0.04, 0.01)));
+  g.add(cv);
+  return g;
+}
+function figScope() {                                                       // 研究合作：顯微鏡＋玻片
+  const g = new THREE.Group();
+  g.add(box(1.5, 0.2, 1.1, M.white, 0, 0.1, 0.05, 0.08));                  // 底座
+  g.add(box(0.34, 1.7, 0.4, M.white, 0, 0.95, -0.32, 0.1));                // 支柱
+  const arm = box(0.34, 0.36, 0.95, M.white, 0, 1.78, -0.02, 0.1); arm.rotation.x = 0.25; g.add(arm);   // 上方的手臂
+  const tube = cyl(0.2, 0.2, 1.05, M.blue, 0, 1.7, 0.32, 24); tube.rotation.x = -0.38; g.add(tube);    // 鏡筒
+  const eye = cyl(0.13, 0.15, 0.36, M.dark, 0, 2.27, 0.12, 20); eye.rotation.x = -0.38; g.add(eye);    // 目鏡
+  g.add(cyl(0.11, 0.07, 0.32, M.dark, 0, 1.12, 0.5, 16));                  // 物鏡
+  g.add(box(1.0, 0.07, 0.75, M.dark, 0, 0.86, 0.36, 0.03));                // 載物台
+  g.add(box(0.7, 0.025, 0.24, M.screen, 0, 0.91, 0.42, 0.01));             // 玻片
+  g.add(ball(0.07, M.accent, 0, 0.93, 0.42));                              // 樣本
+  [-1, 1].forEach(sx => { const k = cyl(0.17, 0.17, 0.12, M.dark, sx * 0.24, 0.62, -0.32, 20); k.rotation.z = Math.PI / 2; g.add(k); });   // 對焦旋鈕
+  g.add(cyl(0.2, 0.2, 0.5, M.green, 1.05, 0.25, 0.25, 20));                // 旁邊的試劑瓶
+  g.add(cyl(0.1, 0.1, 0.18, M.white, 1.05, 0.59, 0.25, 16));
+  return g;
+}
+function figTalk() {                                                        // 串連線下交流：兩朵對話雲
+  const g = new THREE.Group();
+  const bubble = (w, h, mat, x, y, z, tailX) => {
+    const b = new THREE.Group(); b.position.set(x, y, z);
+    b.add(box(w, h, 0.32, mat, 0, 0, 0, Math.min(w, h) * 0.45));           // 圓角對話框
+    const tail = box(0.34, 0.34, 0.3, mat, tailX, -h / 2 + 0.04, 0, 0.06); tail.rotation.z = Math.PI / 4; b.add(tail);   // 小尾巴
+    [-1, 0, 1].forEach(k => b.add(ball(0.1, M.white, k * 0.3, 0, 0.17)));   // 三個點點
+    return b;
+  };
+  g.add(bubble(1.9, 1.15, M.accent, -0.45, 1.55, 0.2, -0.5));
+  g.add(bubble(1.7, 1.05, M.blue, 0.6, 0.55, -0.3, 0.45));
+  g.add(cyl(0.9, 0.9, 0.08, M.keybase, 0, 0.0, 0, 40));                    // 底下的圓盤
+  return g;
+}
+let platFigsDrawn = false;
+function drawPlatFigures() {
+  if (platFigsDrawn) return; platFigsDrawn = true;
+  const W = 480, H = 360;
+  const r = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+  r.setPixelRatio(1); r.setSize(W, H, false);
+  r.toneMapping = THREE.ACESFilmicToneMapping; r.toneMappingExposure = 0.95;
+  const pm = new THREE.PMREMGenerator(r);
+  const env = pm.fromScene(new RoomEnvironment(), 0.04).texture;
+  [['figLaptop', figLaptop], ['figScope', figScope], ['figTalk', figTalk]].forEach(([id, make]) => {
+    const sc = new THREE.Scene(); sc.environment = env;
+    sc.add(new THREE.HemisphereLight('#ffffff', '#c9cdd6', 0.6));
+    const sun = new THREE.DirectionalLight('#ffffff', 2.0); sun.position.set(-3, 6, 5); sc.add(sun);
+    const obj = make(); sc.add(obj);
+    // 置中：用外框算中心和大小，正交相機從斜前上方看（跟地圖同一種等角感）
+    const bb = new THREE.Box3().setFromObject(obj), c = bb.getCenter(new THREE.Vector3()), size = bb.getSize(new THREE.Vector3()).length();
+    const half = size * 0.5, cam = new THREE.OrthographicCamera(-half * W / H, half * W / H, half, -half, 0.1, 100);
+    cam.position.copy(c).add(new THREE.Vector3(5, 4.2, 7)); cam.lookAt(c);
+    r.render(sc, cam);
+    const cv = document.getElementById(id); cv.width = W; cv.height = H;
+    cv.getContext('2d').drawImage(r.domElement, 0, 0);
+  });
+  env.dispose(); pm.dispose(); r.dispose(); r.forceContextLoss();
+}
 // 把角色畫成牌卡上的小插圖：開一個暫時的小渲染器，畫完就關掉（不佔用地圖的效能）
 function drawJoinFigures() {
   const keepN = illusN;                                                     // 不影響地圖上人物的道具分配
@@ -1610,7 +1775,7 @@ function build(variantId, { replay = true } = {}) {
   // 清空上一個方案
   world.traverse(o => { if (o.isCSS2DObject) o.element.remove(); });   // 標籤是 DOM 元素，要手動移除
   board = null; lightbox = null; computer = null; boardLights.length = 0;
-  world.clear(); items.length = 0; people.length = 0; pets.length = 0; cars.length = 0; carLights.length = 0; clocks.length = 0; fountains.length = 0; labelEls.length = 0; lampLights.length = 0;
+  world.clear(); items.length = 0; people.length = 0; pets.length = 0; cars.length = 0; carLights.length = 0; clocks.length = 0; fountains.length = 0; labelEls.length = 0; lampLights.length = 0; spaceLights.length = 0;
   seed = 7; illusN = 0;
   const L = VARIANTS[variantId]();
   const placed = [];
@@ -1661,6 +1826,7 @@ function build(variantId, { replay = true } = {}) {
     g.rotation.y = p.rot;
     wrap.add(g);
     addItem(wrap, p.x, p.z, { delay: 0.35 + Math.hypot(p.x, p.z) / 40, baseY: p.y + 1, drop: 9, liftAmount: 0.6 });
+    p.wrap = wrap;                                     // 計畫亮點、媒合平台螢幕要用到場景本身
     // 畫面座標：等角視角下，畫面水平 ∝ x − z、畫面垂直 ∝ x + z
     (inst[p.id] ??= []).push({ id: p.id, wrap, done, sx: p.x - p.z, sy: p.x + p.z });
   });
@@ -1712,7 +1878,7 @@ function build(variantId, { replay = true } = {}) {
     lb.position.set(LX, 0, LZ);
     towerC.wrap.add(lb);
     const w = towerC.wrap;
-    lightbox = { g: lb, stop: 3, label: hotspotLabel(lb, '進駐企業', 2.5),
+    lightbox = { g: lb, stop: 6, label: hotspotLabel(lb, '進駐企業', 2.5),
       center: new THREE.Vector3(w.position.x + LX, w.userData.baseY + BY, w.position.z + LZ), dir: new THREE.Vector3(0, 26, 28.3).normalize() };   // 比等角稍微高一點，前面的大學和路人會落到畫面下方
   }
 
@@ -1980,7 +2146,7 @@ function build(variantId, { replay = true } = {}) {
       addItem(g, bx, bz, { delay: 1.4, baseY: Y, drop: 6, liftAmount: 0.5 });   // hover 會浮起
       // 兩塊板面的四個角（本地座標：左上、右上、右下、左下），每一幀投影到螢幕上，對齊 HTML 牌卡
       board = {
-        stop: 4, label: (g.userData.labelEl = hotspotLabel(g, '園區活動・最新消息', 5.2)),
+        stop: 7, label: (g.userData.labelEl = hotspotLabel(g, '園區活動・最新消息', 5.2)),
         g, center: new THREE.Vector3(bx, Y + PY, bz), width: 6.4, height: 3.2,
         dir: new THREE.Vector3(28.3, 22, 0).normalize(),     // 鏡頭正對布告欄（比等角視角高一點，前面的樹會落到板面下方）
         panels: panels.map(pn => [[-1, 1], [1, 1], [1, -1], [-1, -1]].map(([a, b2]) =>
@@ -2037,7 +2203,53 @@ function build(variantId, { replay = true } = {}) {
     });
   }
 
-  current = { L, office: placed.find(p => p.id === 'office') };
+  // 計畫亮點三個空間：辦公研發空間 → 跨院系研發中心 → 產學合作空間（各取地圖上第一個）
+  const office = placed.find(p => p.id === 'office');
+  current = { L, office, spaces: ['office', 'cowork', 'exchange'].map(id => placed.find(p => p.id === id)).filter(Boolean) };
+  platScr = null;
+  // ---- 計畫亮點三個空間裡的人：只有鏡頭拉近時才出現，在做這個空間會做的事 ----
+  // 座標是各場景自己的座標（跟 scenes/*.js 的家具位置對齊），人物掛在場景底下，場景浮起、掉落時一起動
+  // kind：type 用電腦打字、point 對著白板／投影幕講解、read 低頭看桌上的資料、chat 圍著討論（頭上冒對話雲）
+  const INSIDERS = {
+    office: [   // 辦公研發空間：一人在桌前用電腦、一人在白板前寫想法
+      { kind: 'type', x: 0.7, z: 0.72, face: Math.PI },               // 站在桌子和椅子中間，面對螢幕
+      { kind: 'point', x: -2.3, z: -3.3, face: Math.PI + 0.35 },
+    ],
+    cowork: [   // 跨院系研發中心：三個人圍著圓桌討論（站在椅子之間）
+      { kind: 'chat', x: 0.8 + Math.sin(0.85) * 1.55, z: 0.7 + Math.cos(0.85) * 1.55 },
+      { kind: 'chat', x: 0.8 + Math.sin(2.45) * 1.55, z: 0.7 + Math.cos(2.45) * 1.55 },
+      { kind: 'chat', x: 0.8 + Math.sin(4.05) * 1.55, z: 0.7 + Math.cos(4.05) * 1.55 },
+    ],
+    exchange: [ // 產學合作空間：一人對著投影幕簡報、兩人在長桌兩側看資料
+      { kind: 'point', x: -0.1, z: -3.4, face: Math.PI - 0.6 },
+      { kind: 'read', x: 2.3, z: -1.95, face: 0 },
+      { kind: 'read', x: 2.3, z: 0.15, face: Math.PI },
+    ],
+  };
+  (current.spaces ?? []).forEach((sp, si) => {
+    const root = sp.wrap?.children[0]; if (!root) return;
+    // 室內燈：天花板高度兩盞暖白點光源（前、後各一，整個房間都照得到），白天關著
+    [[-1.2, -1.6], [1.6, 1.4]].forEach(([x, z]) => {
+      const l = new THREE.PointLight('#ffe2b8', 0, 9, 1.4);
+      l.position.set(x, 5.2, z);
+      root.add(l); spaceLights.push(l);
+    });
+    INSIDERS[sp.id]?.forEach((d, k, list) => {
+      const pp = person(OUTFITS[(outfit++ + si) % OUTFITS.length]);
+      // 沒給朝向的（圍桌討論）面向圓桌中心
+      pp.g.rotation.y = d.face ?? Math.atan2(0.8 - d.x, 0.7 - d.z);
+      pp.g.position.set(d.x, 0, d.z);
+      pp.g.userData.baseScale = pp.g.scale.x; pp.g.userData.delay = 0;   // delay：對話雲判斷「站穩了沒」用
+      pp.g.scale.setScalar(0.001); pp.g.visible = false;
+      root.add(pp.g);
+      const h = { kind: d.kind, ...pp, inside: true, showS: 0, phase: rand() * 6 };
+      if (d.kind === 'chat') {
+        h.cloud = speechCloud(); h.cloud.g.scale.setScalar(0.001); h.cloud.g.visible = false; world.add(h.cloud.g);
+        Object.assign(h, { cloudS: 0, group: 20 + si, idx: k, size: list.length });
+      }
+      people.push(h);
+    });
+  });
   if (replay) anim.replay();
 }
 
@@ -2122,15 +2334,23 @@ const ZOOM_VIEW = 17;
 // ===== 捲動時間軸（單位：螢幕高）=====
 // 站點編號：0 首屏、1 理念與使命、2 辦公研發空間、3 進駐企業、4 活動消息
 // 「screen」=鏡頭貼近電腦螢幕（玻璃填滿畫面）
-const DIVE = 1.2, ABOUT_STEP = 1.0, EXIT = 2.0, MAPSEG = 2.0;
+const DIVE = 1.2, ABOUT_STEP = 1.0, EXIT = 2.0, MAPSEG = 2.0, PDIVE = 1.6, PLAT = 1.4;
 const ABOUT_IN = DIVE, ABOUT_OUT = DIVE + ABOUT_STEP * 3;            // 在螢幕裡播幻燈片的範圍
+// 站點：0 首屏、1 理念與使命、2～4 計畫亮點三個空間、5 產研媒合平台（辦公室電腦螢幕裡）、6 進駐企業、7 活動消息
+// 「screen」= 貼近廣場復古電腦螢幕；「pscreen」= 貼近辦公研發空間的電腦螢幕
 const TIMELINE = [
   { from: 0, to: 'screen', len: DIVE, kind: 'dive' },                 // 首屏 → 一路推近到電腦螢幕
   { from: 'screen', to: 'screen', len: ABOUT_STEP * 3, kind: 'about' }, // 螢幕裡：01 → 02 → 03
   { from: 'screen', to: 2, len: EXIT, kind: 'dive' },                 // 從螢幕退出，直接飛回地圖、接到辦公研發空間
-  { from: 2, to: 3, len: MAPSEG, kind: 'map' },
-  { from: 3, to: 4, len: MAPSEG, kind: 'map' },
+  { from: 2, to: 3, len: MAPSEG, kind: 'map' },                       // → 跨院系研發中心
+  { from: 3, to: 4, len: MAPSEG, kind: 'map' },                       // → 產學合作空間
+  { from: 4, to: 'pscreen', len: PDIVE, kind: 'dive' },               // → 鑽進辦公室的電腦螢幕
+  { from: 'pscreen', to: 'pscreen', len: PLAT, kind: 'plat' },        // 螢幕裡：產研媒合平台
+  { from: 'pscreen', to: 6, len: EXIT, kind: 'dive' },                // 退出螢幕 → 進駐企業
+  { from: 6, to: 7, len: MAPSEG, kind: 'map' },                       // → 活動消息
 ];
+const isScreen = id => id === 'screen' || id === 'pscreen';
+const PLAT_IN = ABOUT_OUT + EXIT + MAPSEG * 2 + PDIVE, PLAT_OUT = PLAT_IN + PLAT;   // 在媒合平台螢幕裡的範圍
 const TIMELINE_END = TIMELINE.reduce((a, g) => a + g.len, 0);
 // 目前捲到時間軸的哪裡：回傳所在段落與段落內的進度 k（map 段：前 8% 停留、中間轉場、後段停在下一站）
 function timelineAt(sv) {
@@ -2139,8 +2359,8 @@ function timelineAt(sv) {
     if (sv < start + seg.len || seg === TIMELINE.at(-1)) {
       const f = Math.min(Math.max((sv - start) / seg.len, 0), 1);
       const k = seg.kind === 'map' ? smooth(Math.min(Math.max((f - 0.08) / 0.6, 0), 1))
-        : seg.kind === 'about' ? 1
-        : seg.from === 'screen' ? smooth(Math.min(f / 0.7, 1))   // 退出：前 70% 飛到辦公研發空間，後段停留閱讀
+        : seg.kind === 'about' || seg.kind === 'plat' ? 1
+        : isScreen(seg.from) ? smooth(Math.min(f / 0.7, 1))   // 退出：前 70% 飛到下一站，後段停留閱讀
         : smooth(f);
       return { seg, k, f, start };
     }
@@ -2148,7 +2368,12 @@ function timelineAt(sv) {
   }
 }
 // 每一站在時間軸上的停留位置（點錨點、hover 標籤、繼續觀看都捲到這裡）
-const STOP_S = [0, ABOUT_IN + 0.3, ABOUT_OUT + EXIT * 0.85, ABOUT_OUT + EXIT + MAPSEG * 0.8, ABOUT_OUT + EXIT + MAPSEG * 1.8];
+const SPACES_S = ABOUT_OUT + EXIT;                                     // 第一個空間的轉場結束點
+const STOP_S = [0, ABOUT_IN + 0.3, ABOUT_OUT + EXIT * 0.85, SPACES_S + MAPSEG * 0.8, SPACES_S + MAPSEG * 1.8,
+  PLAT_IN + 0.3, PLAT_OUT + EXIT * 0.85, PLAT_OUT + EXIT + MAPSEG * 0.8];
+// 站點 → 錨點列的第幾顆（計畫亮點的 4 站都算 03）
+const STOP_CH = [0, 1, 2, 2, 2, 2, 3, 4];
+const LAST_STOP = 7;
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 // 每一站的鏡頭：看哪裡（target）、畫面要容納多少（view）、往右偏多少（shift，讓左側說明卡不擋到）
 const stopTarget = new THREE.Vector3();
@@ -2157,12 +2382,16 @@ const stackArea = { hero: [0, 1], caption: [0, 1], tenants: [0, 1], board: [0, 1
 const areaSY = a => 0.5 - (a[0] + a[1]) / 2;                         // 讓主體落在這個範圍的正中間
 function stopAt(i, Lc, stacked) {
   const aspect = innerWidth / innerHeight;
-  if (i === 2 && current?.office) {                // 站點編號見 TIMELINE：2 辦公研發空間、3 進駐企業、4 活動消息
-    const o = current.office;
+  if (i >= 2 && i <= 4 && current?.spaces?.[i - 2]) {   // 計畫亮點：辦公研發空間、跨院系研發中心、產學合作空間
+    const o = current.spaces[i - 2];
     return { target: stopTarget.clone().set(o.x, o.y + 2.4, o.z), view: ZOOM_VIEW, shift: 0, dir: ISO_DIR, sy: stacked ? areaSY(stackArea.caption) : 0 };
   }
-  if (i === 3 && lightbox) return { target: lightbox.center, view: stacked ? 10 : 7, shift: stacked ? 0 : 0.16, dir: lightbox.dir, sy: stacked ? areaSY(stackArea.tenants) : 0 };
-  if (i === 4 && board) {                         // 布告欄寬度佔畫面約 78%，高度也要放得下
+  if ((i === 'pscreen' || i === 5) && platScreen()) { // 貼近辦公室電腦螢幕：正對螢幕、玻璃剛好填滿畫面
+    const ps = platScreen();
+    return { target: ps.center, view: Math.min(ps.h, ps.w / aspect) * 0.96, shift: 0, dir: ps.dir, dist: 1.6, midView: 7 };
+  }
+  if (i === 6 && lightbox) return { target: lightbox.center, view: stacked ? 10 : 7, shift: stacked ? 0 : 0.16, dir: lightbox.dir, sy: stacked ? areaSY(stackArea.tenants) : 0 };
+  if (i === 7 && board) {                         // 布告欄寬度佔畫面約 78%，高度也要放得下
     if (stacked) {                                // 上圖下文：牌卡疊在畫面中間，鏡頭把布告欄板面對準牌卡
       const a = stackArea.board, h = Math.max(a[1] - a[0], 0.2);
       return { target: board.center, view: board.height * 0.75 / h, shift: 0, dir: board.dir, sy: areaSY(a) };   // 板面比牌卡高約 1.25 倍，上下露出布告欄的框
@@ -2171,13 +2400,66 @@ function stopAt(i, Lc, stacked) {
   }
   if (i === 'screen' && computer) {               // 貼近螢幕：正對電腦、螢幕玻璃剛好填滿整個畫面
     const aspect2 = innerWidth / innerHeight;
-    return { target: computer.screen, view: Math.min(1.15, 1.57 / aspect2) * 0.96, shift: 0, dir: SCREEN_DIR, dist: 2.2 };   // dist：鏡頭真的貼到螢幕前，前面的建築才不會擋住
+    return { target: computer.screen, view: Math.min(1.15, 1.57 / aspect2) * 0.96, shift: 0, dir: SCREEN_DIR, dist: 2.2, midView: 14 };   // dist：鏡頭真的貼到螢幕前，前面的建築才不會擋住
   }
   if (typeof i === 'number' && i > 1) return stopAt(i - 1, Lc, stacked);
   return { target: Lc.home, view: Lc.view, shift: Lc.shift, dir: ISO_DIR, sy: Lc.sy ?? 0 };   // Lc 是兩種版型依切換進度混合後的結果
 }
 const SCREEN_DIR = new THREE.Vector3(0, 0.12, 1).normalize();     // 正對復古電腦螢幕（電腦正面朝 +z）
-const capTenants = document.getElementById('capTenants');
+// 產研媒合平台：辦公研發空間桌上那台電腦的螢幕（場景模組載入後才找得到，找到就記住；每次重算位置，因為場景會浮起、掉落）
+let platScr = null;
+const psV = new THREE.Vector3(), psQ = new THREE.Quaternion(), psBox = new THREE.Box3();
+function platScreen() {
+  const wrap = current?.office?.wrap;
+  if (!wrap) return null;
+  if (!platScr || !platScr.mesh.parent) {
+    let best = null, bestW = 0;
+    wrap.traverse(o => {                                                // 場景裡用螢幕材質、最寬的那塊就是桌上螢幕的玻璃
+      if (!o.isMesh || o.material !== M.screen) return;
+      o.geometry.computeBoundingBox(); const w = o.geometry.boundingBox.max.x - o.geometry.boundingBox.min.x;
+      if (w > bestW) { bestW = w; best = o; }
+    });
+    if (!best) return null;
+    const bb = best.geometry.boundingBox;
+    platScr = { mesh: best, lw: bb.max.x - bb.min.x, lh: bb.max.y - bb.min.y, local: bb.getCenter(new THREE.Vector3()), center: new THREE.Vector3(), dir: new THREE.Vector3(), w: 0, h: 0, g: wrap };
+  }
+  const m = platScr.mesh;
+  m.updateWorldMatrix(true, false);
+  platScr.center.copy(platScr.local).applyMatrix4(m.matrixWorld);   // 場景的零件已合併，位置烘在幾何裡，用外框中心換算
+  m.getWorldQuaternion(psQ);
+  psV.setFromMatrixScale(m.matrixWorld);
+  platScr.w = platScr.lw * psV.x; platScr.h = platScr.lh * psV.y;
+  platScr.dir.set(0, 0, 1).applyQuaternion(psQ).setY(0).normalize();   // 螢幕正面（水平方向）
+  platScr.dir.y = 0.12; platScr.dir.normalize();                       // 稍微從上往下看，跟復古電腦一樣
+  return platScr;
+}
+// 計畫亮點說明卡：三個空間的內容（WF 81:1879）
+const SPACE_COPY = [
+  { tag: '進駐企業', title: '辦公研發空間', desc: '開放企業進駐，就近找到研究夥伴與人才' },
+  { tag: '北大師生', title: '跨院系研發中心', desc: '媒合研究計畫，推動新創育成' },
+  { tag: '共創場域', title: '產學合作空間（powered by hub）', desc: '北大團隊與企業共用的交流、會議、休憩⋯⋯等多功能空間' },
+];   // 04 產研媒合平台在電腦螢幕裡，進去後這張卡就收起來
+let spaceShown = 0, spaceTimer;
+const capCopy = document.getElementById('capCopy');
+const capSteps = [...document.querySelectorAll('.cap-steps button')];
+capSteps.forEach(b => { b.onclick = () => goStop(2 + Number(b.dataset.step)); });   // 01～03 → 站點 2～4、04 → 站點 5（媒合平台）
+function setSpaceCopy(i, instant = false) {
+  if (i === spaceShown) return;
+  spaceShown = i;
+  const fill = () => {
+    const c = SPACE_COPY[i];
+    document.getElementById('capTag').textContent = c.tag;
+    document.getElementById('capTitle').textContent = c.title;
+    document.getElementById('capDesc').textContent = c.desc;
+    capSteps.forEach(b => b.setAttribute('aria-current', String(Number(b.dataset.step) === i)));
+    capCopy.classList.remove('swap');
+  };
+  clearTimeout(spaceTimer);
+  if (instant || !caption.classList.contains('show')) return fill();
+  capCopy.classList.add('swap');
+  spaceTimer = setTimeout(fill, 220);
+}
+const capTenants = document.getElementById('capTenants'), plat = document.getElementById('plat');
 document.getElementById('logoWall').append(...TENANTS.map(([name]) => Object.assign(document.createElement('canvas'), { width: 200, height: 100, title: name })));
 drawLogoWall();
 const boardEls = [document.getElementById('boardEvents'), document.getElementById('boardNews')];
@@ -2413,6 +2695,9 @@ function goStop(n) {                                  // 回到原本視角，�
     diveViaJump = true;
     scrollTo({ top: innerHeight * DIVE * 0.45, behavior: 'instant' });
     loopTimers.push(setTimeout(() => glideTo(innerHeight * STOP_S[1]), JUMP_DUR - 200));
+  } else if (n === 5) {                                 // 跳進產研媒合平台：一樣先飛到「螢幕在畫面中間」，再推近鑽進去
+    scrollTo({ top: innerHeight * (PLAT_IN - PDIVE * 0.55), behavior: 'instant' });
+    loopTimers.push(setTimeout(() => glideTo(innerHeight * STOP_S[5]), JUMP_DUR - 200));
   } else {
     scrollTo({ top: innerHeight * STOP_S[n], behavior: 'instant' });
   }
@@ -2423,8 +2708,8 @@ const continueBtn = document.getElementById('continueBtn');
 continueBtn.onclick = () => {
   if (joinOn) return joinToOverview();                                // 一起從這裡起步 → 回到總覽，從頭開始體驗
   if (!trModal.hidden) return goJoin();                               // 交通資訊彈窗開著 → 下一段「一起從這裡起步」
-  if (free) return goStop(Math.min(currentChapter + 1, 4));
-  if (currentChapter >= 4) return goTraffic();                        // 05 → 06 交通資訊（鏡頭飛到小汽車前面 → 彈窗）
+  if (free) return goStop(Math.min(currentChapter + 1, LAST_STOP));
+  if (currentChapter >= LAST_STOP) return goTraffic();                // 05 → 06 交通資訊（鏡頭飛到小汽車前面 → 彈窗）
   goStop(currentChapter + 1);
 };
 const continueLabel = document.getElementById('continueLabel');
@@ -2711,6 +2996,7 @@ function applyNight(t) {
   subtitleMat.emissiveIntensity = 0.9 * t;                                    // 夜晚中文字發光
   subtitleMat.color.setScalar(lerp(1, 0.25, t));                             // 夜晚底色變暗，字更突出
   lampLights.forEach(l => { l.intensity = 45 * t; });
+  spaceLights.forEach(l => { l.intensity = 38 * t; });                       // 三個空間的室內燈
   carLights.forEach(l => { l.intensity = 10 * t; });                      // 小汽車車頭燈
   beamMat.opacity = 0.85 * t;
   haloMat.opacity = t;
@@ -2824,7 +3110,7 @@ function setDevice(mode) {
 }
 document.querySelectorAll('#deviceSeg button').forEach(b => { b.onclick = () => setDevice(b.dataset.device); });
 addEventListener('resize', fitDevice);
-window.__debug = { stage, people, pets, about, openTraffic };
+window.__debug = { stage, people, pets, about, openTraffic, platScreen };
 // 網址加上 ?focus=x,y,z,zoom 會直接進入自由檢視並把鏡頭對準該位置（方便檢查細節或分享特定畫面）
 // 網址加上 ?night=1 會直接用夜晚模式打開
 // 網址加 ?night=1 / ?night=0 可以強制夜晚／白天（檢查畫面用），否則依當地時間
@@ -2901,26 +3187,28 @@ stage.renderer.setAnimationLoop(() => {
   const eTarget = jump || diveViaJump || carFocus || joinOn ? 1 : seg === TIMELINE[0] ? k : 1;   // 飛向小汽車時也收起
   heroE += (eTarget - heroE) * Math.min(0.2 * dt, 1);
   const e = heroE;
-  const atRaw = seg.kind === 'about' ? 1 : k > 0.97 ? seg.to : k < 0.03 ? seg.from : -1;
-  const at = atRaw === 'screen' ? 1 : atRaw;                          // 目前停在哪一站（轉場中 = -1）
+  const atRaw = seg.kind === 'about' ? 1 : seg.kind === 'plat' ? 5 : k > 0.97 ? seg.to : k < 0.03 ? seg.from : -1;
+  const at = atRaw === 'screen' ? 1 : atRaw === 'pscreen' ? 5 : atRaw;   // 目前停在哪一站（轉場中 = -1）
 
   if (!free) {
     ctl.enabled = sv < 0.02 && !returning && !joinOn;                            // 只有在 Hero 區（還沒往下捲）才能拖曳地圖
     // 關掉動態效果的人：不做鑽進螢幕的推近，鏡頭停在首屏，到點直接切換畫面
     const kk = reduceMotion && seg.kind === 'dive' ? (seg.from === 0 ? 0 : 1) : k;
     let A = stopAt(seg.from, Lc, stacked), B = stopAt(seg.to, Lc, stacked), kk2 = kk;
+    let clipNear = seg.kind === 'plat' ? 1 : 0;                       // 辦公室電腦：椅子就在螢幕正前方，推近時把鏡頭前面的東西切掉
     // 鑽進／退出螢幕分兩階段：
     //   ① 鏡頭轉到電腦正面，同時把螢幕移到畫面正中央（畫面稍微拉近一點）
     //   ② 螢幕留在正中央，原地一路推進到玻璃填滿畫面
     // 退出時倒過來：先原地拉遠，再飛到下一站
     if (seg.kind === 'dive') {
-      const scr = stopAt('screen', Lc, stacked);
-      const mid = { target: scr.target, view: 14, shift: 0, dir: SCREEN_DIR, dist: 30 };   // 螢幕在正中央、還沒推近的狀態
-      const into = seg.to === 'screen', SPLIT = 0.45;
+      const into = isScreen(seg.to), SPLIT = 0.45;
+      const scr = stopAt(into ? seg.to : seg.from, Lc, stacked);      // 廣場復古電腦或辦公室電腦
+      const mid = { target: scr.target, view: scr.midView, shift: 0, dir: scr.dir, dist: 30 };   // 螢幕在正中央、還沒推近的狀態
       const pFar = into ? A : B;                                        // 遠的那一端（首屏或辦公研發空間）
       const t = into ? kk : 1 - kk;                                     // 0 = 遠端、1 = 螢幕
       if (t < SPLIT) { A = pFar; B = mid; kk2 = smooth(t / SPLIT); }
       else { A = mid; B = scr; kk2 = smooth((t - SPLIT) / (1 - SPLIT)); }
+      if ([seg.from, seg.to].includes('pscreen') && t >= SPLIT) clipNear = smooth((t - SPLIT) / (1 - SPLIT));
     }
     // 鑽進／退出：大小用「等比」縮放（越靠近推得越細，不會最後一下猛衝）；地圖站之間：先稍微拉遠再拉近
     stage.view = seg.kind === 'map' ? lerp(A.view, B.view, kk2) + Math.sin(Math.PI * kk2) * 14 : Math.exp(lerp(Math.log(A.view), Math.log(B.view), kk2));
@@ -2932,6 +3220,7 @@ stage.renderer.setAnimationLoop(() => {
     camDir.copy(A.dir).lerp(B.dir, kk2).normalize();                // 電腦螢幕、布告欄、燈箱這幾站鏡頭會轉到正面
     // 鏡頭離目標的距離：平常 120（遠遠看）；鑽進螢幕時一路靠近，經過的建築會被留在鏡頭後面
     const camDist = seg.kind === 'map' ? 120 : Math.exp(lerp(Math.log(A.dist ?? 120), Math.log(B.dist ?? 120), kk2));
+    stage.camera.near = Math.max(0.1, (camDist - 0.6) * clipNear);   // 近裁切面推到螢幕前 0.6：中間擋住的家具看不到（stage.frame 會更新投影）
     if (joinOn) { stage.view *= JOIN_FAR; stage.shift = 0; }        // 一起從這裡起步：地圖置中、鋪滿畫面（牌卡在正中間）
     stage.camera.position.copy(tmp).addScaledVector(camDir, camDist);
     stage.camera.lookAt(tmp);
@@ -2981,6 +3270,7 @@ stage.renderer.setAnimationLoop(() => {
     stage.frame();
   } else {
     ctl.enabled = true;
+    if (stage.camera.near !== 0.1) { stage.camera.near = 0.1; stage.camera.updateProjectionMatrix(); }
     // 放大上限：畫面高度最少要看得到 14 個單位（約 CNRD 立體字佔畫面寬度兩成的大小），再近就不給放大
     ctl.maxZoom = stage.view / FREE_MIN_VIEW;
     if (stage.camera.zoom > ctl.maxZoom) { stage.camera.zoom = ctl.maxZoom; stage.camera.updateProjectionMatrix(); }
@@ -3009,14 +3299,49 @@ stage.renderer.setAnimationLoop(() => {
   fadeA.style.transformOrigin = '0 50%';
   fadeA.style.transform = stacked ? '' : `scaleX(${1 - collapse})`;
   if (sv > 0.02 || free) { if (dragTip.classList.contains('show')) hideDragTip(); }   // 捲動或拖曳地圖就收起提示
-  caption.classList.toggle('show', !free && !jump && !carFocus && at === 2);
-  capTenants.classList.toggle('show', !free && !jump && !carFocus && at === 3);
+  caption.classList.toggle('show', !free && !jump && !carFocus && at >= 2 && at <= 4);
+  if (at >= 2 && at <= 4) setSpaceCopy(at - 2);
+  capTenants.classList.toggle('show', !free && !jump && !carFocus && at === 6);
   updateAboutUI(sv, inAbout, now);
   // 燈箱跑馬燈：慢慢往左捲，約 3 秒移動一個 Logo
   lbTex.offset.x = (now / 3000 / TENANTS.length) % 1;
 
   const t = now / 1000;
+  // 空間裡的人：畫面高度小於 26 單位（拉近看單一場景）才長出來，拉遠就縮回去
+  // 鑽進辦公室電腦時先收起來（打字的人就站在螢幕正前方，會擋住）
+  const insideWant = stage.view / stage.camera.zoom < 26 && ![seg.from, seg.to].includes('pscreen') ? 1 : 0;
   for (const h of people) {
+    if (h.inside) {
+      h.showS += (insideWant - h.showS) * Math.min(0.12 * dt, 1);
+      const sc = h.showS < 0.01 ? 0.001 : h.g.userData.baseScale * smooth(Math.min(h.showS, 1));
+      h.g.scale.setScalar(sc);
+      h.g.visible = h.showS >= 0.01;
+      if (!h.g.visible) { if (h.cloud) { h.cloud.g.visible = false; h.cloudS = 0; } continue; }
+    }
+    if (h.kind === 'type') {                                            // 打字：兩手往前放在鍵盤上，輪流輕敲；偶爾抬頭看螢幕
+      const tap = Math.sin(t * 11 + h.phase);
+      h.armL.rotation.x = -0.95 + Math.max(0, tap) * 0.08; h.armR.rotation.x = -0.95 + Math.max(0, -tap) * 0.08;
+      h.armL.rotation.z = -0.2; h.armR.rotation.z = 0.2;
+      h.head.rotation.x = 0.12 + Math.sin(t * 0.6 + h.phase) * 0.05;
+      h.legL.rotation.x = 0; h.legR.rotation.x = 0;
+      continue;
+    }
+    if (h.kind === 'point') {                                           // 講解：右手指向白板／投影幕、慢慢比劃，頭跟著點
+      h.armR.rotation.x = -2.0 + Math.sin(t * 1.3 + h.phase) * 0.18;
+      h.armR.rotation.z = 0.1 + Math.sin(t * 0.9 + h.phase) * 0.1;
+      h.armL.rotation.x = -0.1; h.armL.rotation.z = -0.08;
+      h.head.rotation.x = Math.sin(t * 1.6 + h.phase) * 0.06;
+      h.legL.rotation.x = 0; h.legR.rotation.x = 0;
+      continue;
+    }
+    if (h.kind === 'read') {                                            // 看資料：低頭看桌上的紙，右手偶爾指一下
+      const poke = Math.max(0, Math.sin(t * 0.8 + h.phase));
+      h.armR.rotation.x = -0.7 - poke * 0.35; h.armR.rotation.z = 0.1;
+      h.armL.rotation.x = -0.45; h.armL.rotation.z = -0.1;
+      h.head.rotation.x = 0.32 + Math.sin(t * 1.1 + h.phase) * 0.05;
+      h.legL.rotation.x = 0; h.legR.rotation.x = 0;
+      continue;
+    }
     if (h.kind === 'walk') {
       // 散步：腳步頻率跟移動速度連動，才不會「腳在跑、人在滑」
       h.s += h.speed * h.dir * dt;
@@ -3123,8 +3448,9 @@ stage.renderer.setAnimationLoop(() => {
   }
   // 鑽進／退出螢幕、或貼在螢幕前時：鏡頭和電腦之間（視線通道內）的物件先藏起來，不然會擋住畫面
   // （物件的顯示由進場動畫每幀重設，所以只要在這裡藏，下一幀離開通道就會自動回來）
-  if (!free && seg.kind !== 'map' && computer && stage.camera.position.distanceTo(computer.screen) < 45) {
-    const camPos = stage.camera.position, look = computer.screen;
+  const diveScr = seg.kind === 'map' ? null : [seg.from, seg.to].includes('pscreen') ? platScreen() && { g: platScr.g, screen: platScr.center } : computer;
+  if (!free && diveScr && stage.camera.position.distanceTo(diveScr.screen) < 45) {
+    const camPos = stage.camera.position, look = diveScr.screen;
     const axis = tmpV.copy(camPos).sub(look); const len = axis.length(); axis.divideScalar(len);
     const halfW = stage.view * innerWidth / innerHeight / 2 + 3;      // 畫面寬度一半再多留一點
     const blocks = o => {
@@ -3135,9 +3461,15 @@ stage.renderer.setAnimationLoop(() => {
       if (along + r < 1.2 || along - r > len) return false;            // 整個都在電腦後面、或整個都在鏡頭後面 → 不用藏
       return d.addScaledVector(axis, -along).length() < halfW + r;     // 有任何一部分靠近視線 → 會擋到
     };
-    items.forEach(o => { if (o !== computer.g && !o.userData.isGround && o.visible && blocks(o)) o.visible = false; });
+    items.forEach(o => { if (o !== diveScr.g && !o.userData.isGround && o.visible && blocks(o)) o.visible = false; });
     people.forEach(h => { if (!h.g.visible && h.cloud) h.cloud.g.visible = false; });
   }
+  // 產研媒合平台：鏡頭推到辦公室螢幕填滿畫面時淡入平台畫面，退出時淡出
+  if (!platFigsDrawn && sv > PLAT_IN - 3) drawPlatFigures();          // 快到了才畫插圖（不拖慢首頁載入）
+  const platK = free ? 0 : Math.min(smooth(Math.min(Math.max((sv - (PLAT_IN - 0.15)) / 0.15, 0), 1)), smooth(Math.min(Math.max((PLAT_OUT + 0.15 - sv) / 0.15, 0), 1)));
+  plat.style.opacity = platK;
+  plat.classList.toggle('live', platK > 0.5);
+  plat.classList.toggle('on', platK > 0.8);
   // 鑽進螢幕的那一刻用底色遮罩接起來（推近到螢幕填滿 → 底色 → 幻燈片；退出時反過來）
   const fadeIn = 1 - Math.min(Math.abs(sv - ABOUT_IN) / 0.1, 1), fadeOut = 1 - Math.min(Math.abs(sv - ABOUT_OUT) / 0.1, 1);
   if (!aboutFade.classList.contains('loop')) aboutFade.style.opacity = Math.max(fadeIn, fadeOut);
@@ -3191,7 +3523,7 @@ stage.renderer.setAnimationLoop(() => {
     el.classList.toggle('show', intro || hot || el === hoverEl || el === tapLabel);
   }
   // 布告欄牌卡：把兩塊板面的四個角投影到螢幕上，HTML 牌卡等比縮放貼齊
-  const showBoard = !free && !jump && !carFocus && at === 4 && board;
+  const showBoard = !free && !jump && !carFocus && at === 7 && board;
   boardEls.forEach((el, i) => {
     el.classList.toggle('show', !!showBoard);
     if (!board) return;
@@ -3209,8 +3541,8 @@ stage.renderer.setAnimationLoop(() => {
   // 右下角圓形按鈕：首屏顯示「開始體驗」，動過地圖後變成「繼續觀看」，捲走後隱藏
   // 段落錨點：離開首屏後顯示；轉場過一半就切換到下一站的按鈕
   body.classList.toggle('in-sections', !free && e > 0.6);
-  const navId = id => (id === 'screen' ? 1 : id);
-  const activeStop = seg.kind === 'about' ? 1 : navId(k > 0.5 ? seg.to : seg.from);   // 轉場過一半就切到下一站
+  const navId = id => (id === 'screen' ? 1 : id === 'pscreen' ? 5 : id);
+  const activeStop = seg.kind === 'about' ? 1 : seg.kind === 'plat' ? 5 : navId(k > 0.5 ? seg.to : seg.from);   // 轉場過一半就切到下一站
   // 右下角按鈕：依目前章節換文字（首屏「開始體驗」、其他章節「繼續體驗」、交通資訊彈窗開著時「繼續瀏覽」）
   currentChapter = activeStop;
   body.classList.toggle('show-continue', !document.getElementById('loader'));
@@ -3219,7 +3551,7 @@ stage.renderer.setAnimationLoop(() => {
   continueBtn.classList.toggle('up', joinOn);                       // 回到總覽：箭頭朝上
   continueBtn.setAttribute('aria-label', joinOn ? '回到總覽，從頭開始體驗' : trOpen ? '前往下一段：一起從這裡起步' : '前往下一個章節');
   // 錨點列還沒出現時直接定位（不播動畫），出現後才用橡皮筋效果切換
-  const navActive = trOpen ? 5 : activeStop;                         // 交通資訊開著時，錨點滑塊停在「06 交通資訊」
+  const navActive = trOpen ? 5 : STOP_CH[activeStop];               // 交通資訊開著時，錨點滑塊停在「06 交通資訊」；計畫亮點 4 站都停在 03
   setSecActive(navActive, !body.classList.contains('in-sections') && rubber.active !== navActive);
 });
 </script>
