@@ -212,34 +212,40 @@
 
   /* ---------- 布告欄牌卡：位置與大小由程式對齊 3D 板面（設計尺寸 480px 寬，再整體縮放） ---------- */
   .board-panel { position: fixed; z-index: 2; left: 0; top: 0; width: 480px; transform-origin: 0 0; opacity: 0; pointer-events: none;
-    display: flex; flex-direction: column; background: #fbf3e6; border-radius: var(--radius-sm); overflow: hidden; transition: opacity .35s;
-    --text-primary: #1f2328; --text-secondary: rgba(0,0,0,.6); }   /* 布告欄上的白紙：深淺色模式都維持淺色 */
+    display: flex; flex-direction: column; overflow: hidden; transition: opacity .35s, background-color .8s;
+    /* 跟 Hero 卡、說明卡、加入卡同一套毛玻璃樣式（深淺色模式跟著切換） */
+    background: var(--board-bg); border: 1px solid var(--card-border); border-radius: var(--radius-card);
+    backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px);
+    --board-bg: rgba(236,238,242,.9); }   /* 底色比一般卡片深一階，裡面的小牌卡才分得出來 */
+  body.night .board-panel { --board-bg: rgba(12,15,21,.9); }
   .board-panel.show { opacity: 1; pointer-events: auto; }
   .board-sheet { display: contents; }   /* 桌機：兩張牌卡各自貼在 3D 板面上；直式螢幕改成下方面板（見 RWD 區塊） */
-  .bp-head { display: flex; align-items: center; justify-content: space-between; height: 40px; padding: 0 16px; color: #fff; flex: none; }
-  .bp-head.orange { background: var(--color-primary); }
-  .bp-head.blue { background: #1f6fd6; }
-  .bp-head strong { font-size: 16px; }
-  .bp-head a { color: #fff; font-size: 12px; text-decoration: none; opacity: .9; }
-  .bp-head a:hover { opacity: 1; text-decoration: underline; }
+  /* 標題列：拿掉橘／藍色塊，改成卡片標題色；高度不變 */
+  .bp-head { display: flex; align-items: center; justify-content: space-between; height: 40px; padding: 0 16px; color: var(--card-title); flex: none; }
+  .bp-head strong { font-size: 16px; font-weight: 700; }
+  .bp-head a { color: var(--text-secondary); font-size: 12px; text-decoration: none; transition: color .2s; }
+  .bp-head a:hover { color: var(--color-primary); }
   .events { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 12px; min-height: 0; }
-  .ev { display: flex; flex-direction: column; gap: 2px; min-height: 0; padding: 8px; border-radius: var(--radius-sm); background: #fff;
-    color: var(--text-primary); text-decoration: none; box-shadow: 0 1px 3px rgba(0,0,0,.08); transition: transform .2s; }
+  /* 內層小牌卡：跟加入卡裡的區塊一樣用淡底（--chip-bg），不用白底陰影 */
+  .ev { display: flex; flex-direction: column; gap: 2px; min-height: 0; padding: 8px; border-radius: var(--radius-sm); background: var(--chip-bg);
+    color: var(--text-primary); text-decoration: none; transition: transform .2s, background-color .2s; }
+  .ev:hover, .news a:hover { background: var(--hover); }
   .ev:hover { transform: translateY(-2px); }
   .ev .img { position: relative; flex: 1; min-height: 40px; border-radius: var(--radius-sm); margin-bottom: 4px;
-    background: #eeeff3 center / cover no-repeat; --ph: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' fill='none' stroke='%239aa0a8' stroke-width='1.6'%3E%3Crect x='2.5' y='2.5' width='15' height='15' rx='2'/%3E%3Ccircle cx='7.5' cy='7.5' r='1.5'/%3E%3Cpath d='M17.5 12.5l-4-4-9 9'/%3E%3C/svg%3E"); }
-  .ev .badge { position: absolute; left: 6px; top: 6px; padding: 2px 6px; border-radius: 4px; background: #1f2328; color: #fff; font-size: 10px; }
-  .ev time, .ev small { font-size: 10px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .ev b { font-size: 12px; line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    background: var(--chip-bg) center / cover no-repeat; --ph: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' fill='none' stroke='%239aa0a8' stroke-width='1.6'%3E%3Crect x='2.5' y='2.5' width='15' height='15' rx='2'/%3E%3Ccircle cx='7.5' cy='7.5' r='1.5'/%3E%3Cpath d='M17.5 12.5l-4-4-9 9'/%3E%3C/svg%3E"); }
+  /* 活動標籤：沿用產研媒合平台的膠囊標籤（.cap-tag），疊在照片上所以底色改成毛玻璃卡片底，才看得清楚 */
+  .ev .cap-tag { position: absolute; left: 6px; top: 6px; background: var(--card-bg); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+  .ev time, .ev small { font-size: 10px; color: var(--text-secondary); opacity: .75; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ev b { font-size: 12px; color: var(--card-title); line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   html[lang="en"] .ev b { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }   /* 英文活動標題比較長：最多兩行，不再被截成一行 */
   .news { list-style: none; margin: 0; padding: 12px; flex: 1; display: flex; flex-direction: column; gap: 10px; }
   .news li { flex: 1; }
   .news a { height: 100%; display: flex; flex-direction: column; justify-content: center; gap: 4px; padding: 8px 12px; border-radius: var(--radius-sm);
-    background: #fff; color: var(--text-primary); text-decoration: none; box-shadow: 0 1px 3px rgba(0,0,0,.08); transition: transform .2s; }
+    background: var(--chip-bg); color: var(--text-primary); text-decoration: none; transition: transform .2s, background-color .2s; }
   .news a:hover { transform: translateY(-2px); }
-  .news .ntag { align-self: flex-start; padding: 1px 8px; border: 1px solid #9aa0a8; border-radius: 4px; font-size: 10px; color: var(--text-secondary); }
-  .news b { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .news time { font-size: 10px; color: var(--text-secondary); }
+  .news .ntag { align-self: flex-start; font-size: 13px; font-weight: 600; line-height: 1.4; color: var(--color-primary); }   /* 分類標籤：跟「一起從這裡起步」的橘色粗體小標一樣 */
+  .news b { font-size: 13px; color: var(--card-title); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .news time { font-size: 10px; color: var(--text-secondary); opacity: .75; }   /* 時間、地點再淡一階，跟標題拉開層次 */
 
   /* ---------- 3D 標籤 ---------- */
   .label { transition: opacity .25s; font-size: 12px; padding: 4px 10px; border-radius: 99px; background: rgba(31,35,40,.7); color: #fff;
@@ -589,7 +595,7 @@
     :root { --tr-h: 64; }   /* 卡片佔畫面高度 64%，上方留給小汽車 */
     .tr-modal { left: var(--gutter); right: calc(var(--gutter) * 2 + 88px); width: auto; top: auto; bottom: var(--gutter); height: calc(var(--tr-h) * 1vh); }
     .tr-map { height: 20vh; }
-    .board-sheet .board-panel { position: relative; width: auto; height: auto; align-self: stretch; box-shadow: 0 10px 30px rgba(0,0,0,.14); }
+    .board-sheet .board-panel { position: relative; width: auto; height: auto; align-self: stretch; }
     /* 牌卡用原尺寸排版：活動兩欄 grid（minmax(0, 1fr) 才不會被長標題撐寬、切掉右邊那欄），文字超過一行就換行 */
     .board-sheet .events { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .board-sheet .ev .img { flex: none; aspect-ratio: 16 / 9; min-height: 0; }
@@ -640,8 +646,8 @@
     .board-sheet .board-panel { flex: none; }
     .board-sheet .events { flex: none; display: flex; gap: 10px; padding: 10px;
       overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; scroll-padding: 0 10px; overscroll-behavior-x: contain; scrollbar-width: none; }
-    /* 固定高度合計約 400px（實測）：最新消息整張 246 + 間距 12 + 園區活動標題列 40 + 內距 20 + 卡片文字區與內距 74 */
-    .board-sheet { --cover-h: max(24px, min(16vh, calc(100cqh - 400px))); }
+    /* 固定高度合計約 404px（實測）：最新消息整張 246 + 間距 12 + 園區活動標題列 40 + 內距 20 + 卡片文字區與內距 74 + 兩張卡的 1px 邊框 4 */
+    .board-sheet { --cover-h: max(24px, min(16vh, calc(100cqh - 404px))); }
     .board-sheet .ev { flex: none; width: clamp(160px, calc(var(--cover-h) * 16 / 9 + 24px), 82%); padding: 8px 12px; scroll-snap-align: start; }   /* 內距跟最新消息的牌卡一樣 */
     .board-sheet .ev .img { flex: none; height: var(--cover-h); aspect-ratio: auto; }
     .board-sheet .ev time, .board-sheet .ev small, .board-sheet .ev b,
@@ -899,16 +905,16 @@
 <!-- 園區活動＋最新消息：鏡頭拉近中央綠地的布告欄，牌卡疊在兩塊板面上（WF 81:1930、81:1940） -->
 <div class="board-sheet" id="boardSheet">
 <div class="board-panel" id="boardEvents">
-  <header class="bp-head orange"><strong>園區活動</strong><a href="#">查看全部 →</a></header>
+  <header class="bp-head"><strong>園區活動</strong><a href="#">查看全部 →</a></header>
   <div class="events">
-    <a class="ev" href="#"><div class="img" style="background-image:url('https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=480&h=300&q=70')"><span class="badge">今日活動</span></div><time>2027-07-22 12:00～13:30</time><b>下一站，你想飛去哪？</b><small>創新交流空間</small></a>
+    <a class="ev" href="#"><div class="img" style="background-image:url('https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=480&h=300&q=70')"><span class="cap-tag">今日活動</span></div><time>2027-07-22 12:00～13:30</time><b>下一站，你想飛去哪？</b><small>創新交流空間</small></a>
     <a class="ev" href="#"><div class="img" style="background-image:url('https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&w=480&h=300&q=70')"></div><time>2027-07-28 12:00～13:30</time><b>國泰世華商業銀行北二區徵才說明會</b><small>創新交流空間</small></a>
     <a class="ev" href="#"><div class="img" style="background-image:url('https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=480&h=300&q=70')"></div><time>2027-08-05 14:00～16:30</time><b>AI 產業應用論壇：從研究到落地</b><small>產學合作空間</small></a>
     <a class="ev" href="#"><div class="img" style="background-image:url('https://images.unsplash.com/photo-1544531586-fde5298cdd40?auto=format&fit=crop&w=480&h=300&q=70')"></div><time>2027-08-12 15:00～17:00</time><b>新創團隊 × 企業媒合午茶會</b><small>綠地公共廣場</small></a>
   </div>
 </div>
 <div class="board-panel" id="boardNews">
-  <header class="bp-head blue"><strong>最新消息</strong><a href="#">查看全部 →</a></header>
+  <header class="bp-head"><strong>最新消息</strong><a href="#">查看全部 →</a></header>
   <ul class="news">
     <li><a href="#"><span class="ntag">大樓</span><b>國泰產業研發中心獲得國際雙認證</b><time>3 天前</time></a></li>
     <li><a href="#"><span class="ntag">產學</span><b>第六屆厝客松聯展</b><time>2027-06-25 17:30</time></a></li>
