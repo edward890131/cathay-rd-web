@@ -47,6 +47,7 @@
     --radius-panel: 12px;   /* 浮動面板（工具列、錨點列、操作說明） */
     --radius-btn: 4px;      /* 按鈕（Header 主按鈕、面板內的按鈕） */
     --radius-sm: 4px;       /* 小元件（牌卡、Logo 格、圖片） */
+    /* 按鈕字重：全站一律 500 */
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; background: var(--bg); color: var(--text-primary); font-family: var(--font-family); }
@@ -77,7 +78,7 @@
     display: flex; align-items: center; gap: 56px; padding: 0 var(--gutter);
     background: var(--surface-page); border-bottom: 1px solid var(--border-default);
     transition: background-color .8s, border-color .8s; }   /* 跟主視覺一起切換深淺色 */
-  .site-header .logo { font-size: 18px; font-weight: 700; line-height: 1.6; color: var(--text-primary); text-decoration: none; }
+  .site-header .logo { font: 700 22px/1 var(--font-display); letter-spacing: -.06em; color: var(--text-primary); text-decoration: none; }   /* Logo 暫用 GROW BEYOND 同一套字體（Lexend Exa 粗體） */
   .site-header nav { display: flex; align-items: center; gap: 24px; }
   .site-header nav a { display: inline-flex; align-items: center; gap: 4px; font-size: 14px; font-weight: 500; line-height: 1.6;   /* Header 所有入口（含主按鈕）統一 14px／500 */
     color: var(--text-primary); text-decoration: none; white-space: nowrap; }
@@ -146,7 +147,7 @@
   .caption .copy.swap { opacity: 0; transform: translateY(6px); }                     /* 換空間時：先淡出、換字、再淡入 */
   .cap-tag { align-self: flex-start; padding: 4px 12px; border-radius: 99px; background: var(--chip-bg); font-size: 12px; font-weight: 600; color: var(--text-primary); }
   .cap-cta { display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 20px; border-radius: var(--radius-btn); align-self: flex-start;   /* 靠左對齊（媒合平台的「前往平台」另外設在右邊） */
-    background: var(--fill-button); color: var(--text-on-fill); font: 600 14px/1 var(--font-family); text-decoration: none; transition: background .2s; }
+    background: var(--fill-button); color: var(--text-on-fill); font: 500 14px/1 var(--font-family); text-decoration: none; transition: background .2s; }
   .cap-cta:hover { background: var(--fill-hover); }
 
   /* 理念與使命卡：步驟線（可點）＋ 目前步驟的 01／02／03 內文，換步時淡出換字 */
@@ -322,7 +323,7 @@
   /* Pill Tabs：選中＝主要按鈕（深底白字），其餘＝次要（白底灰框） */
   .tr-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
   .tr-tabs button { height: 40px; padding: 0 18px; border-radius: var(--radius-btn); border: 1px solid #8c959f; background: var(--surface-page);
-    color: var(--text-primary); font: 400 14px/1.6 var(--font-family); cursor: pointer; transition: background .2s, color .2s; }
+    color: var(--text-primary); font: 500 14px/1.6 var(--font-family); cursor: pointer; transition: background .2s, color .2s; }
   .tr-tabs button:hover { background: var(--hover); }
   .tr-tabs button[aria-selected="true"] { background: var(--fill-button); border-color: var(--fill-button); color: var(--text-on-fill); }
   .tr-panel { display: flex; flex-direction: column; gap: 12px; animation: tr-fade .25s ease; }
@@ -335,13 +336,13 @@
 
   /* ---------- 頁尾（WF 81:1983）：在「一起從這裡起步」再往下滑，從畫面底部往上出現，蓋住一部分地圖；上面的牌卡跟著往上 ---------- */
   .site-footer { position: fixed; z-index: 4; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; gap: 32px;
-    padding: 56px 80px 32px; background: var(--surface-subtle); color: var(--text-secondary); font-size: 14px; line-height: 1.6;
+    padding: 56px 80px 44px; background: var(--surface-subtle); color: var(--text-secondary); font-size: 14px; line-height: 1.6;
     transform: translateY(105%); transition: transform .8s cubic-bezier(.2,.8,.2,1), background-color .8s; }   /* 跟牌卡往上的速度一致 */
   body.footer-open .site-footer { transform: none; }
   body.footer-open { --join-lift: calc(var(--footer-h, 0px) + 12px); }               /* 牌卡和「再看一次」整組往上推（大小不變，像頁面往下捲） */
   .ft-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 40px; }
   .ft-left { display: flex; align-items: flex-start; gap: 56px; }
-  .ft-logo { flex: none; font-size: 18px; font-weight: 700; line-height: 44px; color: var(--text-primary); text-decoration: none; }
+  .ft-logo { flex: none; font: 700 26px/44px var(--font-display); letter-spacing: -.06em; color: var(--text-primary); text-decoration: none; }   /* 頁尾比 Header 大一號 */
   .ft-info { display: grid; grid-template-columns: auto 1fr; gap: 10px 20px; margin: 0; }
   .ft-info dd { margin: 0; }
   .ft-info a, .ft-terms a { color: var(--text-primary); text-decoration: none; }
@@ -352,9 +353,9 @@
   .ft-social a:hover, .ft-social .ft-top:hover { background: var(--hover); }
   .ft-top img { filter: invert(1); }                                                    /* 圖示原本是白色箭頭：白天反成深色，跟社群圖示一樣 */
   body.night .ft-top img { filter: none; }
-  .ft-note { margin: 0; padding-top: 28px; border-top: 1px solid var(--border-default); font-size: 12px; line-height: 1.8; }
-  .ft-bottom { display: flex; align-items: center; justify-content: space-between; gap: 16px; font-size: 12px; }
-  .ft-terms { display: flex; gap: 24px; }
+  .ft-note { margin: 0; padding: 32px 0 16px; border-top: 1px solid var(--border-default); font-size: 12px; line-height: 2; }   /* 集團宣告：上下都多留白，跟版權列拉開 */
+  .ft-bottom { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-top: 20px; border-top: 1px solid var(--border-default); font-size: 12px; line-height: 1.8; }   /* 版權列：用一條細線跟宣告分開 */
+  .ft-terms { display: flex; gap: 32px; }
   body.night .ft-social a img { filter: invert(1); }
   /* ---------- Cookie 同意（WF 81:1984）：桌機浮在地圖下方中間；手機、直式平板貼在畫面最底下，Hero 文字和箭頭按鈕往上讓位，關掉後再回原位 ---------- */
   .cookie { position: fixed; z-index: 45; bottom: var(--gutter); left: calc(var(--panel-w) * 1vw + (100vw - var(--panel-w) * 1vw) / 2); width: min(600px, max(340px, calc(100vw - var(--panel-w) * 1vw - (var(--gutter) + 104px) * 2)));   /* 兩側讓出右下角圓形按鈕的寬度，不會疊到 */
@@ -370,12 +371,13 @@
   .cookie button:hover { background: var(--fill-hover); }
   body[data-layout="a"] .cookie { left: 50%; width: min(600px, calc(100vw - (var(--gutter) + 104px) * 2)); }   /* 全幅（進場時）：放在畫面正中間 */
   @media (max-width: 900px) {
-    .site-footer { padding: 40px var(--gutter) 28px; gap: 28px; }
+    .site-footer { padding: 40px var(--gutter) 36px; gap: 28px; }
     .ft-row { flex-direction: column; gap: 28px; }
     .ft-left { flex-direction: column; gap: 20px; }
     .ft-info { gap: 8px 16px; }
-    .ft-note { padding-top: 24px; }
-    .ft-bottom { flex-direction: column; align-items: flex-start; gap: 12px; }
+    .ft-note { padding: 28px 0 12px; }
+    .ft-bottom { flex-direction: column; align-items: flex-start; gap: 16px; padding-top: 20px; }
+    .ft-terms { gap: 28px; }
   }
 
   /* ---------- 右上角：工具列 + 操作說明 ---------- */
@@ -428,7 +430,7 @@
   /* 繼續觀看：使用者動過地圖後才出現，點了回到原本的捲動流程 */
   .continue { position: fixed; z-index: 4; right: var(--gutter); bottom: var(--gutter); width: 88px; height: 88px; border-radius: 50%; border: 0;
     display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
-    background: var(--fill-button); color: var(--text-on-fill); font: 600 12px/1.3 var(--font-family); cursor: pointer;
+    background: var(--fill-button); color: var(--text-on-fill); font: 500 12px/1.3 var(--font-family); cursor: pointer;
     box-shadow: 0 10px 30px rgba(0,0,0,.18); opacity: 0; transform: scale(.6); pointer-events: none;
     margin-bottom: var(--cookie-push, 0px);
     transition: opacity .25s, transform .3s cubic-bezier(.3,1.6,.5,1), background .8s, color .8s, margin-bottom .45s cubic-bezier(.2,.8,.2,1); }
@@ -497,7 +499,7 @@
   body.join-open .join-card, body.join-open .join-again { pointer-events: auto; transform: translateY(calc(-1 * var(--join-lift, 0px))); }
   body.join-open .continue { opacity: 0 !important; pointer-events: none !important; }   /* 這段改用牌卡下方置中的「再看一次」 */
   .join-again { flex: none; display: inline-flex; align-items: center; gap: 8px; height: 48px; padding: 0 28px; border: 0; border-radius: var(--radius-btn);
-    background: var(--fill-button); color: var(--text-on-fill); font: 600 15px/1 var(--font-family); cursor: pointer;
+    background: var(--fill-button); color: var(--text-on-fill); font: 500 15px/1 var(--font-family); cursor: pointer;
     box-shadow: 0 10px 30px rgba(0,0,0,.18); transform: translateY(16px); transition: transform .8s cubic-bezier(.2,.8,.2,1), background .2s; }
   .join-again:hover { background: var(--fill-hover); }
   .join-again svg { width: 18px; height: 18px; }
@@ -517,7 +519,7 @@
   .join-item dt { font-weight: 600; color: var(--text-primary); }
   .join-item dd { margin: 0; color: var(--text-secondary); }
   .join-item .btn-fill { align-self: flex-start; margin-top: auto; display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 20px;
-    border-radius: var(--radius-btn); background: var(--fill-button); color: var(--text-on-fill); font: 600 14px/1 var(--font-family); text-decoration: none; transition: background .2s; }
+    border-radius: var(--radius-btn); background: var(--fill-button); color: var(--text-on-fill); font: 500 14px/1 var(--font-family); text-decoration: none; transition: background .2s; }
   .join-item .btn-fill:hover { background: var(--fill-hover); }
   /* 立體角色插圖：用地圖上同一套人物模型即時畫出來，站在牌卡右下角，頭稍微超出牌卡上緣 */
   .join-fig { position: absolute; right: 16px; bottom: 0; width: 170px; height: 280px; pointer-events: none; }
@@ -612,7 +614,7 @@
     .continue svg { width: 20px; height: 20px; }
     /* 箭頭和「下滑」字樣輪流出現，提示可以往下滑（中文用內文字體，12px 才看得清楚） */
     /* 用同一個開關（.cue-on）切換：先淡出的那個 0.3 秒內消失，另一個等 0.3 秒後才淡入，所以永遠不會同時出現 */
-    .continue .cue { display: block; position: absolute; font: 600 12px/1 var(--font-family); letter-spacing: 0; opacity: 0; transition: opacity .3s ease 0s; }
+    .continue .cue { display: block; position: absolute; font: 500 12px/1 var(--font-family); letter-spacing: 0; opacity: 0; transition: opacity .3s ease 0s; }
     .continue svg { animation: none; opacity: 1; transition: opacity .3s ease .3s; }
     .continue.cue-on:not(.up) svg { opacity: 0; transition-delay: 0s; }
     .continue.cue-on:not(.up) .cue { opacity: 1; transition-delay: .3s; }
@@ -674,6 +676,7 @@
     .bp-head a { padding: 12px 0 12px 12px; }
   }
 
+  @media (max-width: 760px) { .site-header .logo { font-size: 19px; } .ft-logo { font-size: 22px; } }   /* 手機 Logo 小一號 */
   /* ---------- 手機：按鈕統一規格（右下角的 Scroll 圓形按鈕不變）：高度一律 38px、字級一律 14px；放在最後，蓋過觸控裝置的 44px 設定 ---------- */
   @media (max-width: 760px) {
     :root { --nav-btn: 38px; --btn-h: 38px; }
