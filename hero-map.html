@@ -1135,7 +1135,9 @@ const STACKED_MQ = matchMedia('(max-width: 760px), (max-width: 1100px) and (max-
 const setAboutView = () => {
   // 桌機：主體往右推，左邊留給文字卡片；上圖下文：卡片在下方，主體推到卡片上方空白區的正中間
   if (!STACKED_MQ.matches) return about.setView(innerWidth, innerHeight, { shiftX: innerWidth * 0.16 });
-  const top = document.querySelector(innerWidth < 760 ? '.site-header' : '.tools')?.getBoundingClientRect().bottom ?? 0;
+  // 上緣：工具列／Header 和錨點列取比較低的那個（手機的錨點列在 Header 下方，主體要放在錨點列以下才不會太靠上）
+  const bottomOf = sel => document.querySelector(sel)?.getBoundingClientRect().bottom ?? 0;
+  const top = Math.max(bottomOf(innerWidth < 760 ? '.site-header' : '.tools'), bottomOf('#secNav')) + 8;
   const bottom = document.getElementById('aboutCard')?.getBoundingClientRect().top ?? innerHeight;
   about.setView(innerWidth, innerHeight, { shiftY: -(innerHeight / 2 - (top + bottom) / 2) });
 };
