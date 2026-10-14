@@ -3396,14 +3396,14 @@ async function bgmStart() {
 function bgmStop() {
   if (!bgm.ctx || !bgm.src) return;
   const src = bgm.src; bgm.src = null;
-  bgmFade(0, 0.8); setTimeout(() => { if (!bgm.src) src.stop(); }, 900);   // 淡出完才真的停
+  bgmFade(0, 0.8); setTimeout(() => src.stop(), 900);   // 淡出完才真的停（就算這期間又按開，舊的那份也要停掉，不然會兩份疊在一起播）
 }
 const setMusicUI = on => musicBtn.setAttribute('aria-pressed', String(on));
 function setMusic(on) {
   bgm.on = on; bgm.pending = false; setMusicUI(on); bgmSave(on);
   on ? bgmStart() : bgmStop();
 }
-musicBtn.onclick = () => setMusic(!bgm.on);
+musicBtn.onclick = () => setMusic(bgm.pending ? true : !bgm.on);   // 記住「開」但還沒出聲時，按音樂鈕＝直接開始播，不是關掉
 // 分頁切到背景就暫停（省電、不干擾別的分頁）；回來再恢復
 document.addEventListener('visibilitychange', () => {
   if (!bgm.ctx || !bgm.on) return;
@@ -3414,7 +3414,7 @@ document.addEventListener('visibilitychange', () => {
 if (bgmRead()) {
   bgm.on = true; bgm.pending = true; setMusicUI(true);
   const unlock = e => {
-    if (e.target.closest?.('#musicBtn')) return;             // 按的就是音樂鈕：交給它自己的 onclick
+    if (e.target.closest?.('#musicBtn')) { removeEventListener('pointerdown', unlock, true); removeEventListener('keydown', unlock, true); return; }   // 按的就是音樂鈕：交給它自己的 onclick
     removeEventListener('pointerdown', unlock, true); removeEventListener('keydown', unlock, true);
     if (bgm.on && bgm.pending) { bgm.pending = false; bgmStart(); }
   };
