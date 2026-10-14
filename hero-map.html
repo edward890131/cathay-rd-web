@@ -4,6 +4,8 @@
 <meta charset="utf-8" />
 <meta name="robots" content="noindex, nofollow" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+<!-- iPhone Safari 會自動把地址、電話變成連結（文字下面出現虛線），把一段字切成好幾塊，語系切換就對不到原文；電話和信箱已經手動做成連結 -->
+<meta name="format-detection" content="telephone=no, address=no, email=no, date=no" />
 <title>國泰產研中心平台</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -3372,6 +3374,20 @@ function translateDOM(root = document.body) {
     const en = lang === 'en' && dict?.[key];
     n.nodeValue = en ? zh.replace(key, en) : zh;                          // 保留前後的空白
   }
+  // 保險：一段字如果被瀏覽器或其他程式切成好幾個節點（例如自動偵測的地址連結），逐段查不到 → 改用整個元素的文字查表
+  // 只處理裡面全是文字的元素（有圖示、按鈕的不碰，免得把圖示一起換掉）；切回中文時還原原本的 HTML
+  const zhHTML = translateDOM.zhHTML ??= new WeakMap();
+  root.querySelectorAll('p, h1, h2, h3, h4, li, dd, dt, small, b, span, a, strong').forEach(el => {
+    let rec = zhHTML.get(el);
+    if (!rec) {
+      if (lang !== 'en' || el.childElementCount === 0 || el.closest('script, style, [data-i18n-skip]')) return;
+      if (el.querySelector('svg, img, canvas, i, input, select, button') || !hasZh(el.textContent)) return;
+      const key = el.textContent.trim();
+      if (!dict?.[key]) return;
+      rec = { html: el.innerHTML, key }; zhHTML.set(el, rec);
+    }
+    if (lang === 'en') el.textContent = dict[rec.key]; else el.innerHTML = rec.html;
+  });
   root.querySelectorAll('[aria-label], [title], [alt], [placeholder]').forEach(el => {
     if (el.closest('[data-i18n-skip]')) return;
     let saved = zhAttr.get(el);
