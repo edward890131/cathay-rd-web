@@ -360,6 +360,11 @@ export function createAboutSlides() {
 
   let night = 0;
   const tmpC = new THREE.Color();
+  // 直式畫面（手機、直式平板）：畫面很窄，原本的鏡頭左右會被裁掉、看起來貼很近
+  // → 鏡頭視角放寬、整體往後退一點；03 室內把握手的兩個人放到畫面正中間
+  let portrait = false;
+  const PORTRAIT_BACK = 1.25;                                          // 往後退 25%
+  const HANDSHAKE = V(HX, 2.0, HZ);
 
   // ---------- 每幀更新：畫面 = f(第幾步, 播了幾秒) ----------
   function update(step, t) {
@@ -383,6 +388,10 @@ export function createAboutSlides() {
     // 鏡頭
     const inside = step === 2 && t >= SWAP;
     camAt(inside ? INTERIOR : SHOTS[step], t);
+    if (portrait) {
+      if (inside) camState.look.lerp(HANDSHAKE, 0.85);                  // 握手的兩個人在畫面中間
+      camState.pos.sub(camState.look).multiplyScalar(PORTRAIT_BACK).add(camState.look);
+    }
     camera.position.copy(camState.pos); camera.lookAt(camState.look);
     // 太靠近鏡頭的路人先隱藏（不然會擋住畫面，或鏡頭穿過人的身體）
     walkers.forEach(w => { if (w.g.visible && w.g.position.distanceTo(camera.position) < (step === 2 ? 7 : 3.5)) w.g.visible = false; });
@@ -405,6 +414,9 @@ export function createAboutSlides() {
     // 視窗大小：shiftX = 主體往右推的像素（左邊留給文字卡片），shiftY = 往下推的像素（手機版卡片在下方時用）
     setView(w, h, { shiftX = 0, shiftY = 0 } = {}) {
       camera.aspect = w / h;
+      portrait = camera.aspect < 1;
+      // 直式畫面：讓左右至少看得到約 40 度（垂直視角最多放寬到 70 度，再大會變形）
+      camera.fov = portrait ? THREE.MathUtils.clamp(2 * THREE.MathUtils.radToDeg(Math.atan(Math.tan(THREE.MathUtils.degToRad(20)) / camera.aspect)), 38, 70) : 38;
       camera.setViewOffset(w, h, -shiftX, -shiftY, w, h);
       camera.updateProjectionMatrix();
     },

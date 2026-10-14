@@ -296,10 +296,6 @@
     background: transparent; color: var(--text-primary); cursor: pointer; transition: background .2s; }
   .icon-btn:hover { background: var(--hover); }
   .icon-btn svg { width: 20px; height: 20px; }
-  #tNight .moon { display: none; }
-  #tNight[aria-pressed="true"] { background: var(--fill-button); color: var(--text-on-fill); }
-  #tNight[aria-pressed="true"] .sun { display: none; }
-  #tNight[aria-pressed="true"] .moon { display: block; }
   /* 材質切換（分段按鈕） */
   .seg { display: flex; gap: 2px; padding: 2px; border-radius: var(--radius-btn); background: var(--hover); }
   .seg button { height: 32px; padding: 0 10px; border: 0; border-radius: 8px; background: transparent; color: var(--text-secondary);
@@ -308,8 +304,8 @@
   .seg button[aria-pressed="true"] { background: var(--seg-on); color: var(--text-primary); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
   .tools [hidden] { display: none !important; }
   /* 裝置切換：圖示按鈕 */
-  #deviceSeg button { width: 36px; padding: 0; display: grid; place-items: center; }
-  #deviceSeg svg { width: 18px; height: 18px; }
+  #deviceSeg button, .icon-seg button { width: 36px; padding: 0; display: grid; place-items: center; }
+  #deviceSeg svg, .icon-seg svg { width: 18px; height: 18px; }
   /* 材質：下拉選單（用原生 select，鍵盤、手機都好操作；外觀改成跟分段按鈕同一套） */
   .select { position: relative; display: inline-flex; align-items: center; }
   .select select { appearance: none; -webkit-appearance: none; height: 36px; padding: 0 30px 0 12px; border: 0; border-radius: var(--radius-btn);
@@ -625,6 +621,14 @@
     <a href="#" target="_blank" rel="noopener">研究發展處<img src="assets/icon-external-link.svg" width="16" height="16" alt="另開新視窗" /></a>
   </nav>
   <nav class="side-nav">
+    <div class="seg icon-seg" id="nightSeg" role="group" aria-label="白天／夜晚">
+      <button data-night="0" aria-pressed="true" aria-label="白天" title="白天">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+      </button>
+      <button data-night="1" aria-pressed="false" aria-label="夜晚" title="夜晚">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
+    </div>
     <a href="#" lang="en">EN</a>
     <a class="btn" href="#">產研媒合平台 →</a>
   </nav>
@@ -801,11 +805,6 @@
     </select>
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
   </label>
-  <span class="sep"></span>
-  <button class="icon-btn" id="tNight" aria-pressed="false" aria-label="切換夜晚模式" title="白天／夜晚">
-    <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
-    <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
-  </button>
   <button class="icon-btn" id="tHelp" aria-expanded="false" aria-controls="freePanel" aria-label="操作說明" title="操作說明">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .8-1 1.5v.4"/><circle cx="12" cy="17" r=".6" fill="currentColor"/></svg>
   </button>
@@ -2690,15 +2689,15 @@ function applyNight(t) {
   boardLights.forEach(l => { l.intensity = 14 * t; });                         // 燈箱晚上更亮
 }
 // 切換白天／夜晚；instant = 直接切好（剛打開網頁時用），否則慢慢過渡
-const nightBtn = document.getElementById('tNight');
+const nightBtns = [...document.querySelectorAll('#nightSeg button')];
 function setNight(on, instant = false) {
-  nightBtn.setAttribute('aria-pressed', String(on));
+  nightBtns.forEach(b => b.setAttribute('aria-pressed', String((b.dataset.night === '1') === on)));
   nightTarget = on ? 1 : 0;
   body.classList.toggle('night', on);
   if (instant) { nightT = nightTarget; applyNight(nightT); }
 }
 let nightManual = false;                                    // 使用者自己按過切換，就不再依時間自動切
-nightBtn.onclick = () => { nightManual = true; setNight(nightBtn.getAttribute('aria-pressed') !== 'true'); };
+nightBtns.forEach(b => { b.onclick = () => { nightManual = true; setNight(b.dataset.night === '1'); }; });   // Header 的白天／夜晚切換
 // 依使用者電腦的當地時間：08:00–17:59 白天，其他時間夜晚
 const isNightHour = () => { const h = new Date().getHours(); return h < 8 || h >= 18; };
 
@@ -2720,9 +2719,12 @@ addEventListener('keydown', e => { if (e.key === 'Escape') setMenu(false); });
 // 右上工具列：手機搬進選單的「顯示設定」，其他尺寸放回右上角（同一組按鈕，功能不用重綁）
 const PHONE_MQ = matchMedia('(max-width: 760px)'), dockHome = document.createComment('dock');
 dockEl.before(dockHome);
+// 白天／夜晚切換：平常在 Header（EN 左邊）；手機 Header 太擠，搬進選單的顯示設定
+const nightSegEl = document.getElementById('nightSeg'), nightHome = document.createComment('night');
+nightSegEl.before(nightHome);
 const placeDock = () => {
-  if (PHONE_MQ.matches) document.getElementById('drawerTools').append(dockEl);
-  else { dockHome.after(dockEl); setMenu(false); }
+  if (PHONE_MQ.matches) { document.getElementById('drawerTools').append(dockEl); dockEl.querySelector('.tools').prepend(nightSegEl); }
+  else { dockHome.after(dockEl); nightHome.after(nightSegEl); setMenu(false); }
 };
 placeDock();
 PHONE_MQ.addEventListener('change', placeDock);
@@ -2846,6 +2848,7 @@ const panelVw = parseFloat(getComputedStyle(document.documentElement).getPropert
 let layoutT = body.dataset.layout === 'b' ? 1 : 0;
 const fadeA = document.querySelector('.fade-a'), panelB = document.querySelector('.panel-b');
 let last = performance.now();
+const FREE_MIN_VIEW = 14;   // 自由操作時最多放大到「畫面高度 = 14 個世界單位」
 
 stage.renderer.setAnimationLoop(() => {
   if (deviceMode !== 'desktop') return;   // RWD 預覽中：外面的地圖被 mockup 蓋住，不用畫
@@ -2949,6 +2952,9 @@ stage.renderer.setAnimationLoop(() => {
     stage.frame();
   } else {
     ctl.enabled = true;
+    // 放大上限：畫面高度最少要看得到 14 個單位（約 CNRD 立體字佔畫面寬度兩成的大小），再近就不給放大
+    ctl.maxZoom = stage.view / FREE_MIN_VIEW;
+    if (stage.camera.zoom > ctl.maxZoom) { stage.camera.zoom = ctl.maxZoom; stage.camera.updateProjectionMatrix(); }
     ctl.update();
     stage.sun.target.position.copy(ctl.target);                      // 陰影範圍跟著視點走
     stage.sun.position.copy(ctl.target).addScaledVector(SUN_DIR, 80);
