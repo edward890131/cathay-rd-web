@@ -52,7 +52,8 @@
     /* 按鈕字重：全站一律 500 */
   }
   * { box-sizing: border-box; }
-  html, body { margin: 0; background: var(--bg); color: var(--text-primary); font-family: var(--font-family); }
+  html, body { margin: 0; background: var(--bg); color: var(--text-primary); font-family: var(--font-family);
+    overscroll-behavior: none; }   /* 手機捲到最底／最頂時不要回彈（iPhone 回彈時固定在畫面上的元素會整片被拉走，有時回不來） */
   canvas { position: fixed; inset: 0; display: block; }
   /* 捲動距離：用來驅動鏡頭 */
   .scroll-space { height: 1840vh; }   /* 首屏 → 理念與使命（鑽進螢幕＋3 步＋退出）→ 計畫亮點三個空間 → 產研媒合平台（鑽進辦公室電腦）→ 進駐企業 → 園區活動／最新消息（時間軸總長 17.2 屏＋最後停留 1.2 屏） */
@@ -2646,6 +2647,13 @@ canvas.style.touchAction = 'pan-y';        // 手機：上下滑照常捲動頁�
 const touchPts = new Map();                // 正在觸碰的手指：pointerId → 按下的位置
 let touchDX = 0, touchDY = 0;              // 這次觸碰最大的水平／垂直位移
 const isCoarse = matchMedia('(pointer: coarse)').matches;
+// 交通資訊、一起從這裡起步：鎖住後面的頁面不能捲
+// 手機、平板不用 overflow: hidden——iPhone 在手指還在滑（慣性、回彈）時被切成 hidden，畫面會整片卡在偏移的位置回不來；
+// 觸控裝置改由 touchmove 攔截（見下方），效果一樣
+function lockPageScroll(on) {
+  if (on && isCoarse) return;
+  document.documentElement.style.overflow = on ? 'hidden' : '';
+}
 canvas.addEventListener('pointerdown', e => {
   if (e.pointerType !== 'touch') return;
   if (!touchPts.size) touchDX = touchDY = 0;
@@ -2731,7 +2739,7 @@ function openTraffic() {
   const mapSrc = 'https://www.google.com/maps?q=' + encodeURIComponent('104382台北市中山區建國北路二段69號') + `&hl=${lang === 'en' ? 'en' : 'zh-TW'}&z=17&output=embed`;
   if (trMap.src !== mapSrc) trMap.src = mapSrc;
   trModal.hidden = false;
-  document.documentElement.style.overflow = 'hidden';                 // 交通資訊不在捲動軸上：滾輪改成「往下＝下一段、往上＝回到活動消息」
+  lockPageScroll(true);                                               // 交通資訊不在捲動軸上：滾輪改成「往下＝下一段、往上＝回到活動消息」
 }
 // ===== 捲到底之後的「往下／往上」：活動消息 → 交通資訊 → 一起從這裡起步 =====
 // 交通資訊和一起從這裡起步不在捲動軸上，所以用滾輪、觸控滑動、鍵盤的方向來切換：
@@ -2807,7 +2815,7 @@ function closeTraffic() {
   trModal.hidden = true;
   body.classList.remove('tr-open');
   if (carFocus) { startJump(); carFocus = null; }       // 關掉彈窗：鏡頭從車前面平順飛回原本的畫面
-  document.documentElement.style.overflow = '';
+  lockPageScroll(false);
 }
 addEventListener('keydown', e => { if (e.key === 'Escape' && !trModal.hidden) closeTraffic(); });
 // 交通方式切換：地圖、地址、版面不變，只換下面這段文字
@@ -2863,7 +2871,7 @@ function leaveOverlays() {
     carFocus = null; clearTimeout(carFocusTimer);
     left = true;
   }
-  if (left) document.documentElement.style.overflow = '';
+  if (left) lockPageScroll(false);
   return left;
 }
 function goStop(n) {                                  // 回到原本視角，捲到第 n 站
@@ -2913,7 +2921,7 @@ const JOIN_FAR = 0.62;                                   // 拉近到地圖鋪�
 function goJoin() {
   trafficToOverview();
   joinOn = true;
-  document.documentElement.style.overflow = 'hidden';
+  lockPageScroll(true);
   if (!figsDrawn) { figsDrawn = true; drawJoinFigures(); }
   join.hidden = false;
   clearTimeout(joinTimer);
@@ -2954,14 +2962,14 @@ function joinToOverview() {
   clearTimeout(joinTimer);
   body.classList.remove('join-open');
   joinOn = false;
-  document.documentElement.style.overflow = '';
+  lockPageScroll(false);
   startJump();                                           // 鏡頭從遠景平順回到首屏
   joinTimer = setTimeout(() => { join.hidden = true; }, 700);
 }
 // 交通資訊 → 回到總覽：關掉彈窗，鏡頭從車子前面直接飛回首屏全景（不經過中間章節）
 function trafficToOverview() {
   trModal.hidden = true; body.classList.remove('tr-open');
-  document.documentElement.style.overflow = '';
+  lockPageScroll(false);
   carFocus = null; clearTimeout(carFocusTimer);
   userNav(-1);
   if (glide) { cancelAnimationFrame(glide.raf); glide = null; }
