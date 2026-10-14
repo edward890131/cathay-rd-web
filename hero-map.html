@@ -572,9 +572,9 @@
   </div>
   <span class="sep"></span>
   <div class="seg" id="finishSeg" role="group" aria-label="材質">
-    <button data-finish="plastic" aria-pressed="true">塑膠</button>
-    <button data-finish="matte" aria-pressed="false">霧面</button>
-    <button data-finish="frosted" aria-pressed="false">磨砂</button>
+    <button data-finish="matte" aria-pressed="true">霧面</button>
+    <button data-finish="clay" aria-pressed="false">黏土</button>
+    <button data-finish="paper" aria-pressed="false">紙雕</button>
   </div>
   <span class="sep"></span>
   <button class="icon-btn" id="tNight" aria-pressed="false" aria-label="切換夜晚模式" title="白天／夜晚">
@@ -1665,13 +1665,14 @@ function build(variantId, { replay = true } = {}) {
     addItem(d.g, 0, 0, { delay: 2.4, drop: 3, hoverable: false });
     pets.push({ kind: 'dog', ...d, owner, rect: rectOf(walkerBlocks[0], OFF + 0.9), phase: 0 });
   }
-  // 小貓：坐在最靠近觀看者的街區邊緣（等角視角下，越前面的位置越不會被牆或建築擋住）
-  const catBlock = L.blocks.reduce((a, b) => (b.x1 + b.z1 > a.x1 + a.z1 ? b : a));
+  // 小貓：坐在中央大綠地右側的空位（CNRD 立體字和噴水池中間，正對布告欄的另一側）
+  const catLawn = L.blocks.find(b => b.ground === 'grass' && b.x1 - b.x0 > 20 && b.z1 - b.z0 > 20)
+    || L.blocks.reduce((a, b) => (b.x1 + b.z1 > a.x1 + a.z1 ? b : a));   // 沒有大綠地的方案：退回最前面的街區
   {
     const c = cat();
     c.g.scale.setScalar(PERSON_SCALE * 1.2);   // 比人物的比例稍大一點，鳥瞰時還找得到
     c.g.rotation.y = Math.PI / 4;              // 臉朝向觀看者
-    addItem(c.g, catBlock.x1 - 0.6, (catBlock.z0 + catBlock.z1) / 2 + 2, { delay: 2.6, baseY: CURB_H, drop: 3, hoverable: false });
+    addItem(c.g, (catLawn.x0 + catLawn.x1) / 2 + 9, (catLawn.z0 + catLawn.z1) / 2, { delay: 2.6, baseY: CURB_H, drop: 3, hoverable: false });
     pets.push({ kind: 'cat', ...c, phase: rand() * 6 });
   }
 
@@ -2163,75 +2164,71 @@ function updateAboutUI(sv, inAbout, now) {
 // 這一幀要畫哪一步、播到第幾秒（關掉動態效果：固定顯示第 3 層的完成畫面）
 const aboutFrame = now => reduceMotion ? [2, 99] : [Math.max(aboutState.step, 0), (now - aboutState.t0) / 1000];
 
-// ============ 材質切換（塑膠／霧面／磨砂） ============
+// ============ 材質切換（霧面／黏土／紙雕） ============
 // 所有場景共用 M 裡的材質，所以改材質參數就能整張地圖一起換，不用重建模型
 // 玻璃、窗戶、螢幕、水、金屬維持光滑，不參與切換
 const GLOSSY = /glass|water|lit|screen|window|metal/i;
 const finishMats = Object.entries(M)
   .filter(([k, m]) => m.isMeshPhysicalMaterial && !GLOSSY.test(k) && !m.transparent && !(m.transmission > 0))
   .map(([, m]) => m);
-const finishBase = new Map(finishMats.map(m => [m, { r: m.roughness, cc: m.clearcoat, ccr: m.clearcoatRoughness }]));
-// 磨砂顆粒：用物件在世界中的位置算雜訊（大地板、小物件的顆粒一樣細），讓粗糙度、法線、顏色有細微變化
-const grainU = { value: 0 };
-let finishGrain = 0, nightLevel = 0;   // 目前材質的顆粒量、目前的夜晚程度（0 白天 ～ 1 夜晚）
-// 夜晚光線很暗，顆粒造成的暗點和凹凸會被放大成髒污感，所以晚上把顆粒量降到 25%
-const applyGrain = () => { grainU.value = finishGrain * lerp(1, 0.25, nightLevel); };
-const GRAIN_GLSL = `
-uniform float uGrain;
-varying vec3 vGrainPos;
-float gHash(vec3 p) { p = fract(p * 0.3183099 + 0.1); p *= 17.0; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }
-float gNoise(vec3 x) {
+const finishBase = new Map(finishMats.map(m => [m, m.roughness]));
+// 紙雕：表面加上很淡的紙纖維紋理（依世界座標算，大小物件紋理一樣細），轉折的邊角稍微亮一點，像紙板裁切後的邊
+const paperU = { value: 0 };
+const PAPER_GLSL = `
+uniform float uPaper;
+varying vec3 vPaperPos;
+float pHash(vec3 p) { p = fract(p * 0.3183099 + 0.1); p *= 17.0; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }
+float pNoise(vec3 x) {
   vec3 i = floor(x), f = fract(x); f = f * f * (3.0 - 2.0 * f);
-  return mix(mix(mix(gHash(i), gHash(i + vec3(1,0,0)), f.x), mix(gHash(i + vec3(0,1,0)), gHash(i + vec3(1,1,0)), f.x), f.y),
-             mix(mix(gHash(i + vec3(0,0,1)), gHash(i + vec3(1,0,1)), f.x), mix(gHash(i + vec3(0,1,1)), gHash(i + vec3(1,1,1)), f.x), f.y), f.z);
+  return mix(mix(mix(pHash(i), pHash(i + vec3(1,0,0)), f.x), mix(pHash(i + vec3(0,1,0)), pHash(i + vec3(1,1,0)), f.x), f.y),
+             mix(mix(pHash(i + vec3(0,0,1)), pHash(i + vec3(1,0,1)), f.x), mix(pHash(i + vec3(0,1,1)), pHash(i + vec3(1,1,1)), f.x), f.y), f.z);
 }
-// 細顆粒：依「一個像素在世界中多大」決定顆粒密度，讓顆粒在螢幕上永遠約 1 像素（拉遠不糊成一片、拉近不變大塊）
-// 密度以 2 的次方分級，兩級之間平滑混合，縮放時不會跳動
-float gFine(vec3 p, float seed) {
-  float px = max(length(fwidth(p)), 1e-4);
-  float lvl = clamp(log2(1.0 / px), 3.0, 8.0);             // 每單位 8 ~ 256 顆
-  float fl = floor(lvl);
-  return mix(gNoise(p * exp2(fl) + seed), gNoise(p * exp2(fl + 1.0) + seed), fract(lvl));
+// 紙纖維：把雜訊往兩個斜方向拉長（一條條細絲交錯），再疊一層大塊的深淺不均（紙漿的雲紋）
+float paperFiber(vec3 p) {
+  float near = 1.0 - smoothstep(0.008, 0.025, length(fwidth(p)));   // 拉遠時細絲比一個像素還小，會閃爍，所以淡掉只留雲紋
+  float f1 = pNoise(vec3(p.x * 3.0 + p.z * 3.0, p.y * 40.0, (p.z - p.x) * 40.0));
+  float f2 = pNoise(vec3((p.x - p.z) * 40.0 + 7.1, p.y * 3.0, (p.x + p.z) * 3.0 + 2.3));
+  float cloud = pNoise(p * 1.6 + 11.0);
+  return mix(0.5, (f1 + f2) * 0.5, near) * 0.6 + cloud * 0.4;
 }`;
 finishMats.forEach(m => {
   m.onBeforeCompile = shader => {
-    shader.uniforms.uGrain = grainU;
-    shader.vertexShader = 'varying vec3 vGrainPos;\n' + shader.vertexShader.replace('#include <project_vertex>', `#include <project_vertex>
-      vec4 gpW = vec4(transformed, 1.0);
+    shader.uniforms.uPaper = paperU;
+    shader.vertexShader = 'varying vec3 vPaperPos;\n' + shader.vertexShader.replace('#include <project_vertex>', `#include <project_vertex>
+      vec4 ppW = vec4(transformed, 1.0);
       #ifdef USE_INSTANCING
-        gpW = instanceMatrix * gpW;
+        ppW = instanceMatrix * ppW;
       #endif
-      vGrainPos = (modelMatrix * gpW).xyz;`);
-    shader.fragmentShader = GRAIN_GLSL + '\n' + shader.fragmentShader
-      .replace('#include <color_fragment>', `#include <color_fragment>
-        float gC = gFine(vGrainPos, 0.0);
-        diffuseColor.rgb *= 1.0 - smoothstep(0.35, 1.0, gC) * 0.22 * uGrain;      // 顆粒只往「暗」的方向（像細小凹點），整體顏色不會變淡`)
-      .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
-        roughnessFactor = clamp(roughnessFactor + (gFine(vGrainPos, 3.1) - 0.5) * 0.35 * uGrain, 0.0, 1.0);`)
-      .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
-        normal = normalize(normal + (vec3(gFine(vGrainPos, 1.7), gFine(vGrainPos, 5.1), gFine(vGrainPos, 9.4)) - 0.5) * 0.5 * uGrain);   // 細小凹凸，受光面有顆粒明暗`);
+      vPaperPos = (modelMatrix * ppW).xyz;`);
+    shader.fragmentShader = PAPER_GLSL + '\n' + shader.fragmentShader.replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
+      if (uPaper > 0.0) {
+        float pf = paperFiber(vPaperPos);
+        float pEdge = smoothstep(0.08, 0.45, length(fwidth(normal)));                              // 法線變化快的地方 = 邊角
+        diffuseColor.rgb *= 1.0 + (pf - 0.5) * 0.10 * uPaper;                                     // 纖維深淺 ±5%
+        diffuseColor.rgb = mix(diffuseColor.rgb, vec3(1.0), pEdge * 0.22 * uPaper);                // 邊角提亮
+        normal = normalize(normal + (vec3(pNoise(vPaperPos * 22.0), pNoise(vPaperPos * 22.0 + 4.7), pNoise(vPaperPos * 22.0 + 9.3)) - 0.5) * 0.12 * uPaper);   // 紙面極淺的起伏
+      }`);
   };
-  m.customProgramCacheKey = () => 'grain';
+  m.customProgramCacheKey = () => 'paper';
   m.needsUpdate = true;
 });
 const FINISH = {
-  plastic: { r: o => o.r, cc: o => o.cc, ccr: o => o.ccr, sheen: 0, grain: 0 },        // 原本：霧面塑膠＋一層亮光漆
-  matte:   { r: o => Math.max(o.r, 0.9), cc: () => 0, ccr: o => o.ccr, sheen: 0, grain: 0 },   // 霧面：去掉亮光漆，整體更粗糙
-  frosted: { r: o => Math.max(o.r, 0.7), cc: () => 0, ccr: o => o.ccr, sheen: 0, grain: 1 },   // 磨砂：霧面＋細顆粒（不加白色柔光，避免整體變淡）
+  matte: { r: 0.9, sheen: 0, paper: 0 },     // 霧面：去掉亮光漆，整體更粗糙
+  clay:  { r: 1, sheen: 0.45, paper: 0 },    // 黏土：完全不反光，邊緣一圈柔和的暖色亮光（像黏土表面的細絨）
+  paper: { r: 1, sheen: 0, paper: 1 },      // 紙雕：紙纖維紋理＋邊角提亮，幾乎沒有反光
 };
 function setFinish(name) {
   const f = FINISH[name];
   finishMats.forEach(m => {
-    const o = finishBase.get(m);
-    m.roughness = f.r(o); m.clearcoat = f.cc(o); m.clearcoatRoughness = f.ccr(o);
-    m.sheen = f.sheen; m.sheenRoughness = 0.8; m.sheenColor.set('#ffffff');
+    m.roughness = Math.max(finishBase.get(m), f.r); m.clearcoat = 0;
+    m.sheen = f.sheen; m.sheenRoughness = 0.5; m.sheenColor.set('#fff0dc');
+    m.specularIntensity = f.paper ? 0.35 : 1;   // 紙張幾乎不反光
   });
-  finishGrain = f.grain; applyGrain();
+  paperU.value = f.paper;
   document.querySelectorAll('#finishSeg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.finish === name)));
 }
 document.querySelectorAll('#finishSeg button').forEach(b => { b.onclick = () => setFinish(b.dataset.finish); });
-const finishParam = new URLSearchParams(location.search).get('finish');
-if (FINISH[finishParam]) setFinish(finishParam);   // 網址加 ?finish=matte / frosted 直接用該材質打開
+setFinish(FINISH[new URLSearchParams(location.search).get('finish')] ? new URLSearchParams(location.search).get('finish') : 'matte');   // 網址加 ?finish=clay / paper 直接用該材質打開
 
 // ============ 白天／夜晚 ============
 // 光暈貼圖：中心亮、往外漸淡的圓形，所有路燈共用一張
@@ -2276,7 +2273,6 @@ function applyNight(t) {
   carLights.forEach(l => { l.intensity = 10 * t; });                      // 小汽車車頭燈
   beamMat.opacity = 0.85 * t;
   haloMat.opacity = t;
-  nightLevel = t; applyGrain();                                             // 磨砂顆粒跟著日夜調整
   about.setNight(t);                                                        // 螢幕裡的天空、雲、燈光也跟著日夜
   NIGHT_GROUND.forEach(({ m, day }) => m.color.copy(day).multiplyScalar(lerp(1, 0.45, t)));
   lightboxMat.emissiveIntensity = lerp(0.35, 1.1, t);

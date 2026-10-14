@@ -80,8 +80,9 @@ export default function build() {
     [3.4, 4.85, -2.6, 1.6],      // 右側
     [0.4, 3.0, -4.85, -3.5],     // 右後（大樹後方）
   ];
-  lawns.forEach(([x0, x1, z0, z1]) =>
-    platform.add(box(x1 - x0, 0.14, z1 - z0, M.plazaBLawn, (x0 + x1) / 2, 0.07, (z0 + z1) / 2, 0.05)));
+  // 左前、右側兩塊用深綠，跟另外兩塊萊姆綠交錯
+  lawns.forEach(([x0, x1, z0, z1], i) =>
+    platform.add(box(x1 - x0, 0.14, z1 - z0, i % 2 ? M.plazaBLawn : M.plazaBLawnDk, (x0 + x1) / 2, 0.07, (z0 + z1) / 2, 0.05)));
   // 地磚：所有地磚共用同一個幾何；草坪裡面的不鋪
   const tileGeo = new RoundedBoxGeometry(0.92, 0.06, 0.92, 2, 0.02);
   const inLawn = (x, z) => lawns.some(([x0, x1, z0, z1]) => x > x0 && x < x1 && z > z0 && z < z1);
