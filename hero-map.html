@@ -624,7 +624,7 @@
     .panel-b { display: none; }
     .fade-a, body[data-layout="b"] .fade-a { background: linear-gradient(0deg, var(--bg) 0%, color-mix(in srgb, var(--bg) 82%, transparent) 30%, transparent 55%); }   /* 漸層改成從下往上，墊在文字底下 */
     .hero-main, body[data-layout="b"] .hero-main { --slogan: clamp(56px, 11vw, 104px); --gap: 28px; --card-w: min(560px, 100%);
-      left: var(--gutter); right: var(--gutter); bottom: 5vh; }
+      left: var(--gutter); right: var(--gutter); bottom: var(--gutter); }   /* 底部貼齊邊距，跟右下角圓形按鈕的底邊對齊 */
     .drag-tip, body[data-layout="b"] .drag-tip { --tip-x: 50%; top: 30%; }     /* 放在上半部的地圖中間 */
     /* 布告欄：貼在 3D 板面上會縮到看不清楚（手機約 0.35 倍），改成畫面下方的原尺寸面板，上方鏡頭照常看布告欄 */
     .board-sheet { position: fixed; z-index: 2; left: var(--gutter); right: var(--gutter);
