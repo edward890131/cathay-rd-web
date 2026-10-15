@@ -1,0 +1,37 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>跑步小人：拍成連續動作圖</title>
+<!-- 產生 assets/loader-runner.png：node tools/make-runner-sprite.mjs（會打開這頁、拍好再存檔）。改了 shared/runner.js 的造型或動作就重新跑一次 -->
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { createRunner, RUN_HZ } from '../shared/runner.js';
+const FRAMES = 20, W = 70, H = 84, SCALE = 2;                 // 一個循環拍 20 格；每格 70×84（CSS px），存 2 倍解析度（高解析螢幕也清楚，檔案也不會太大）
+const r = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+r.setPixelRatio(1); r.setSize(W * SCALE, H * SCALE, false);
+r.toneMapping = THREE.ACESFilmicToneMapping; r.toneMappingExposure = 0.95;
+const pm = new THREE.PMREMGenerator(r);
+const sc = new THREE.Scene(); sc.environment = pm.fromScene(new RoomEnvironment(), 0.04).texture;
+sc.add(new THREE.HemisphereLight('#ffffff', '#c9cdd6', 0.6));
+const sun = new THREE.DirectionalLight('#ffffff', 2.0); sun.position.set(-3, 6, 6); sc.add(sun);
+const runner = createRunner(); sc.add(runner.root);
+// 正交相機從正側面看，畫面底邊剛好在腳底（鞋子踩在進度條上）
+const cam = new THREE.OrthographicCamera(-2.5, 2.5, 3, -3, 0.1, 100);
+cam.position.set(0, 2.85, 20); cam.lookAt(0, 2.85, 0);
+const strip = document.createElement('canvas'); strip.width = W * SCALE * FRAMES; strip.height = H * SCALE;
+const ctx = strip.getContext('2d');
+for (let i = 0; i < FRAMES; i++) {
+  runner.pose(i / FRAMES / RUN_HZ);
+  r.render(sc, cam);
+  ctx.drawImage(r.domElement, i * W * SCALE, 0);
+}
+document.body.append(strip);
+window.spriteDataURL = strip.toDataURL('image/png');
+window.spriteInfo = { frames: FRAMES, w: W, h: H, cycle: 1 / RUN_HZ };
+</script>

@@ -109,7 +109,7 @@ export default function build() {
   tower.add(box(DW + 0.3, 0.16, 0.22, M.white, DX, DH + 0.08, FZ + 0.08, 0.05));
   [-1, 1].forEach(s => tower.add(box(0.15, DH + 0.16, 0.22, M.white, DX + s * (DW / 2 + 0.075), (DH + 0.16) / 2, FZ + 0.08, 0.05)));
   // 玻璃後方亮燈的大廳（夜晚會亮）
-  tower.add(box(DW, DH, 0.03, M.shopGlow, DX, DH / 2, FZ + 0.0, 0.01));
+  tower.add(box(DW, DH, 0.03, M.towerLobby, DX, DH / 2, FZ + 0.0, 0.01));
   // 兩扇玻璃門：金屬細框 + 透明玻璃 + 長條把手 + 反光
   const leafW = DW / 2;
   [-1, 1].forEach(s => {

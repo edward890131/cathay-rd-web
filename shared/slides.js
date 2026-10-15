@@ -229,7 +229,26 @@ export function createAboutSlides() {
     c.position.set(...at); c.scale.setScalar(1.8); c.userData.baseX = at[0];
     clouds.add(c);
   });
-  const CLOUD_SPEED = 1.2;                                             // 每秒往右飄約 1.2 單位：看得出在動，但很慢
+  const CLOUD_SPEED = 1.2;
+
+  // ---------- 遠山：跟其他物件一樣的圓潤公仔質感（圓頂山峰、霧面塑膠，不加頂蓋），前後兩排、越遠越淡 ----------
+  // 不吃霧（不然會被洗成跟天空同色），改用比較淡的顏色做出遠近
+  const mountains = new THREE.Group(); scene.add(mountains);
+  const peakGeo = (() => {                                             // 圓頂山形：底部寬、往上收，山頂圓圓的（旋轉曲線做出來）
+    const pts = [];
+    for (let i = 0; i <= 16; i++) { const k = i / 16; pts.push(new THREE.Vector2(Math.max(0.001, 1 - Math.pow(k, 1.6)) * (1 - 0.15 * k), k)); }
+    pts.push(new THREE.Vector2(0, 1));
+    return new THREE.LatheGeometry(pts, 40);
+  })();
+  const mtnMat = (c) => new THREE.MeshStandardMaterial({ color: c, roughness: 0.9, fog: false });
+  const RANGES = [
+    { z: -165, mat: mtnMat('#a9cfae'), peaks: [[-150, 26, 30], [-105, 34, 36], [-60, 24, 28], [-15, 38, 40], [35, 28, 32], [80, 36, 38], [130, 25, 30]] },   // 後排：淡、高
+    { z: -135, mat: mtnMat('#86bf86'), peaks: [[-125, 18, 26], [-80, 22, 28], [-38, 16, 22], [10, 20, 26], [58, 17, 24], [102, 21, 28], [145, 16, 22]] },   // 前排：綠一點、矮
+  ];
+  RANGES.forEach(({ z, mat, peaks }) => peaks.forEach(([x, h, r]) => {
+    h *= 0.62;                                                         // 整體壓低：當背景襯托，不搶前面的建築
+    const m = new THREE.Mesh(peakGeo, mat); m.scale.set(r, h, r * 0.7); m.position.set(x, -0.5, z); mountains.add(m);
+  }));                                             // 每秒往右飄約 1.2 單位：看得出在動，但很慢
 
   // ---------- 地面：草地 + 中央廣場 + 人行道 + 道路 ----------
   const flat = (w, d, mat, x, z, y = 0) => {
@@ -274,6 +293,22 @@ export function createAboutSlides() {
   place(buildPlazaB(), -25, 0, 0.6);
   place(buildShop(), 25.5, 0, 0.75);
   place(buildOffice(), 0, -15, 0.9);
+  // 後排：再多一條街的店家、共創空間和公園，大樓後面不再空蕩蕩（越後面越晚落下，像城市一路往後長出來）
+  flat(140, 3.2, M.road, 0, -22.5, -0.02);                             // 後街
+  for (let i = -12; i <= 12; i++) flat(1.6, 0.18, M.lane, i * 4.5, -22.5, -0.01);
+  place(buildPlazaA(), -26, -13, 0.95);
+  place(buildExchange(), 26, -13, 1.0);
+  place(buildShop(), -24, -30, 1.15);
+  place(buildCowork(), -11, -30, 1.25);
+  place(buildPlazaB(), 2, -30, 1.35);
+  place(buildShop(), 14.5, -30, 1.45);
+  place(buildOffice(), 28, -30, 1.55);
+  place(buildExchange(), -18, -43, 1.7);
+  place(buildShop(), -5, -43, 1.78);
+  place(buildCowork(), 8, -43, 1.86);
+  place(buildPlazaA(), 21, -43, 1.94);
+  [[-32, -21], [-19, -19.5], [-6, -19.5], [7, -19.5], [20, -19.5], [33, -21], [-31, -37], [-12, -37], [9, -37], [31, -37], [-28, -50], [0, -51], [27, -50]]
+    .forEach(([x, z], i) => { const g = tree(1.1 + (i % 3) * 0.15); g.position.set(x, 0, z); scene.add(g); town.push({ g, delay: 1.2 + i * 0.05 }); });   // 街道兩旁和後面的樹
   [-21, -14, -7, 6, 13, 20].forEach((x, i) => {                        // 人行道上的路燈
     const g = new THREE.Group(); g.add(lamp(2.8)); g.position.set(x, 0, 8.2); scene.add(g); town.push({ g, delay: 1.0 + i * 0.06 });
   });
@@ -342,9 +377,10 @@ export function createAboutSlides() {
   // ---------- 鏡頭關鍵影格 ----------
   const SHOTS = [
     // 01：看到大學和兩側公園 → 新大樓落下時鏡頭微微抬高 → 換成街景時稍微退後
-    [{ t: 0, pos: V(4, 7.5, 26), look: V(0, 2.2, 0) }, { t: 3.6, pos: V(4, 6.5, 25), look: V(0, 4.6, 0) }, { t: 7.2, pos: V(6, 9.5, 33), look: V(-0.5, 3, -3) }],
+    // 開場拉近：大學建築佔畫面更大；換成街景時只稍微退後，看得到大樓後面一路長出來的街區
+    [{ t: 0, pos: V(3.5, 5.4, 18), look: V(0, 2.6, -0.5) }, { t: 3.6, pos: V(4, 6.8, 22), look: V(0, 5.2, 0) }, { t: 7.2, pos: V(5.5, 9, 27), look: V(-0.5, 4.8, -6) }],
     // 02：慢慢往大門推近，看著師生走進去
-    [{ t: 0, pos: V(6, 9.5, 33), look: V(-0.5, 3, -3) }, { t: 3, pos: V(8, 3.6, 24), look: V(-1.5, 2.4, 1) }, { t: 12, pos: V(4.5, 2.4, 15), look: V(-1.7, 1.6, 1.5) }],
+    [{ t: 0, pos: V(5.5, 9, 27), look: V(-0.5, 4.8, -6) }, { t: 3, pos: V(8, 3.6, 24), look: V(-1.5, 2.4, 1) }, { t: 12, pos: V(4.5, 2.4, 15), look: V(-1.7, 1.6, 1.5) }],
     // 03：穿過大門（之後切到室內）
     [{ t: 0, pos: V(4.5, 2.4, 15), look: V(-1.7, 1.6, 1.5) }, { t: 0.9, pos: V(DOOR.x + 0.6, 1.4, 6.5), look: V(DOOR.x, 1.1, 0) }, { t: 1.4, pos: V(DOOR.x, 1.1, 2.7), look: V(DOOR.x, 1.1, -4) }],
   ];
@@ -399,7 +435,7 @@ export function createAboutSlides() {
     sun.target.position.copy(camState.look);
     sun.position.copy(camState.look).addScaledVector(SUN_DIR, 80);
     // 天空跟著鏡頭（永遠包住鏡頭）；進到室內就不顯示藍天白雲，背景回到底色
-    sky.visible = clouds.visible = !inside;
+    sky.visible = clouds.visible = mountains.visible = !inside;
     sky.position.copy(camera.position);
     scene.fog.color.copy(inside ? scene.background : skyMat.uniforms.bottom.value);
     const drift = performance.now() / 1000 * CLOUD_SPEED;

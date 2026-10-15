@@ -93,12 +93,29 @@ export function createAnimator(stage, items, { drop = 7, dur = 0.65, lift = 0.35
   const pointer = new THREE.Vector2(9, 9);
   let start = performance.now();
   let hovered = null;
-  let hoverEnabled = true;
+  let hoverEnabled = true, pressed = false, frame = 0;
   stage.renderer.domElement.addEventListener('pointermove', e => {
     pointer.set((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
   });
   stage.renderer.domElement.addEventListener('pointerleave', () => pointer.set(9, 9));
-  const findItem = o => { while (o && !o.userData.isItem) o = o.parent; return o; };
+  // 拖曳地圖時不判斷 hover（按著滑鼠時不需要，也最吃效能）
+  stage.renderer.domElement.addEventListener('pointerdown', () => { pressed = true; });
+  addEventListener('pointerup', () => { pressed = false; });
+  addEventListener('pointercancel', () => { pressed = false; });
+  // hover 判斷用每個物件的外框盒子，不逐一檢查模型的每個三角形（整張地圖約 85 萬個三角形，每幀逐一檢查是拖曳卡頓的主因）
+  // 外框只量一次（落地之後），記成「相對物件位置的偏移」，物件移動（走路的人）時跟著平移
+  const boxes = new WeakMap(), wb = new THREE.Box3(), hitP = new THREE.Vector3();
+  const itemBox = g => {
+    let b = boxes.get(g);
+    if (!b) {
+      g.updateMatrixWorld(true);
+      b = new THREE.Box3().setFromObject(g);
+      if (b.isEmpty()) return null;
+      b.min.sub(g.position); b.max.sub(g.position);
+      boxes.set(g, b);
+    }
+    return wb.copy(b).translate(g.position);
+  };
 
   return {
     replay() { start = performance.now(); },
@@ -108,12 +125,19 @@ export function createAnimator(stage, items, { drop = 7, dur = 0.65, lift = 0.35
     get hovered() { return hovered; },
     update() {
       const t = (performance.now() - start) / 1000;
-      hovered = null;
-      if (hoverEnabled) {
+      if (!hoverEnabled || pressed || pointer.x > 2) hovered = null;
+      else if (frame++ % 3 === 0) {                                   // 每 3 幀判斷一次就夠（滑鼠移動時看不出差別）
         raycaster.setFromCamera(pointer, stage.camera);
-        const hit = raycaster.intersectObjects(items, true)[0];
-        const it = hit && findItem(hit.object);
-        if (it && it.userData.hoverable) hovered = it;
+        let best = null, bestD = Infinity;
+        for (const g of items) {
+          if (!g.visible || !g.userData.hoverable || (t - g.userData.delay) < dur) continue;   // 還在掉落的不算
+          const b = itemBox(g);
+          if (b && raycaster.ray.intersectBox(b, hitP)) {
+            const d = hitP.distanceToSquared(raycaster.ray.origin);
+            if (d < bestD) { bestD = d; best = g; }
+          }
+        }
+        hovered = best;
       }
       for (const g of items) {
         const u = g.userData;

@@ -64,15 +64,23 @@
     transition: opacity .7s ease, visibility .7s; }
   .loader.hide { opacity: 0; visibility: hidden; }
   .loader.hide .loader-inner { transform: translateY(-12px) scale(.98); }
-  .loader-inner { display: flex; flex-direction: column; align-items: center; gap: 14px; width: min(360px, 80vw);
+  .loader-inner { display: flex; flex-direction: column; align-items: center; gap: 14px; width: min(560px, 84vw);
     transition: transform .7s ease; }
   .loader-brand { font: 700 14px/1 var(--font-display); letter-spacing: .2em; color: var(--text-secondary); }
-  .loader-num { display: flex; align-items: baseline; gap: 4px; font: 700 clamp(64px, 10vw, 112px)/1 var(--font-display);
+  .loader-num { display: flex; align-items: baseline; gap: 4px; font: 700 clamp(88px, 15vw, 168px)/1 var(--font-display);
     letter-spacing: -0.06em; color: var(--text-heading); font-variant-numeric: tabular-nums; }
   .loader-num small { font-size: .38em; color: var(--color-primary); letter-spacing: 0; }
   .loader-bar { width: 100%; height: 4px; border-radius: 99px; background: rgba(0,0,0,.08); overflow: hidden; }
   .loader-bar i { display: block; height: 100%; background: var(--color-primary); transform: scaleX(0); transform-origin: 0 50%; }
-  .loader-cap { margin: 0; font-size: 13px; color: var(--muted); }
+  .loader-cap { margin: 12px 0 0; font-size: 13px; color: var(--muted); }   /* 進度條下方多空一點，跟跑步小人拉開 */
+  /* 跑步小人：站在進度條上、跟著進度最前端跑（位置由載入程式更新）
+     動作是 3D 模型預先拍好的 20 格連續圖（shared/runner.js → tools/runner-sprite.html），網頁一打開就能播，不用等 3D 引擎；
+     只用 transform 切換畫格，就算後面電腦忙著準備畫面，小人也照樣跑、不會頓 */
+  .loader-track { position: relative; width: 100%; padding-top: 80px; }
+  #loaderRunner { position: absolute; left: 0; bottom: 3px; width: 70px; height: 84px; transform: translateX(-50%); overflow: hidden; pointer-events: none; }
+  #loaderRunner img { display: block; width: 1400px; height: 84px; max-width: none; animation: loader-run .69s steps(20) infinite; will-change: transform; }
+  @keyframes loader-run { to { transform: translateX(-1400px); } }
+  @media (prefers-reduced-motion: reduce) { #loaderRunner img { animation: none; } }
   body.night .loader-bar { background: rgba(255,255,255,.12); }   /* 夜晚：深色底上的進度條底軌 */
   body.night .loader-brand { color: var(--muted); }
 
@@ -103,8 +111,8 @@
     letter-spacing: -0.09em; font-size: clamp(64px, 9vw, 130px); color: var(--text-heading); }
   .slogan .o { color: var(--color-primary); display: block; }
   .card { width: 500px; max-width: 100%; padding: 32px; border-radius: var(--radius-card); display: flex; flex-direction: column; gap: 20px;
-    align-items: flex-start; background: var(--card-bg); border: 1px solid var(--card-border); backdrop-filter: blur(22px);
-    -webkit-backdrop-filter: blur(22px); pointer-events: auto; }
+    align-items: flex-start; background: var(--card-bg); border: 1px solid var(--card-border); backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px); pointer-events: auto; }
   .card .copy { display: flex; flex-direction: column; gap: 16px; }
   .card h2 { margin: 0; font-size: 20px; font-weight: 700; line-height: 1.4; color: var(--card-title); }
   .card p { margin: 0; font-size: 14px; line-height: 1.6; color: var(--text-secondary); }
@@ -175,6 +183,11 @@
   .plat { position: fixed; inset: 0; z-index: 3; display: grid; place-items: center; overflow-y: auto; opacity: 0; pointer-events: none;
     padding: calc(var(--header-h) + var(--gutter) + 72px) var(--gutter) calc(var(--gutter) + 110px); background: var(--bg); transition: background-color .8s; }
   .plat.live { pointer-events: auto; }
+  /* 桌機：鏡頭停在辦公室螢幕前，平台畫面貼在螢幕玻璃範圍內（位置、大小由程式每幀量），內容整體等比縮小放進去 */
+  .plat.in-screen { inset: auto; padding: 0; display: block; overflow: hidden; border-radius: 2px; }
+  .plat.in-screen .plat-inner { position: absolute; left: 50%; top: 50%; width: 820px; transform: translate(-50%, -50%) scale(var(--ps, 1)); transform-origin: 50% 50%; gap: 24px; }
+  .plat.in-screen .plat-grid { gap: 16px; }
+  .plat.in-screen .plat-item { padding: 18px; }
   .plat-inner { width: min(1120px, 100%); display: flex; flex-direction: column; gap: 32px; }
   .plat-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }   /* 標題在左、前往平台在右（不會跟右下角圓形按鈕重疊） */
   .plat-head > div { display: flex; flex-direction: column; gap: 8px; }
@@ -215,7 +228,7 @@
     display: flex; flex-direction: column; overflow: hidden; transition: opacity .35s, background-color .8s;
     /* 跟 Hero 卡、說明卡、加入卡同一套毛玻璃樣式（深淺色模式跟著切換） */
     background: var(--board-bg); border: 1px solid var(--card-border); border-radius: var(--radius-card);
-    backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
     --board-bg: rgba(236,238,242,.9); }   /* 底色比一般卡片深一階，裡面的小牌卡才分得出來 */
   body.night .board-panel { --board-bg: rgba(12,15,21,.9); }
   .board-panel.show { opacity: 1; pointer-events: auto; }
@@ -248,12 +261,20 @@
   .news time { font-size: 10px; color: var(--text-secondary); opacity: .75; }   /* 時間、地點再淡一階，跟標題拉開層次 */
 
   /* ---------- 3D 標籤 ---------- */
-  .label { transition: opacity .25s; font-size: 12px; padding: 4px 10px; border-radius: 99px; background: rgba(31,35,40,.7); color: #fff;
-    -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);   /* 背景模糊（毛玻璃）；底色透明度從 .82 降到 .7，模糊才看得出來 */
+  .label { transition: opacity .25s; font-size: 12px; padding: 4px 10px; border-radius: 99px; background: rgba(31,35,40,.84); color: #fff;
+    -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);   /* 背景模糊（毛玻璃）；底色加深到 .84（字更清楚），模糊半徑縮小省效能 */
     white-space: nowrap; display: flex; gap: 6px; align-items: center; }
   .label i { width: 7px; height: 7px; border-radius: 50%; background: var(--wip); }
   .label.done i { background: var(--done); }
+  .label.pet-name i { display: none; }   /* 貓狗的名字：不需要場景的完工狀態圓點 */
   .label { opacity: 0; }
+  /* 貓狗的對話框：白底圓角、底下一個小尖角指向頭頂；滑鼠移到牠身上，或拉近到看得清楚時出現 */
+  .pet-bubble { position: relative; padding: 6px 12px; border-radius: 12px; background: #fff; color: #1f2328; font-size: 13px; font-weight: 500;
+    white-space: nowrap; box-shadow: 0 4px 14px rgba(0,0,0,.16); opacity: 0; transform: translateY(-34px) scale(.85); transform-origin: 50% 100%;
+    transition: opacity .25s, transform .3s cubic-bezier(.2,.8,.2,1); pointer-events: none; }
+  .pet-bubble::after { content: ""; position: absolute; left: 50%; bottom: -6px; width: 12px; height: 12px; background: #fff; border-radius: 2px;
+    transform: translateX(-50%) rotate(45deg); }
+  .pet-bubble.show { opacity: 1; transform: translateY(-34px) scale(1); }   /* 往上讓出名稱標籤 */
   .label.show { opacity: 1; }      /* 進場前 5 秒顯示，之後只在 hover 該場景時顯示 */
   body.focus .hero, body.focus .fade-a, body.focus .panel-b, body.focus .drag-tip { display: none; }   /* ?focus= 模式只看地圖 */
 
@@ -309,7 +330,7 @@
   .tr-modal[hidden] { display: none; }
   .tr-dialog { position: relative; height: 100%; overflow: hidden; pointer-events: auto;   /* 固定撐滿可用高度：切換頁籤時卡片大小不變 */
     display: flex; flex-direction: column; gap: 20px; padding: 28px; border-radius: var(--radius-card);
-    background: var(--card-bg); border: 1px solid var(--card-border); backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px);
+    background: var(--card-bg); border: 1px solid var(--card-border); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
     color: var(--text-primary); animation: tr-pop .45s cubic-bezier(.2,.8,.2,1); }
   @keyframes tr-fade { from { opacity: 0; } }
   @keyframes tr-pop { from { opacity: 0; transform: translateY(12px); } }
@@ -328,15 +349,16 @@
   .tr-info { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
   .tr-addr { display: flex; align-items: center; gap: 16px; }
   .tr-addr p { flex: 1; margin: 0; font-size: 16px; font-weight: 700; line-height: 1.6; }
-  .tr-nav { width: 44px; height: 44px; flex: none; display: grid; place-items: center; border: 1px solid var(--text-secondary); border-radius: 50%; transition: background .2s; }
+  /* 導航按鈕、交通方式切換：跟計畫亮點 01–04 同一套淺灰色按鈕（淺灰底、無框線，選中變黑底） */
+  .tr-nav { width: 44px; height: 44px; flex: none; display: grid; place-items: center; border: 0; border-radius: 50%; background: var(--chip-bg); transition: background .2s; }
   .tr-nav:hover { background: var(--hover); }
   body.night .tr-nav img { filter: invert(1); }
   /* Pill Tabs：選中＝主要按鈕（深底白字），其餘＝次要（白底灰框） */
   .tr-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
-  .tr-tabs button { height: 40px; padding: 0 18px; border-radius: var(--radius-btn); border: 1px solid #8c959f; background: var(--surface-page);
-    color: var(--text-primary); font: 500 14px/1.6 var(--font-family); cursor: pointer; transition: background .2s, color .2s; }
-  .tr-tabs button:hover { background: var(--hover); }
-  .tr-tabs button[aria-selected="true"] { background: var(--fill-button); border-color: var(--fill-button); color: var(--text-on-fill); }
+  .tr-tabs button { height: 40px; padding: 0 18px; border-radius: var(--radius-sm); border: 0; background: var(--chip-bg);
+    color: var(--text-secondary); font: 500 14px/1.6 var(--font-family); cursor: pointer; transition: background .2s, color .2s; }
+  .tr-tabs button:hover { color: var(--text-primary); }
+  .tr-tabs button[aria-selected="true"] { background: var(--fill-button); color: var(--text-on-fill); }
   .tr-panel { display: flex; flex-direction: column; gap: 12px; animation: tr-fade .25s ease; }
   .tr-panel[hidden] { display: none; }
   .tr-group { display: flex; flex-direction: column; gap: 2px; font-size: 14px; line-height: 1.7; }
@@ -516,9 +538,8 @@
     box-shadow: 0 10px 30px rgba(0,0,0,.18); transform: translateY(16px); transition: transform .8s cubic-bezier(.2,.8,.2,1), background .2s; }
   .join-again:hover { background: var(--fill-hover); }
   .join-again svg { width: 18px; height: 18px; }
-  body.join-open .sec-nav { opacity: 0 !important; pointer-events: none !important; }   /* 這段不在錨點裡 */
   .join-card { width: min(1040px, 100%); min-height: 0; flex: 0 1 auto; overflow: auto; overscroll-behavior: contain; padding: 48px; border-radius: var(--radius-card);
-    background: var(--card-bg); border: 1px solid var(--card-border); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+    background: var(--card-bg); border: 1px solid var(--card-border); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
     box-shadow: 0 20px 60px rgba(0,0,0,.12); transform: translateY(16px); transition: transform .8s cubic-bezier(.2,.8,.2,1), background-color .8s; }
   .join-card > h2 { margin: 0; text-align: center; font-size: 32px; font-weight: 700; line-height: 1.4; color: var(--card-title); }
   .join-card > p { margin: 12px 0 0; text-align: center; font-size: 15px; line-height: 1.8; color: var(--text-secondary); }
@@ -536,8 +557,7 @@
   .join-item .btn-fill:hover { background: var(--fill-hover); }
   /* 立體角色插圖：用地圖上同一套人物模型即時畫出來，站在牌卡右下角，頭稍微超出牌卡上緣 */
   .join-fig { position: absolute; right: 16px; bottom: 0; width: 170px; height: 280px; pointer-events: none; }
-  .join-fig canvas { position: static; width: 100%; height: 100%; display: block; animation: join-bob 3.2s ease-in-out infinite; }
-  .join-item + .join-item .join-fig canvas { animation-delay: -1.6s; }
+  .join-fig canvas { position: static; width: 100%; height: 100%; display: block; }   /* 動作由 3D 即時畫（上班族原地走、學生揮手） */
   @keyframes join-bob { 50% { transform: translateY(-4px); } }
   @media (max-width: 900px) {
     .join-card { padding: 28px 20px; }
@@ -670,7 +690,7 @@
     .tr-body { gap: 16px; }
     .tr-addr p { font-size: 15px; }
     /* 一起從這裡起步：上方不用讓工具列（收在選單裡）；角色插圖縮小 */
-    .join { padding: calc(var(--header-h) + var(--gutter)) var(--gutter) var(--gutter); gap: 14px; }
+    .join { padding: calc(var(--header-h) + var(--gutter) + var(--nav-btn) + 24px) var(--gutter) var(--gutter); gap: 14px; }   /* 上方讓出錨點列（07 一同起步也在錨點列上） */
     .join-card { padding: 20px 16px; }
     .join-card > h2 { font-size: 20px; }
     .join-card > p { font-size: 13px; line-height: 1.7; }
@@ -721,6 +741,7 @@
     .seg button { height: 34px; font-size: 14px; }                                    /* 外框 2px 內距＋34 = 整組 38 */
   }
 </style>
+<link rel="preload" as="image" href="assets/loader-runner.png">   <!-- 載入畫面的跑步小人：最先下載，一打開就出現 -->
 <script type="importmap">
 { "imports": {
   "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
@@ -734,7 +755,7 @@
   <div class="loader-inner">
     <span class="loader-brand">CNRD</span>
     <div class="loader-num"><span id="loaderNum">0</span><small>%</small></div>
-    <div class="loader-bar"><i id="loaderBar"></i></div>
+    <div class="loader-track"><div id="loaderRunner" aria-hidden="true"><img src="assets/loader-runner.png" alt="" width="1400" height="84"></div><div class="loader-bar"><i id="loaderBar"></i></div></div>
     <p class="loader-cap" id="loaderCap">正在載入 3D 引擎…</p>
   </div>
 </div>
@@ -747,16 +768,17 @@
     const nq = new URLSearchParams(location.search).get('night'), h = new Date().getHours();
     if (nq === '1' || (nq !== '0' && (h < 8 || h >= 18))) document.body.classList.add('night');
     const num = document.getElementById('loaderNum'), bar = document.getElementById('loaderBar');
-    const cap = document.getElementById('loaderCap'), el = document.getElementById('loader');
+    const cap = document.getElementById('loaderCap'), el = document.getElementById('loader'), runner = document.getElementById('loaderRunner');
     document.documentElement.classList.add('loading');
     const tick = () => {
       if (L.target < 30) L.target = Math.min(30, L.target + 0.25);
-      if (performance.now() - L.t0 > 20000) L.done = true;            // 保險：20 秒還沒好就直接進網站
+      if (performance.now() - L.t0 > 30000) L.done = true;            // 保險：30 秒還沒好就直接進網站
       const goal = L.done ? 100 : L.target;
       L.shown += Math.max((goal - L.shown) * 0.08, goal > L.shown ? 0.4 : 0);
       if (L.shown > goal) L.shown = goal;
       num.textContent = Math.floor(L.shown);
       bar.style.transform = `scaleX(${L.shown / 100})`;
+      runner.style.left = `${L.shown}%`;                               // 小人跟著進度條最前端
       el.setAttribute('aria-valuenow', Math.floor(L.shown));
       if (L.caption) cap.textContent = L.caption;
       if (L.done && L.shown >= 99.9) {                                  // 跑到 100% 停一下再淡出
@@ -902,8 +924,8 @@
 <!-- 進駐企業：鏡頭拉近商業大樓前的燈箱（WF 81:1919） -->
 <section class="card caption" id="capTenants">
   <div class="copy">
-    <small>TENANTS</small>
-    <h3>進駐企業</h3>
+    <small>進駐企業</small>
+    <h3>這些品牌都在這裡</h3>
     <p>依企業名稱排序</p>
   </div>
   <div class="logo-wall" id="logoWall"></div>
@@ -939,6 +961,7 @@
   <button data-stop="6"><b>04</b><span>進駐企業</span></button>
   <button data-stop="7"><b>05</b><span>活動消息</span></button>
   <button data-action="traffic"><b>06</b><span>交通資訊</span></button>
+  <button data-action="join"><b>07</b><span>一同起步</span></button>
   <div class="sec-thumb" id="secThumb" aria-hidden="true"><div class="clone"></div></div>
 </nav>
 
@@ -946,7 +969,7 @@
 <div class="tr-modal" id="trModal" role="region" aria-labelledby="trTitle" hidden>
   <section class="tr-dialog">
     <header class="tr-head">
-      <div><small>ACCESS 06</small><h2 id="trTitle">交通資訊</h2></div>
+      <div><small>交通資訊</small><h2 id="trTitle">我該怎麼前往</h2></div>
     </header>
     <div class="tr-body">
       <div class="tr-map"><iframe id="trMap" title="國泰產研中心位置（Google 地圖）" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe></div>
@@ -1157,8 +1180,9 @@ const progress = (v, caption) => {
 progress(30, '正在準備字型…');                                         // 走到這裡代表 3D 引擎與網站程式都下載好了
 
 // ============ 舞台 ============
-const stage = createStage({ view: 60, shadowSize: 62, shadowRes: 4096, target: [0, 0, 0], background: '#f2f2f2', maxPixelRatio: 1.5 });
+const stage = createStage({ view: 60, shadowSize: 62, shadowRes: 2048, target: [0, 0, 0], background: '#f2f2f2', maxPixelRatio: 1.5 });
 stage.controls.enabled = false;           // 預設由捲動控制鏡頭
+stage.controls.dampingFactor = 0.16;     // 拖曳慣性：預設 0.05 太黏（放手後拖很久、拖曳時畫面跟不上手），調高讓地圖跟手
 const { scene } = stage;
 // 「關於這個計畫」電腦螢幕幻燈片：獨立的 3D 小劇場，用同一個渲染器畫在同一個畫布上
 const about = createAboutSlides();
@@ -1783,7 +1807,8 @@ function drawPlatFigures() {
   });
   env.dispose(); pm.dispose(); r.dispose(); r.forceContextLoss();
 }
-// 把角色畫成牌卡上的小插圖：開一個暫時的小渲染器，畫完就關掉（不佔用地圖的效能）
+// 把角色畫成牌卡上的小插圖：用一個小渲染器畫好，一起從這裡起步打開時每幀更新動作（上班族原地走路、學生揮手）
+let joinFig = null;
 function drawJoinFigures() {
   const keepN = illusN;                                                     // 不影響地圖上人物的道具分配
   const figs = [['figBiz', personBiz, -0.35], ['figStu', personStudent, -0.35]];
@@ -1792,8 +1817,8 @@ function drawJoinFigures() {
   r.setPixelRatio(1); r.setSize(W, H, false);
   r.toneMapping = THREE.ACESFilmicToneMapping; r.toneMappingExposure = 0.95;
   const pm = new THREE.PMREMGenerator(r);
-  const env = pm.fromScene(new RoomEnvironment(), 0.04).texture;
-  figs.forEach(([id, make, yaw]) => {
+  const env = pm.fromScene(new RoomEnvironment(), 0.04).texture; pm.dispose();
+  joinFig = { r, last: 0, figs: figs.map(([id, make, yaw]) => {
     const sc = new THREE.Scene(); sc.environment = env;
     sc.add(new THREE.HemisphereLight('#ffffff', '#c9cdd6', 0.6));
     const sun = new THREE.DirectionalLight('#ffffff', 2.0); sun.position.set(-3, 6, 6); sc.add(sun);
@@ -1802,12 +1827,29 @@ function drawJoinFigures() {
     // 正交相機，從正面稍微偏上看（跟地圖的等角視角同一種感覺，但更正面）
     const cam = new THREE.OrthographicCamera(-2.0, 2.0, 3.3, -3.3, 0.1, 100);
     cam.position.set(0, 3.6, 20); cam.lookAt(0, 2.5, 0);
-    r.render(sc, cam);
     const cv = document.getElementById(id); cv.width = W; cv.height = H;
-    cv.getContext('2d').drawImage(r.domElement, 0, 0);
-  });
-  env.dispose(); pm.dispose(); r.dispose(); r.forceContextLoss();
+    return { p, sc, cam, ctx: cv.getContext('2d'), baseArmZ: p.armL.rotation.z };
+  }) };
   illusN = keepN;
+  animateJoinFigures(0);
+}
+// 一起從這裡起步的角色動作（主畫面迴圈在牌卡打開時每幀呼叫）：
+//   上班族：原地走路（手腳交錯擺動、身體隨步伐上下），提著電腦包的右手擺小一點
+//   學生：舉起的左手左右揮動，身體跟著微微晃
+function animateJoinFigures(now) {
+  if (!joinFig) return;
+  const t = now / 1000, [biz, stu] = joinFig.figs;
+  const sw = Math.sin(t * 5.2);
+  biz.p.legL.rotation.x = sw * 0.42; biz.p.legR.rotation.x = -sw * 0.42;
+  biz.p.armL.rotation.x = -sw * 0.38; biz.p.armR.rotation.x = sw * 0.16;
+  biz.p.g.position.y = Math.abs(Math.cos(t * 5.2)) * 0.05;
+  stu.p.armL.rotation.z = stu.baseArmZ + Math.sin(t * 7) * 0.32;            // 揮手：大約每秒揮一下多
+  stu.p.g.rotation.z = Math.sin(t * 7) * 0.015;
+  joinFig.figs.forEach(f => {
+    joinFig.r.render(f.sc, f.cam);
+    f.ctx.clearRect(0, 0, f.ctx.canvas.width, f.ctx.canvas.height);
+    f.ctx.drawImage(joinFig.r.domElement, 0, 0);
+  });
 }
 
 // ============ 動物 ============
@@ -1933,6 +1975,28 @@ let current = null;   // 目前方案（給鏡頭用）
 let board = null, lightbox = null, computer = null;   // computer：廣場復古電腦（hover 標籤、鑽進螢幕的位置）
 let retroScreen = null;   // 廣場復古電腦的螢幕（之後播「關於這個計畫」幻燈片）
 // 布告欄、燈箱的 hover 標籤（點擊後捲到對應段落）
+// 貓狗頭上的對話框（CSS2D 標籤）：量一次模型高度，放在頭頂上方
+function petBubble(g, text) {
+  // 外層給 CSS2D 定位用（它會覆寫 transform），裡面的對話框才能自己做往上偏移和彈出動畫；不放進 labelEls（那邊會每幀重設標籤的顯示）
+  const wrap = document.createElement('div'), el = document.createElement('div');
+  el.className = 'pet-bubble'; el.textContent = text; wrap.append(el);
+  const h = new THREE.Box3().setFromObject(g).getSize(new THREE.Vector3()).y / g.scale.y;
+  const lab = new CSS2DObject(wrap); lab.position.set(0, h + 0.35, 0); g.add(lab);
+  return el;
+}
+// 貓狗的名稱標籤：跟場景標籤同一種深色膠囊，hover 牠（浮起來）或拉近時出現；對話框疊在名稱上方
+function petName(g, text) {
+  const el = document.createElement('div');
+  el.className = 'label pet-name'; el.innerHTML = `<i></i>${text}`; el.intro = false;
+  labelEls.push(el);
+  g.userData.labelEl = el;                                             // hover 時由場景標籤的邏輯顯示
+  const h = new THREE.Box3().setFromObject(g).getSize(new THREE.Vector3()).y / g.scale.y;
+  const lab = new CSS2DObject(el); lab.position.set(0, h + 0.35, 0); g.add(lab);
+  return el;
+}
+const petBox = new THREE.Box3();
+let petFly = null;                                  // 點貓狗：鏡頭拉近到看得到對話框的距離 { pet, t0, from, z0, off }
+const pickPet = ptr => { hotRay.setFromCamera(ptr, stage.camera); return pets.find(a => a.g.visible && hotRay.ray.intersectsBox(petBox.setFromObject(a.g).expandByScalar(0.3))) ?? null; };
 function hotspotLabel(parent, text, y) {
   const el = document.createElement('div');
   el.className = 'label done hot';                     // hot：可以點的標籤（觸控裝置在首屏常駐顯示，點了前往）
@@ -1972,6 +2036,7 @@ function build(variantId, { replay = true } = {}) {
       lanes.add(box(l.axis === 'z' ? 0.22 : 1.5, 0.04, l.axis === 'z' ? 1.5 : 0.22, M.lane, x, 0.12, z, 0.02));
     }
   });
+  mergeParts(lanes).children.forEach(m => { m.castShadow = false; });   // 幾十條虛線合成一個物件畫（貼地的線不需要影子）
   world.add(lanes);
 
   // 大道綠帶
@@ -2350,8 +2415,8 @@ function build(variantId, { replay = true } = {}) {
   const owner = people.find(h => h.kind === 'walk');
   if (owner) {
     const d = dog();
-    addItem(d.g, 0, 0, { delay: 2.4, drop: 3, hoverable: false });
-    pets.push({ kind: 'dog', ...d, owner, rect: rectOf(walkerBlocks[0], OFF + 0.9), phase: 0 });
+    addItem(d.g, 0, 0, { delay: 2.4, drop: 3 });                      // hover 時跟場景一樣浮起來（可以點：拉近看牠說話）
+    pets.push({ kind: 'dog', ...d, owner, rect: rectOf(walkerBlocks[0], OFF + 0.9), phase: 0, bubble: petBubble(d.g, '好想去公園玩！'), name: petName(d.g, '許志豪') });
   }
   // 小貓：坐在中央大綠地右側的空位（CNRD 立體字和噴水池中間，正對布告欄的另一側）
   const catLawn = L.blocks.find(b => b.ground === 'grass' && b.x1 - b.x0 > 20 && b.z1 - b.z0 > 20)
@@ -2360,8 +2425,8 @@ function build(variantId, { replay = true } = {}) {
     const c = cat();
     c.g.scale.setScalar(PERSON_SCALE * 1.2);   // 比人物的比例稍大一點，鳥瞰時還找得到
     c.g.rotation.y = Math.PI / 4;              // 臉朝向觀看者
-    addItem(c.g, (catLawn.x0 + catLawn.x1) / 2 + 9, (catLawn.z0 + catLawn.z1) / 2, { delay: 2.6, baseY: CURB_H, drop: 3, hoverable: false });
-    pets.push({ kind: 'cat', ...c, phase: rand() * 6 });
+    addItem(c.g, (catLawn.x0 + catLawn.x1) / 2 + 9, (catLawn.z0 + catLawn.z1) / 2, { delay: 2.6, baseY: CURB_H, drop: 3 });   // hover 浮起來、可以點
+    pets.push({ kind: 'cat', ...c, phase: rand() * 6, bubble: petBubble(c.g, '喵...喵...喵...'), name: petName(c.g, '陳淑芬') });
   }
 
   // 小汽車（黃、橘兩台）：沿著整張地圖最外圈的街道慢慢繞
@@ -2425,6 +2490,14 @@ function build(variantId, { replay = true } = {}) {
       }
       people.push(h);
     });
+  });
+  // 效能：很小的零件（眼睛、鞋帶、按鈕…）不投影子，影子那一輪要畫的東西少很多，畫面看不出差別
+  world.updateMatrixWorld(true);
+  const ws = new THREE.Vector3();
+  world.traverse(o => {
+    if (!o.isMesh || !o.castShadow) return;
+    o.geometry.boundingSphere ?? o.geometry.computeBoundingSphere();
+    if (o.geometry.boundingSphere.radius * o.getWorldScale(ws).x < 0.12) o.castShadow = false;
   });
   if (replay) anim.replay();
 }
@@ -2562,11 +2635,15 @@ function stopAt(i, Lc, stacked) {
     const o = current.spaces[i - 2];
     return { target: stopTarget.clone().set(o.x, o.y + 2.4, o.z), view: ZOOM_VIEW, shift: 0, dir: ISO_DIR, sy: stacked ? areaSY(stackArea.caption) : 0 };
   }
-  if ((i === 'pscreen' || i === 5) && platScreen()) { // 貼近辦公室電腦螢幕：正對螢幕、玻璃剛好填滿畫面
+  if ((i === 'pscreen' || i === 5) && platScreen()) { // 辦公室電腦螢幕：正對螢幕
     const ps = platScreen();
+    // 桌機：停在螢幕前面，螢幕約佔畫面高度一半，背景看得到桌面、書櫃這些辦公室局部；平台畫面放進螢幕玻璃裡
+    if (!stacked) return { target: ps.center, view: Math.max(ps.h * 1.8, ps.w * 1.4 / aspect), shift: 0, dir: ps.dir, dist: 9, midView: 7, keep: 2.2 };
+    // 上圖下文（手機、直式平板）：螢幕太小放不下平台內容，維持推到玻璃填滿畫面
     return { target: ps.center, view: Math.min(ps.h, ps.w / aspect) * 0.96, shift: 0, dir: ps.dir, dist: 1.6, midView: 7 };
   }
-  if (i === 6 && lightbox) return { target: lightbox.center, view: stacked ? 10 : 7, shift: stacked ? 0 : 0.16, dir: lightbox.dir, sy: stacked ? areaSY(stackArea.tenants) : 0 };
+  // 進駐企業：燈箱拉近到快填滿可用的寬度（桌機：說明卡右邊那塊，約畫面寬 55%；上圖下文：整個寬度），畫面窄時自動退一點，左右不會被切掉
+  if (i === 6 && lightbox) return { target: lightbox.center, view: stacked ? Math.max(6, 3.9 / aspect) : Math.max(5, 8 / aspect), shift: stacked ? 0 : 0.16, dir: lightbox.dir, sy: stacked ? areaSY(stackArea.tenants) : 0 };
   if (i === 7 && board) {                         // 布告欄寬度佔畫面約 78%，高度也要放得下
     if (stacked) {                                // 上圖下文：牌卡疊在畫面中間，鏡頭把布告欄板面對準牌卡
       const a = stackArea.board, h = Math.max(a[1] - a[0], 0.2);
@@ -2608,6 +2685,24 @@ function platScreen() {
   platScr.dir.set(0, 0, 1).applyQuaternion(psQ).setY(0).normalize();   // 螢幕正面（水平方向）
   platScr.dir.y = 0.12; platScr.dir.normalize();                       // 稍微從上往下看，跟復古電腦一樣
   return platScr;
+}
+// 產研媒合平台放進螢幕：把玻璃四個角投影到畫面上，平台畫面貼齊玻璃範圍，內容整體等比縮放到放得下（不超出螢幕）
+const psCorner = new THREE.Vector3(), psRight = new THREE.Vector3(), psUp = new THREE.Vector3();
+function placePlatInScreen() {
+  const ps = platScr, cam = stage.camera;
+  cam.updateMatrixWorld();                                            // 鏡頭正對螢幕：用鏡頭的左右、上下方向當玻璃的寬、高方向
+  psRight.setFromMatrixColumn(cam.matrixWorld, 0);
+  psUp.setFromMatrixColumn(cam.matrixWorld, 1);
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  for (const [a, b] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) {
+    psCorner.copy(ps.center).addScaledVector(psRight, a * ps.w / 2).addScaledVector(psUp, b * ps.h / 2).project(cam);
+    const x = (psCorner.x + 1) / 2 * innerWidth, y = (1 - psCorner.y) / 2 * innerHeight;
+    x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y);
+  }
+  const w = x1 - x0, h = y1 - y0, inner = plat.firstElementChild;
+  Object.assign(plat.style, { left: `${x0}px`, top: `${y0}px`, width: `${w}px`, height: `${h}px` });
+  const s = Math.min(w * 0.9 / inner.offsetWidth, h * 0.88 / inner.offsetHeight);
+  plat.style.setProperty('--ps', s.toFixed(4));
 }
 // 計畫亮點說明卡：三個空間的內容（WF 81:1879）
 const SPACE_COPY = [
@@ -2729,13 +2824,17 @@ function exitFree() {
 // 繼續觀看：轉回原本視角，同時捲到下一段（鏡頭拉近辦公研發空間）
 // 布告欄／燈箱：滑鼠指到時顯示標籤，點一下捲到對應段落（拖曳地圖不算點擊）
 const hotRay = new THREE.Raycaster(), hotPtr = new THREE.Vector2(9, 9);
+let hotFrame = 0, hotPressed = false;
+canvas.addEventListener('pointerdown', () => { hotPressed = true; });
+addEventListener('pointerup', () => { hotPressed = false; });
+addEventListener('pointercancel', () => { hotPressed = false; });
 let hotHovered = null, downAt = null;
 canvas.addEventListener('pointermove', e => {
   hotPtr.set(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
   if (e.buttons) hotPtr.set(9, 9);                    // 拖曳中不判斷
 });
 canvas.addEventListener('pointerleave', () => hotPtr.set(9, 9));
-canvas.addEventListener('pointerdown', e => { downAt = [e.clientX, e.clientY]; });
+canvas.addEventListener('pointerdown', e => { downAt = [e.clientX, e.clientY]; petFly = null; });   // 自己拖曳地圖：取消拉近貓狗
 function pickHotspot(ptr) {                          // 滑鼠位置底下是布告欄還是燈箱
   hotRay.setFromCamera(ptr, stage.camera);
   return [board, lightbox, computer, ...cars].find(h => h && hotRay.intersectObject(h.g, true).some(i => i.object.isMesh)) ?? null;
@@ -2746,6 +2845,12 @@ canvas.addEventListener('click', e => {
   const ptr = new THREE.Vector2(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
   const hit = pickHotspot(ptr);                        // 點擊當下重新判斷，不靠上一幀
   if (hit) return hit.stop === 'traffic' ? goTraffic(hit) : goStop(hit.stop);
+  const pet = pickPet(ptr);                            // 點貓狗：進入操作模式，鏡頭拉近到牠頭上出現對話框的距離
+  if (pet && !jump && !carFocus) {
+    enterFree();
+    petFly = { pet, t0: performance.now(), from: ctl.target.clone(), z0: stage.camera.zoom, off: stage.camera.position.clone().sub(ctl.target) };
+    return;
+  }
   if (!isCoarse) return;
   hotRay.setFromCamera(ptr, stage.camera);
   let o = hotRay.intersectObjects(items, true)[0]?.object;
@@ -2773,9 +2878,69 @@ function openTraffic() {
 // 交通資訊和一起從這裡起步不在捲動軸上，所以用滾輪、觸控滑動、鍵盤的方向來切換：
 //   活動消息（頁面已經捲到底）往下 → 交通資訊；交通資訊往下 → 一起從這裡起步、往上 → 回到原本的畫面
 // 交通資訊卡裡面的內容還能捲的時候，讓它先捲，不切換
-let navLock = 0, atBottomSince = 0;
-const atBottom = () => scrollY >= document.documentElement.scrollHeight - innerHeight - 4;
-addEventListener('scroll', () => { if (!atBottom()) atBottomSince = 0; else if (!atBottomSince) atBottomSince = performance.now(); }, { passive: true });
+let navLock = 0;
+// ===== 分段捲動：滑一下 = 前往下一段（或上一段），不會停在兩段中間的轉場，也不會一口氣滑過頭 =====
+// 頁：首屏 → 理念與使命 01、02、03 → 計畫亮點三個空間 → 媒合平台 → 進駐企業 → 活動消息（之後是交通資訊、一起從這裡起步）
+const PAGES = [0, ABOUT_IN + 0.3, ABOUT_IN + ABOUT_STEP + 0.3, ABOUT_IN + ABOUT_STEP * 2 + 0.3, ...STOP_S.slice(2)];
+// 手指或滑鼠所在的元素自己還能往這個方向捲（選單、卡片內容…）：讓它先捲，不換頁
+function innerScroll(t, dir) {
+  for (let el = t instanceof Element ? t : null; el && el !== document.body; el = el.parentElement) {
+    const oy = getComputedStyle(el).overflowY;
+    if ((oy === 'auto' || oy === 'scroll') && el.scrollHeight > el.clientHeight + 2) {
+      if (dir === 0 || (dir > 0 ? el.scrollTop + el.clientHeight < el.scrollHeight - 2 : el.scrollTop > 2)) return true;
+    }
+  }
+  return false;
+}
+// 現在是不是由分段捲動接管（地圖操作模式、交通資訊、一起從這裡起步、選單、RWD 預覽、載入中都不接管）
+function pagingOn(target, dir) {
+  return !document.documentElement.classList.contains('loading') && !free && !joinOn && trModal.hidden && !carFocus
+    && !body.classList.contains('rwd') && !body.classList.contains('menu-open') && !innerScroll(target, dir);
+}
+// 畫面狀態的「指紋」：鏡頭停在哪一站／轉場到哪、理念與使命第幾步、媒合平台畫面淡入多少；指紋一樣 = 畫面看起來一樣
+function camSig(sv) {
+  const { seg, k } = timelineAt(sv);
+  const pos = k >= 1 ? `at:${seg.to}` : k <= 0 ? `at:${seg.from}` : `${TIMELINE.indexOf(seg)}:${k.toFixed(3)}`;
+  const step = sv >= ABOUT_IN && sv < ABOUT_OUT ? Math.floor((sv - ABOUT_IN) / ABOUT_STEP) : -1;
+  const pk = Math.min(Math.max((sv - (PLAT_IN - 0.15)) / 0.15, 0), 1) * Math.min(Math.max((PLAT_OUT + 0.15 - sv) / 0.15, 0), 1);
+  return `${pos}|${step}|${pk.toFixed(2)}`;
+}
+// 從 from 往 to 捲：前面有一段捲動時畫面完全不動（每站的停留區）。換頁時直接跳過這段，一滑鏡頭就開始動，不會覺得延遲
+function motionStart(from, to) {
+  const d = Math.sign(to - from), s0 = camSig(from);
+  let sv = from;
+  while ((to - sv) * d > 0.02 && camSig(sv + d * 0.01) === s0) sv += d * 0.01;
+  return sv;
+}
+function pageStep(dir) {
+  if (jump) return;                                                  // 跨章節直飛中：等它飛完
+  if (glide && glide.page >= 0 && glide.dir === dir && glide.k < 0.75) return;   // 同方向的轉場前 3/4 還在跑：先看完這段，不跳過（快到了就可以接下一段）
+  const base = glide && glide.page >= 0 ? PAGES[glide.page] : scrollY / innerHeight;
+  const idx = dir > 0 ? PAGES.findIndex(s => s > base + 0.05) : PAGES.findLastIndex(s => s < base - 0.05);
+  if (idx < 0) {                                                     // 最後一段再往下：前往交通資訊
+    if (dir > 0 && !glide) { navLock = performance.now() + 1200; goTraffic(); }
+    return;
+  }
+  if (!glide) {                                                      // 跳過畫面不動的那一段（轉場進行中就從目前位置接著走）
+    const s0 = motionStart(scrollY / innerHeight, PAGES[idx]);
+    if (Math.abs(s0 - scrollY / innerHeight) > 0.02) scrollTo({ top: innerHeight * s0, behavior: 'instant' });
+  }
+  const dy = Math.abs(PAGES[idx] - scrollY / innerHeight);
+  userNav(idx >= 1 && idx <= 3 ? idx - 1 : -1);                      // 理念與使命：到了那一步從頭播
+  glideTo(innerHeight * PAGES[idx], { page: idx, dur: Math.min(3000 + dy * 1400, 6500), ease: pageEase });   // 放慢：空間之間約 5 秒，眼睛跟得上鏡頭的動線
+}
+// 保險：用捲軸拖曳等其他方式停在兩段中間時，停下 0.3 秒後自動滑到最近的一段
+let snapTimer;
+addEventListener('scroll', () => {
+  clearTimeout(snapTimer);
+  snapTimer = setTimeout(() => {
+    if (glide || jump || !pagingOn(null, 0)) return;
+    const sv = scrollY / innerHeight;
+    if (sv > PAGES.at(-1) + 0.05) return;                           // 最後一段之後（捲到底）不用吸附
+    const near = PAGES.reduce((a, s) => (Math.abs(s - sv) < Math.abs(a - sv) ? s : a));
+    if (Math.abs(near - sv) > 0.02) glideTo(innerHeight * near, { page: PAGES.indexOf(near), dur: 900 });
+  }, 300);
+}, { passive: true });
 function stepGesture(dir, target) {
   if (performance.now() < navLock) return;
   if (joinOn) {                                                        // 一起從這裡起步：往下 → 頁尾滑上來（最底了）；往上 → 先收頁尾，再回到交通資訊
@@ -2791,30 +2956,55 @@ function stepGesture(dir, target) {
     navLock = performance.now() + 1200;
     return dir > 0 ? goJoin() : closeTraffic();
   }
-  // 剛捲到底的那一下（滑鼠、觸控板的慣性）不算，停在底部 0.4 秒後再往下才前往交通資訊
-  if (dir > 0 && !free && !carFocus && !glide && atBottom() && atBottomSince && performance.now() - atBottomSince > 400) {
-    navLock = performance.now() + 1200;
-    goTraffic();
-  }
+  if (pagingOn(target, dir)) pageStep(dir);
 }
-addEventListener('wheel', e => { if (Math.abs(e.deltaY) >= 24) stepGesture(Math.sign(e.deltaY), e.target); }, { passive: true });
+// 滾輪、觸控板：一次「撥動」只算一下。觸控板放手後的慣性是一連串不間斷的事件，停超過 0.2 秒才算新的一下，
+// 所以不會因為慣性一口氣連跳好幾段（例如一起從這裡起步被慣性直接帶到頁尾）
+let wheelLast = 0, wheelAcc = 0, wheelFired = false;
+addEventListener('wheel', e => {
+  if (e.ctrlKey) return;                                              // 觸控板捏合：交給地圖縮放
+  const now = performance.now();
+  if (now - wheelLast > 200) { wheelAcc = 0; wheelFired = false; }
+  wheelLast = now;
+  const dir = Math.sign(e.deltaY), paging = pagingOn(e.target, dir);
+  if (paging && Math.abs(e.deltaY) >= Math.abs(e.deltaX)) e.preventDefault();   // 頁面不自己捲，改成換頁
+  if (!paging && trModal.hidden && !joinOn) return;                   // 地圖操作模式、卡片內容捲動：照舊
+  wheelAcc += e.deltaY;
+  if (!wheelFired && Math.abs(wheelAcc) >= 30) { wheelFired = true; stepGesture(Math.sign(wheelAcc), e.target); }
+}, { passive: false });
 // 交通資訊、一起從這裡起步開著時：後面的頁面完全不能被拖動（iOS 只靠 overflow: hidden 擋不住），只有卡片內容本身可以捲
+// 觸控：第一下移動就決定這次滑動交給誰。直向、且由分段捲動接管 → 擋掉頁面原本的捲動，放手時換頁；其他（橫向、卡片內容）照舊
+let touchX0 = null, touchMode = null, pageTouch = false;
 addEventListener('touchmove', e => {
+  if (touchMode === null && touchY0 !== null && e.touches.length === 1) {
+    const dx = e.touches[0].clientX - touchX0, dy = touchY0 - e.touches[0].clientY;
+    touchMode = Math.abs(dy) > Math.abs(dx) && pagingOn(e.target, Math.sign(dy)) ? 'page' : 'native';
+    pageTouch = touchMode === 'page';                                 // 換頁的滑動不能順便轉動首屏地圖
+  }
+  if (touchMode === 'page') { e.preventDefault(); return; }
   if (!joinOn && trModal.hidden) return;
   const sc = e.target.closest?.('.join-card, .tr-body, .site-footer');
   if (!sc || sc.scrollHeight <= sc.clientHeight + 2) e.preventDefault();
 }, { passive: false });
 let touchY0 = null;
-addEventListener('touchstart', e => { touchY0 = e.touches.length === 1 ? e.touches[0].clientY : null; }, { passive: true });
+addEventListener('touchstart', e => {
+  touchY0 = e.touches.length === 1 ? e.touches[0].clientY : null;
+  touchX0 = e.touches.length === 1 ? e.touches[0].clientX : null;
+  touchMode = null;
+}, { passive: true });
 addEventListener('touchend', e => {
+  pageTouch = false;
   if (touchY0 === null) return;
   const dy = touchY0 - e.changedTouches[0].clientY; touchY0 = null;   // 手指往上滑 = 往下看
+  if (touchMode === 'native' && !joinOn && trModal.hidden) return;   // 橫向滑動、卡片內容捲動：不換頁
   if (Math.abs(dy) > 50) stepGesture(Math.sign(dy), e.target);
 }, { passive: true });
 addEventListener('keydown', e => {
   if (e.target.closest?.('input, select, textarea')) return;
-  if (['ArrowDown', 'PageDown', ' '].includes(e.key)) stepGesture(1, e.target);
-  else if (['ArrowUp', 'PageUp'].includes(e.key) && !trModal.hidden) stepGesture(-1, e.target);
+  const dir = ['ArrowDown', 'PageDown', ' '].includes(e.key) ? 1 : ['ArrowUp', 'PageUp'].includes(e.key) ? -1 : 0;
+  if (!dir || e.repeat) return;
+  if (pagingOn(e.target, dir)) e.preventDefault();                    // 鍵盤也一次換一段
+  if (dir > 0 || !trModal.hidden || pagingOn(e.target, dir)) stepGesture(dir, e.target);
 });
 // 進入交通資訊：鏡頭先飛到離目前畫面最近的小汽車，停在車頭正前方拉近（車子繼續開，鏡頭跟著），再打開彈窗
 let carFocus = null;                                   // { car, t0, from }
@@ -2861,20 +3051,28 @@ let glide = null;
 const RAMP = 0.3, VMAX = 1 / (1 - RAMP);                            // 加速、減速各佔 30% 時間；中段速度 = 平均速度 × 1.43
 const rampUp = t => VMAX * (t / 2 - RAMP / (2 * Math.PI) * Math.sin(Math.PI * t / RAMP));   // 加速段走過的距離（速度從 0 平順升到最快）
 const glideEase = x => x < RAMP ? rampUp(x) : x > 1 - RAMP ? 1 - rampUp(1 - x) : VMAX * (RAMP / 2 + (x - RAMP));
-function glideTo(y) {
-  if (glide) cancelAnimationFrame(glide.raf);
+// 換頁用：一滑就開始動（不等待），但加速溫和（佔 20%）、收尾更慢（減速佔 50%），鏡頭像被輕輕帶過去
+const PA = 0.2, PD = 0.5, PV = 1 / (1 - (PA + PD) / 2);
+const pageEase = x => x < PA ? PV * (x / 2 - PA / (2 * Math.PI) * Math.sin(Math.PI * x / PA))
+  : x > 1 - PD ? 1 - PV * ((1 - x) / 2 - PD / (2 * Math.PI) * Math.sin(Math.PI * (1 - x) / PD))
+  : PV * (PA / 2 + (x - PA));
+function glideTo(y, opt = {}) {
+  if (glide) { cancelAnimationFrame(glide.raf); glide = null; }
   const y0 = scrollY, dy = y - y0;
   if (Math.abs(dy) < 2) return;
-  const dur = Math.min(2000 + Math.abs(dy) / innerHeight * 550, 4500);
+  const dur = opt.dur ?? Math.min(2000 + Math.abs(dy) / innerHeight * 550, 4500);
   const t0 = performance.now();
+  const g = { raf: 0, page: opt.page ?? -1, dir: Math.sign(dy), k: 0 };   // page：分段捲動要去的那一頁（-1 = 不是分段捲動發起的）；k：進度
+  const ease = opt.ease ?? glideEase;
   const step = now => {
-    const k = Math.min((now - t0) / dur, 1);
-    scrollTo({ top: y0 + dy * glideEase(k), behavior: 'instant' });
-    glide = k < 1 ? { raf: requestAnimationFrame(step) } : null;
+    const k = g.k = Math.min((now - t0) / dur, 1);
+    scrollTo({ top: y0 + dy * ease(k), behavior: 'instant' });
+    if (k < 1) g.raf = requestAnimationFrame(step); else if (glide === g) glide = null;
   };
-  glide = { raf: requestAnimationFrame(step) };
+  g.raf = requestAnimationFrame(step); glide = g;
 }
-['wheel', 'touchstart', 'keydown'].forEach(ev => addEventListener(ev, () => { if (glide) { cancelAnimationFrame(glide.raf); glide = null; } }, { passive: true }));
+// 分段捲動接管的地方，滑動、觸控不會打斷正在進行的轉場（打斷了就會卡在兩段中間）；其他地方照舊
+['wheel', 'touchstart', 'keydown'].forEach(ev => addEventListener(ev, e => { if (glide && !pagingOn(e.target, 0)) { cancelAnimationFrame(glide.raf); glide = null; } }, { passive: true }));
 
 // ===== 跨章節直飛：記下現在的鏡頭 → 捲動位置直接跳到目的地 → 鏡頭從原本的位置平順飛過去（不經過中間的章節）=====
 let jump = null;                                        // { t0, dur, target, dir, view, shift, dist }
@@ -2949,6 +3147,7 @@ const JOIN_FAR = 0.62;                                   // 拉近到地圖鋪�
 function goJoin() {
   trafficToOverview();
   joinOn = true;
+  navLock = performance.now() + JUMP_DUR + 600;                       // 牌卡完整出現後才接受下一次往下（不會被慣性直接帶到頁尾）
   lockPageScroll(true);
   if (!figsDrawn) { figsDrawn = true; drawJoinFigures(); }
   join.hidden = false;
@@ -3005,7 +3204,11 @@ function trafficToOverview() {
   scrollTo({ top: 0, behavior: 'instant' });
 }
 const secBtns = [...document.querySelectorAll('#secNav button')];
-secBtns.forEach(b => { b.onclick = () => (b.dataset.action === 'traffic' ? goTraffic() : goStop(Number(b.dataset.stop))); });   // 06 交通資訊：鏡頭飛到小汽車前面再打開彈窗
+secBtns.forEach(b => { b.onclick = () => {
+  if (b.dataset.action === 'traffic') return goTraffic();            // 06 交通資訊：鏡頭飛到小汽車前面再打開彈窗
+  if (b.dataset.action === 'join') { if (!joinOn) { exitFree(); goJoin(); } return; }   // 07 一同起步：鏡頭拉到全景、淡入牌卡
+  goStop(Number(b.dataset.stop));
+}; });
 // 錨點列可以左右捲動：依目前捲動位置決定兩側要不要淡出；滑鼠在錨點列上滾滾輪 → 改成左右捲動錨點列
 const secNav = document.getElementById('secNav');
 const updateNavFade = () => {
@@ -3236,7 +3439,7 @@ const NIGHT = { bg: new THREE.Color('#0e1118'), sky: new THREE.Color('#5d6d9e'),
 const baseEnv = new Map(Object.values(M).map(m => [m, m.envMapIntensity ?? 1]));
 // 地面類材質（人行道、道路、路緣、標線）：夜晚顏色壓暗，讓整體更接近黑，而不是一片灰
 const NIGHT_GROUND = ['sidewalk', 'road', 'curb', 'lane'].filter(k => M[k]).map(k => ({ m: M[k], day: M[k].color.clone() }));
-const glowBase = { lampBulb: [0, 3.2], shopGlow: [0.35, 1.8], lampGlow: [0.7, 3], brandSign: [0, 1.4] };   // [白天, 夜晚] 的發光強度
+const glowBase = { lampBulb: [0, 3.2], shopGlow: [0.35, 1.8], towerLobby: [0.35, 1.8], lampGlow: [0.7, 3], brandSign: [0, 1.4] };   // [白天, 夜晚] 的發光強度
 let nightTarget = 0, nightT = 0;
 function applyNight(t) {
   scene.background.copy(DAY.bg).lerp(NIGHT.bg, t);
@@ -3519,7 +3722,35 @@ peopleBtns.forEach(b => b.onclick = () => {
 });
 // 全部載入完、畫出第一個畫面後，載入畫面跑到 100% 並淡出；進場掉落動畫等載入畫面開始淡出才播，第一眼就看得到
 progress(0, '正在載入進駐企業…');
-logosReady.then(() => requestAnimationFrame(() => requestAnimationFrame(() => {
+// 預先暖機：載入畫面還蓋著的時候，把後面才會看到的東西都先準備好，第一次往下看時才不會卡
+//   ── 媒合平台、一起從這裡起步的插圖先畫好
+//   ── 地圖和理念與使命的幻燈片：連畫面外、暫時藏起來的物件（室內人物、夜晚燈光…）都先畫一次，
+//      顯示卡第一次畫某個材質要先編譯、第一次畫某個物件要先上傳，這兩件事最容易造成第一次經過時頓一下
+const nextFrame = () => new Promise(r => requestAnimationFrame(() => r()));
+async function warmUp() {
+  progress(90, '正在預先準備畫面…');
+  try {
+    drawPlatFigures();
+    if (!figsDrawn) { figsDrawn = true; drawJoinFigures(); }
+    await nextFrame();
+    progress(94);
+    const r = stage.renderer, restore = [];
+    for (const [sc, cam] of [[scene, stage.camera], [about.scene, about.camera]]) {
+      sc.traverse(o => {
+        if (!o.visible) { o.visible = true; restore.push(() => { o.visible = false; }); }
+        if (o.frustumCulled) { o.frustumCulled = false; restore.push(() => { o.frustumCulled = true; }); }
+      });
+      if (r.compileAsync) await r.compileAsync(sc, cam); else r.compile(sc, cam);
+      r.render(sc, cam);
+      await nextFrame();
+    }
+    restore.forEach(f => f());
+    progress(97);
+    await document.fonts.ready;
+    for (let i = 0; i < 12; i++) await nextFrame();                     // 讓正常畫面先穩定跑幾格再進場
+  } catch (e) { console.warn('warmUp', e); }                            // 暖機失敗不影響進站
+}
+logosReady.then(warmUp).then(() => requestAnimationFrame(() => requestAnimationFrame(() => {
   if (window.__load) { window.__load.caption = '準備完成'; window.__load.done = true; }
 })));
 addEventListener('loader:hide', () => { anim.replay(); showDragTip(); scheduleAutoLayout(); showCookie(); }, { once: true });
@@ -3706,6 +3937,8 @@ function stackedHome() {
 function smooth(t) { return t * t * (3 - 2 * t); }   // 用 function 宣告：程式一開始就能用（夜晚模式初始化會用到）
 function lerp(a, b, t) { return a + (b - a) * t; }
 const tmp = new THREE.Vector3(), tmpV = new THREE.Vector3(), camDir = ISO_DIR.clone(), cullV = new THREE.Vector3();
+let shadowTick = false;
+stage.renderer.shadowMap.autoUpdate = false;                       // 影子改成手動更新（見主畫面繪製前）
 const layoutHome = new THREE.Vector3();
 let heroEdge = 0;   // 左側文字區塊目前的右邊界（往下捲時往左收）
 const panelVw = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--panel-w')) || 40;   // 左側底色區塊寬度（vw），跟 CSS 同一個設定
@@ -3715,8 +3948,31 @@ let last = performance.now();
 const FREE_MIN_VIEW = 14;   // 自由操作時最多放大到「畫面高度 = 14 個世界單位」
 const FREE_MAX_VIEW = 66;   // 電腦版最多縮小到「畫面高度 = 66 個世界單位」
 
+// ===== 效能：靜止時降到 30 fps、跑不順時自動降解析度 =====
+// 使用者最近 1.5 秒有捲動、拖曳、滑鼠移動、按鍵，或鏡頭正在轉場、進場動畫、理念與使命小劇場、日夜切換中 → 每幀都畫；
+// 其他時候畫面上只有路人、車子慢慢動，隔一幀畫一次（30 fps 看不出差別，顯示卡工作量減半）
+let lastActive = performance.now(), skipTick = false;
+['scroll', 'pointermove', 'pointerdown', 'wheel', 'touchstart', 'touchmove', 'keydown'].forEach(ev => addEventListener(ev, () => { lastActive = performance.now(); }, { passive: true }));
+// 自動調解析度（只在「動」的時候）：每 2 秒看一次平均幀數，連續兩次低於 42 fps 才降一級，最低 1.25 倍（不降到 1 倍，細線才不會出現鋸齒斷線）；
+// 一停下來（1.5 秒沒操作）馬上恢復最清楚，靜止的畫面永遠是完整畫質
+const DPR_STEPS = [...new Set([Math.min(devicePixelRatio, 1.5), Math.min(devicePixelRatio, 1.25)])];
+let dprLevel = 0, fpsT0 = 0, fpsN = 0, fpsGood = 0, fpsBad = 0, prevFrame = 0;
+const setDprLevel = lv => { if (lv === dprLevel) return; dprLevel = lv; stage.renderer.setPixelRatio(DPR_STEPS[lv]); stage.frame(); };
+function trackFps(now) {
+  const gap = now - prevFrame; prevFrame = now;
+  if (gap > 250 || document.hidden || anim.elapsed < 4) { fpsT0 = now; fpsN = 0; return; }   // 剛進場、切回分頁、停頓過：重新計時
+  fpsN++;
+  if (now - fpsT0 < 2000) return;
+  const fps = fpsN * 1000 / (now - fpsT0); fpsT0 = now; fpsN = 0;
+  if (fps < 42) { fpsGood = 0; if (++fpsBad >= 2 && dprLevel < DPR_STEPS.length - 1) { fpsBad = 0; setDprLevel(dprLevel + 1); } }
+  else { fpsBad = 0; if (fps > 55 && ++fpsGood >= 2 && dprLevel > 0) { fpsGood = 0; setDprLevel(dprLevel - 1); } }
+}
 stage.renderer.setAnimationLoop(() => {
   if (deviceMode !== 'desktop') return;   // RWD 預覽中：外面的地圖被 mockup 蓋住，不用畫
+  const tNow = performance.now(), sv0 = scrollY / innerHeight;
+  const busy = tNow - lastActive < 1500 || glide || jump || carFocus || returning || anim.elapsed < 8
+    || Math.abs(nightTarget - nightT) > 0.001 || (layoutT !== 0 && layoutT !== 1) || (sv0 >= ABOUT_IN - 0.2 && sv0 < ABOUT_OUT + 0.2);
+  if (!busy) { setDprLevel(0); fpsBad = 0; if ((skipTick = !skipTick)) return; prevFrame = 0; } else trackFps(tNow);   // 停下來：恢復最清楚
   const now = performance.now(), dt = Math.min((now - last) / 16.7, 3); last = now;
   const max = document.documentElement.scrollHeight - innerHeight;
   const p = max > 0 ? scrollY / max : 0;
@@ -3741,11 +3997,11 @@ stage.renderer.setAnimationLoop(() => {
   const at = atRaw === 'screen' ? 1 : atRaw === 'pscreen' ? 5 : atRaw;   // 目前停在哪一站（轉場中 = -1）
 
   if (!free) {
-    ctl.enabled = sv < 0.02 && !returning && !joinOn;                            // 只有在 Hero 區（還沒往下捲）才能拖曳地圖
+    ctl.enabled = sv < 0.02 && !returning && !joinOn && !pageTouch;                            // 只有在 Hero 區（還沒往下捲）才能拖曳地圖
     // 關掉動態效果的人：不做鑽進螢幕的推近，鏡頭停在首屏，到點直接切換畫面
     const kk = reduceMotion && seg.kind === 'dive' ? (seg.from === 0 ? 0 : 1) : k;
     let A = stopAt(seg.from, Lc, stacked), B = stopAt(seg.to, Lc, stacked), kk2 = kk;
-    let clipNear = seg.kind === 'plat' ? 1 : 0;                       // 辦公室電腦：椅子就在螢幕正前方，推近時把鏡頭前面的東西切掉
+    let clipNear = seg.kind === 'plat' ? 1 : 0, clipKeep = 0.6;        // clipKeep：螢幕前保留多深（停在螢幕前時留著桌面上的鍵盤、滑鼠）                       // 辦公室電腦：椅子就在螢幕正前方，推近時把鏡頭前面的東西切掉
     // 鑽進／退出螢幕分兩階段：
     //   ① 鏡頭轉到電腦正面，同時把螢幕移到畫面正中央（畫面稍微拉近一點）
     //   ② 螢幕留在正中央，原地一路推進到玻璃填滿畫面
@@ -3759,7 +4015,9 @@ stage.renderer.setAnimationLoop(() => {
       if (t < SPLIT) { A = pFar; B = mid; kk2 = smooth(t / SPLIT); }
       else { A = mid; B = scr; kk2 = smooth((t - SPLIT) / (1 - SPLIT)); }
       if ([seg.from, seg.to].includes('pscreen') && t >= SPLIT) clipNear = smooth((t - SPLIT) / (1 - SPLIT));
+      clipKeep = scr.keep ?? 0.6;
     }
+    if (seg.kind === 'plat') clipKeep = A.keep ?? 0.6;
     // 鑽進／退出：大小用「等比」縮放（越靠近推得越細，不會最後一下猛衝）；地圖站之間：先稍微拉遠再拉近
     stage.view = seg.kind === 'map' ? lerp(A.view, B.view, kk2) + Math.sin(Math.PI * kk2) * 14 : Math.exp(lerp(Math.log(A.view), Math.log(B.view), kk2));
     stage.shift = stacked ? 0 : lerp(A.shift, B.shift, kk2);
@@ -3770,7 +4028,7 @@ stage.renderer.setAnimationLoop(() => {
     camDir.copy(A.dir).lerp(B.dir, kk2).normalize();                // 電腦螢幕、布告欄、燈箱這幾站鏡頭會轉到正面
     // 鏡頭離目標的距離：平常 120（遠遠看）；鑽進螢幕時一路靠近，經過的建築會被留在鏡頭後面
     const camDist = seg.kind === 'map' ? 120 : Math.exp(lerp(Math.log(A.dist ?? 120), Math.log(B.dist ?? 120), kk2));
-    stage.camera.near = Math.max(0.1, (camDist - 0.6) * clipNear);   // 近裁切面推到螢幕前 0.6：中間擋住的家具看不到（stage.frame 會更新投影）
+    stage.camera.near = Math.max(0.1, (camDist - clipKeep) * clipNear);   // 近裁切面推到螢幕前 0.6：中間擋住的家具看不到（stage.frame 會更新投影）
     if (joinOn) { stage.view *= JOIN_FAR; stage.shift = 0; }        // 一起從這裡起步：地圖置中、鋪滿畫面（牌卡在正中間）
     stage.camera.position.copy(tmp).addScaledVector(camDir, camDist);
     stage.camera.lookAt(tmp);
@@ -3791,12 +4049,12 @@ stage.renderer.setAnimationLoop(() => {
     } else camDistNow = camDist;
     if (carFocus) {                                                   // 交通資訊：鏡頭飛到小汽車車頭正前方，之後跟著車子走
       const c = carFocus.car, yaw = c.yaw ?? c.g.rotation.y;
-      carTarget.set(c.g.position.x, 0.9, c.g.position.z);
-      carFront.set(Math.sin(yaw), 0.45, Math.cos(yaw)).normalize();  // 車頭朝向（稍微從上往下看）
+      carTarget.set(c.g.position.x, 0.75, c.g.position.z);
+      carFront.set(Math.sin(yaw), 0.3, Math.cos(yaw)).normalize();  // 車頭正前方、接近平視（只比車頭燈高一點點），看得到車子的臉
       const fk = glideEase(Math.min((now - carFocus.t0) / CAR_FLY, 1)), F = carFocus.from;
       tmp.lerpVectors(F.target, carTarget, fk);
       camDir.lerpVectors(F.dir, carFront, fk).normalize();
-      stage.view = Math.exp(lerp(Math.log(F.view), Math.log(20), fk)) * (1 + 0.5 * Math.sin(Math.PI * fk));
+      stage.view = Math.exp(lerp(Math.log(F.view), Math.log(stacked ? 8 : 6.5), fk)) * (1 + 0.5 * Math.sin(Math.PI * fk));   // 拉近：車子約佔畫面高度三成
       const trShift = stacked ? 0 : Math.min(((trModal.offsetWidth || innerWidth * 0.5) + 20) / innerWidth / 2, 0.3);   // 左邊是交通資訊卡：車子放在右邊剩下空間的中間
       stage.shift = lerp(F.shift, trShift, fk);
       stage.shiftY = lerp(F.shiftY ?? 0, stacked ? areaSY(stackArea.traffic) : 0, fk);   // 上圖下文：交通資訊卡在下方，車子放在卡片上方空白區
@@ -3805,6 +4063,8 @@ stage.renderer.setAnimationLoop(() => {
       stage.camera.position.copy(tmp).addScaledVector(camDir, d);
       stage.camera.lookAt(tmp);
       camDistNow = d;
+      // 平視時鏡頭和車子之間（同一條路上的路人、別台車、路邊的樹）會擋住：只畫車頭前 6 單位以內的東西
+      stage.camera.near = Math.max(0.1, (d - 6) * fk);
     }
     camLook.copy(tmp);
     if (returning) {                                                  // 從操作模式平滑轉回等角視角
@@ -3827,6 +4087,18 @@ stage.renderer.setAnimationLoop(() => {
     ctl.minZoom = stacked ? 0.5 : Math.min(1, stage.view / FREE_MAX_VIEW);
     if (stage.camera.zoom > ctl.maxZoom) { stage.camera.zoom = ctl.maxZoom; stage.camera.updateProjectionMatrix(); }
     if (stage.camera.zoom < ctl.minZoom) { stage.camera.zoom = ctl.minZoom; stage.camera.updateProjectionMatrix(); }
+    if (petFly) {                                                     // 點了貓狗：1.2 秒內把視點移到牠身上、拉近到畫面高度約 16 單位（對話框出現的距離）
+      const k = smooth(Math.min((now - petFly.t0) / 1200, 1));
+      stage.camera.zoom = Math.exp(lerp(Math.log(petFly.z0), Math.log(Math.min(stage.view / 16, ctl.maxZoom)), k));
+      petFly.pet.g.getWorldPosition(tmpV); tmpV.y += 0.8;              // 狗會一直走：每幀追著牠目前的位置（用世界座標，牠可能被包在場景群組裡）
+      // 畫面往右偏（讓出左側文字區塊）的量是固定的世界單位，放大後不會跟著縮：視點往右補回多出來的偏移，貓狗才會落在右側畫面的中間
+      const sh = stage.shift * stage.view * innerWidth / innerHeight * (1 - 1 / stage.camera.zoom);
+      tmpV.addScaledVector(cullV.setFromMatrixColumn(stage.camera.matrixWorld, 0), sh);
+      ctl.target.lerpVectors(petFly.from, tmpV, k);
+      stage.camera.position.copy(ctl.target).add(petFly.off);
+      stage.camera.updateProjectionMatrix();
+      if (k >= 1) petFly = null;
+    }
     ctl.update();
     stage.sun.target.position.copy(ctl.target);                      // 陰影範圍跟著視點走
     stage.sun.position.copy(ctl.target).addScaledVector(SUN_DIR, 80);
@@ -3965,7 +4237,11 @@ stage.renderer.setAnimationLoop(() => {
     c.wheels.forEach(w => { w.rotation.x += c.speed * dt / 0.18; });
     c.body.position.y = Math.abs(Math.sin(t * 9)) * 0.025;
   }
+  // 對話框：畫面拉近到看得清楚貓狗時出現（點貓狗會自動拉近到這個距離）；鏡頭飛向小汽車、交通資訊、一起從這裡起步時不出現
+  const petNear = stage.view / stage.camera.zoom < 22 && !carFocus && !joinOn && trModal.hidden && !jump;
   for (const a of pets) {
+    a.bubble?.classList.toggle('show', a.g.visible && petNear);
+    if (a.name) a.name.petNear = a.g.visible && petNear;               // 拉近時名稱也一起顯示
     if (a.kind === 'dog') {
       // 小狗跟在主人身後外側，步伐比人快
       const o = a.owner;
@@ -3997,11 +4273,11 @@ stage.renderer.setAnimationLoop(() => {
   }
 
   anim.update();
-  hotHovered = null;                                   // 布告欄、燈箱的 hover 判斷（物件很少，每幀算也不吃效能）
-  if (hotPtr.x < 2) {
-    hotHovered = pickHotspot(hotPtr);
-    if (hotHovered) canvas.style.cursor = 'pointer';
-  }
+  if (joinOn && joinFig) animateJoinFigures(now);                      // 一起從這裡起步：角色原地走路、揮手
+  // 布告欄、燈箱、小汽車的 hover 判斷：每 3 幀判斷一次，拖曳地圖時不判斷
+  if (hotPtr.x > 2 || hotPressed) hotHovered = null;
+  else if (++hotFrame % 3 === 0) hotHovered = pickHotspot(hotPtr);
+  if (hotHovered) canvas.style.cursor = 'pointer';
   // 鑽進／退出螢幕、或貼在螢幕前時：鏡頭和電腦之間（視線通道內）的物件先藏起來，不然會擋住畫面
   // （物件的顯示由進場動畫每幀重設，所以只要在這裡藏，下一幀離開通道就會自動回來）
   const diveScr = seg.kind === 'map' ? null : [seg.from, seg.to].includes('pscreen') ? platScreen() && { g: platScr.g, screen: platScr.center } : computer;
@@ -4024,6 +4300,10 @@ stage.renderer.setAnimationLoop(() => {
   if (!platFigsDrawn && sv > PLAT_IN - 3) drawPlatFigures();          // 快到了才畫插圖（不拖慢首頁載入）
   const platK = free ? 0 : Math.min(smooth(Math.min(Math.max((sv - (PLAT_IN - 0.15)) / 0.15, 0), 1)), smooth(Math.min(Math.max((PLAT_OUT + 0.15 - sv) / 0.15, 0), 1)));
   plat.style.opacity = platK;
+  const inScreen = !!(platK > 0 && !STACKED_MQ.matches && platScreen());
+  if (plat.classList.contains('in-screen') && !inScreen) Object.assign(plat.style, { left: '', top: '', width: '', height: '' });   // 換回上圖下文：拿掉貼螢幕的位置
+  plat.classList.toggle('in-screen', inScreen);
+  if (inScreen) placePlatInScreen();
   plat.classList.toggle('live', platK > 0.5);
   plat.classList.toggle('on', platK > 0.8);
   // 鑽進螢幕的那一刻用底色遮罩接起來（推近到螢幕填滿 → 底色 → 幻燈片；退出時反過來）
@@ -4038,11 +4318,14 @@ stage.renderer.setAnimationLoop(() => {
     const nightIn = inside ? nightT * 0.3 : nightT;
     about.setNight(nightIn);
     if (inside && nightT > 0) baseEnv.forEach((v, m) => { m.envMapIntensity = v * lerp(DAY.env, NIGHT.env, nightIn); });
+    stage.renderer.shadowMap.needsUpdate = true;                   // 理念與使命的小劇場：影子每幀照常更新
     stage.renderer.render(about.scene, about.camera);
     if (inside && nightT > 0) baseEnv.forEach((v, m) => { m.envMapIntensity = v * lerp(DAY.env, NIGHT.env, nightT); });
     labels.domElement.style.visibility = 'hidden';
   } else {
     aboutFlash.style.opacity = 0;
+    // 影子每 2 幀更新一次（太陽不動、只有人和車在動，30 fps 的影子看不出差別），省下將近一半的繪製量
+    if ((shadowTick = !shadowTick)) stage.renderer.shadowMap.needsUpdate = true;
     stage.renderer.render(scene, stage.camera);
     labels.domElement.style.visibility = '';
     labels.render(scene, stage.camera);
@@ -4077,7 +4360,7 @@ stage.renderer.setAnimationLoop(() => {
     const clear = r && r.left >= colRight && r.bottom <= colTop;      // 避開 Hero 文字
     const intro = introOn && el.intro && clear;
     const hot = touchHot && clear && el.classList.contains('hot') && (!cars.length || cars.every(c => c.label !== el) || cars[0].label === el);
-    el.classList.toggle('show', intro || hot || el === hoverEl || el === tapLabel);
+    el.classList.toggle('show', intro || hot || el === hoverEl || el === tapLabel || !!el.petNear);
   }
   // 布告欄牌卡：把兩塊板面的四個角投影到螢幕上，HTML 牌卡等比縮放貼齊
   const showBoard = !free && !jump && !carFocus && at === 7 && board;
@@ -4109,7 +4392,7 @@ stage.renderer.setAnimationLoop(() => {
   continueBtn.classList.toggle('up', joinOn);                       // 回到總覽：箭頭朝上
   continueBtn.setAttribute('aria-label', tr(joinOn ? '回到總覽，從頭開始體驗' : trOpen ? '前往下一段：一起從這裡起步' : '前往下一個章節'));
   // 錨點列還沒出現時直接定位（不播動畫），出現後才用橡皮筋效果切換
-  const navActive = trOpen || carFocus ? 5 : STOP_CH[activeStop];   // 交通資訊（含鏡頭飛向小汽車的途中）停在「06」，不會先閃到 05；計畫亮點 4 站都停在 03
+  const navActive = joinOn ? 6 : trOpen || carFocus ? 5 : STOP_CH[activeStop];   // 一起從這裡起步 = 07   // 交通資訊（含鏡頭飛向小汽車的途中）停在「06」，不會先閃到 05；計畫亮點 4 站都停在 03
   setSecActive(navActive, !body.classList.contains('in-sections') && rubber.active !== navActive);
 });
 </script>
