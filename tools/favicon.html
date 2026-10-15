@@ -1,0 +1,43 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>網站圖示：3D 人物頭像</title>
+<!-- 產生 favicon：node tools/make-brand-assets.mjs（會打開這頁、拍好再存檔）。造型跟地圖上的插畫公仔同一套 -->
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { M } from '../shared/materials.js';
+import { box, ball } from '../shared/kit.js';
+const S = 512;
+const r = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+r.setPixelRatio(1); r.setSize(S, S, false);
+r.toneMapping = THREE.ACESFilmicToneMapping; r.toneMappingExposure = 0.95;
+const pm = new THREE.PMREMGenerator(r);
+const sc = new THREE.Scene(); sc.environment = pm.fromScene(new RoomEnvironment(), 0.04).texture;
+sc.add(new THREE.HemisphereLight('#ffffff', '#c9cdd6', 0.6));
+const sun = new THREE.DirectionalLight('#ffffff', 2.0); sun.position.set(-3, 6, 6); sc.add(sun);
+// 頭像（胸像）：安全帽鮑伯頭、豆豆眼、一字嘴，下面露出藍色外套和白色內搭的肩膀
+const g = new THREE.Group(); sc.add(g);
+g.add(box(1.0, 1.06, 0.94, M.skin, 0, 0.6, 0, 0.42));                   // 臉
+g.add(box(1.14, 0.72, 1.08, M.hair, 0, 1.06, -0.03, 0.35));             // 頭頂（前緣就是齊瀏海）
+g.add(box(1.12, 0.66, 0.6, M.hair, 0, 0.55, -0.25, 0.24));              // 兩側與後腦
+[-0.2, 0.2].forEach(x => g.add(ball(0.065, M.dark, x, 0.6, 0.47)));     // 眼睛
+const mouth = new THREE.Mesh(new THREE.CapsuleGeometry(0.024, 0.11, 4, 8), M.dark);
+mouth.rotation.z = Math.PI / 2; mouth.position.set(0, 0.36, 0.47); g.add(mouth);   // 一字嘴
+g.add(box(0.74, 0.5, 0.46, M.white, 0, -0.2, 0, 0.18));                 // 內搭
+[-1, 1].forEach(sx => g.add(box(0.42, 0.56, 0.54, M.blue, sx * 0.3, -0.22, 0, 0.16)));   // 外套肩膀
+g.rotation.y = -0.18;                                                    // 稍微側一點，看得出立體
+// 正交相機：正面稍微偏上看，頭像置中填滿
+const cam = new THREE.OrthographicCamera(-0.88, 0.88, 0.88, -0.88, 0.1, 100);
+cam.position.set(0, 1.4, 10); cam.lookAt(0, 0.62, 0);
+r.render(sc, cam);
+window.iconDataURL = r.domElement.toDataURL('image/png');
+// iPhone 主畫面圖示不支援透明底：再拍一張淺灰底（跟網站底色一樣）
+sc.background = new THREE.Color('#f2f2f2'); r.render(sc, cam);
+window.iconBgDataURL = r.domElement.toDataURL('image/png');
+</script>
