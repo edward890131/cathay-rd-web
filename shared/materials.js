@@ -56,6 +56,7 @@ export const M = {
   skin:      plastic('#f3cfb1', { roughness: 0.6 }),
   hair:      plastic('#3b2a22', { roughness: 0.6 }),
   hairBrown: plastic('#7a5236', { roughness: 0.6 }),
+  hairOrange: plastic('#e2742f', { roughness: 0.6 }),   // 參考圖那種橘色頭髮
   pantsNavy: plastic('#2f3b52', { roughness: 0.7 }),
   pantsSand: plastic('#cdb48e', { roughness: 0.7 }),
 

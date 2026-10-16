@@ -90,7 +90,7 @@
   .loader-num small { font-size: .38em; color: var(--color-primary); letter-spacing: 0; }
   .loader-bar { width: 100%; height: 4px; border-radius: 99px; background: rgba(0,0,0,.08); overflow: hidden; }
   .loader-bar i { display: block; height: 100%; background: var(--color-primary); transform: scaleX(0); transform-origin: 0 50%; }
-  .loader-cap { margin: 12px 0 0; font-size: 13px; color: var(--muted); }   /* 進度條下方多空一點，跟跑步小人拉開 */
+  .loader-cap { margin: 12px 0 0; font-size: 14px; color: var(--muted); }   /* 進度條下方多空一點，跟跑步小人拉開 */
   /* 跑步小人：站在進度條上、跟著進度最前端跑（位置由載入程式更新）
      動作是 3D 模型預先拍好的 20 格連續圖（shared/runner.js → tools/runner-sprite.html），網頁一打開就能播，不用等 3D 引擎；
      只用 transform 切換畫格，就算後面電腦忙著準備畫面，小人也照樣跑、不會頓 */
@@ -113,8 +113,9 @@
   .site-header nav a:hover { color: var(--color-primary); }
   .site-header .side-nav { margin-left: auto; }
   .site-header .side-nav .btn { font-size: 14px; font-weight: 500; height: 40px; min-width: 156px; }   /* Header 主按鈕：字 14px、高 40px */
+  /* 按鈕字級規範：全站按鈕（主要按鈕、分段切換、步驟編號、下拉選單、錨點列、文字連結按鈕）一律 14px；唯一例外是右下角圓形按鈕 12px（圓裡空間小） */
   .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 44px; padding: 0 20px;
-    border-radius: var(--radius-btn); background: var(--fill-button); color: var(--text-on-fill) !important; font-size: 16px; line-height: 1.6;
+    border-radius: var(--radius-btn); background: var(--fill-button); color: var(--text-on-fill) !important; font-size: 14px; line-height: 1.6;
     text-decoration: none; white-space: nowrap; transition: background .2s; }
   .btn:hover { background: var(--fill-hover); }
   .site-header .menu-btn { display: none; }   /* 手機才出現：Logo 左邊的選單按鈕，從左側滑出選單 */
@@ -163,12 +164,12 @@
   .caption { position: fixed; z-index: 2; left: var(--gutter); bottom: var(--gutter); width: 440px; opacity: 0;
     transform: translateY(12px); transition: opacity .3s, transform .3s; pointer-events: none; }
   .caption.show { opacity: 1; transform: none; }
-  .caption small { color: var(--color-primary); font-family: var(--font-display); font-weight: 700; font-size: 13px; letter-spacing: .02em; }
+  .caption small { color: var(--color-primary); font-family: var(--font-display); font-weight: 700; font-size: 14px; letter-spacing: .02em; }
   .caption h3 { margin: 0; font-size: 26px; font-weight: 700; line-height: 1.4; color: var(--card-title); }
   .caption .cap-head { display: flex; align-items: center; justify-content: space-between; width: 100%; }
   .cap-steps { display: flex; gap: 4px; }
   .cap-steps button { min-width: 34px; height: 28px; padding: 0 8px; border: 0; border-radius: var(--radius-sm); background: var(--chip-bg); color: var(--text-secondary);
-    font: 700 11px/1 var(--font-display); cursor: pointer; transition: background .2s, color .2s; }
+    font: 700 14px/1 var(--font-display); cursor: pointer; transition: background .2s, color .2s; }
   .cap-steps button:hover { color: var(--text-primary); }
   .cap-steps button[aria-current="true"] { background: var(--fill-button); color: var(--text-on-fill); }
   .caption .copy { gap: 10px; transition: opacity .25s, transform .25s; }
@@ -193,8 +194,8 @@
   .about-copy { display: grid; }
   .about-copy > div { grid-area: 1 / 1; opacity: 0; visibility: hidden; transition: opacity .25s, visibility 0s .25s; }
   .about-copy > div.on { opacity: 1; visibility: visible; transition: opacity .25s .2s, visibility 0s; }   /* 先讓上一段淡出，再淡入這段 */
-  .about-copy .n { font: 700 13px/1 var(--font-display); color: var(--color-primary); }
-  .about-copy h4 { margin: 6px 0; font-size: 19px; color: var(--card-title); }
+  .about-copy .n { font: 700 14px/1 var(--font-display); color: var(--color-primary); }
+  .about-copy h4 { margin: 6px 0; font-size: 20px; color: var(--card-title); }
   .about-copy p { margin: 0; font-size: 14px; line-height: 1.75; color: var(--text-secondary); }
   /* 鑽進／退出螢幕時接起兩個畫面的底色遮罩；穿過大門時的白光 */
   .about-fade, .about-flash { position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: 0; }
@@ -211,7 +212,7 @@
   .plat-inner { width: min(1120px, 100%); display: flex; flex-direction: column; gap: 32px; }
   .plat-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }   /* 標題在左、前往平台在右（不會跟右下角圓形按鈕重疊） */
   .plat-head > div { display: flex; flex-direction: column; gap: 8px; }
-  .plat-head small { color: var(--color-primary); font-family: var(--font-display); font-weight: 700; font-size: 13px; letter-spacing: .02em; }
+  .plat-head small { color: var(--color-primary); font-family: var(--font-display); font-weight: 700; font-size: 14px; letter-spacing: .02em; }
   .plat-head h2 { margin: 0; font-size: 36px; font-weight: 700; line-height: 1.3; color: var(--card-title); }
   .plat-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
   .plat-item { display: flex; flex-direction: column; gap: 10px; padding: 24px; border-radius: var(--radius-card); background: var(--surface-page);
@@ -224,7 +225,7 @@
   .plat-item:nth-child(2) .plat-fig canvas { animation-delay: -1.1s; }
   .plat-item:nth-child(3) .plat-fig canvas { animation-delay: -2.2s; }
   .plat-item h3 { margin: 0; font-size: 22px; font-weight: 700; line-height: 1.4; color: var(--card-title); }
-  .plat-item p { margin: 0; font-size: 15px; line-height: 1.7; color: var(--text-secondary); }
+  .plat-item p { margin: 0; font-size: 14px; line-height: 1.7; color: var(--text-secondary); }
   .plat-cta { align-self: flex-end; flex: none; }
   @media (max-width: 900px) {
     .plat-grid { grid-template-columns: 1fr; gap: 12px; }
@@ -232,8 +233,8 @@
     .plat-fig { grid-row: 1 / 4; margin: 0; }
     .plat-item .cap-tag { justify-self: start; }                       /* 標籤寬度跟著文字，不要撐滿整欄 */
     .plat-head h2 { font-size: 24px; }
-    .plat-item h3 { font-size: 17px; }
-    .plat-item p { font-size: 13px; }
+    .plat-item h3 { font-size: 16px; }
+    .plat-item p { font-size: 14px; }
   }
   .about-fade.loop { transition: opacity .5s ease; }
   .about-flash { background: #fff; }
@@ -253,11 +254,14 @@
   body.night .board-panel { --board-bg: rgba(12,15,21,.9); }
   .board-panel.show { opacity: 1; pointer-events: auto; }
   .board-sheet { display: contents; }   /* 桌機：兩張牌卡各自貼在 3D 板面上；直式螢幕改成下方面板（見 RWD 區塊） */
-  /* 標題列：拿掉橘／藍色塊，改成卡片標題色；高度不變 */
-  .bp-head { display: flex; align-items: center; justify-content: space-between; height: 40px; padding: 0 16px; color: var(--card-title); flex: none; }
+  /* 標題列：上方留跟兩側差不多的空間，跟下面的內容牌卡靠近一點（標題屬於下面這組內容） */
+  .bp-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 12px 0 16px; color: var(--card-title); flex: none; }
   .bp-head strong { font-size: 16px; font-weight: 700; }
-  .bp-head a { color: var(--text-secondary); font-size: 12px; text-decoration: none; transition: color .2s; }
-  .bp-head a:hover { color: var(--color-primary); }
+  /* 查看全部：跟全站主要按鈕同一個樣式（深色底、白字、14px、→）。桌機牌卡整張被放大貼在板面上，尺寸乘上 --inv 換算回畫面上的實際大小 */
+  .bp-head a { display: inline-flex; align-items: center; gap: calc(6px * var(--inv, 1)); height: calc(36px * var(--inv, 1)); padding: 0 calc(14px * var(--inv, 1));
+    border-radius: calc(var(--radius-btn) * var(--inv, 1)); background: var(--fill-button); color: var(--text-on-fill);
+    font: 500 calc(14px * var(--inv, 1))/1 var(--font-family); white-space: nowrap; text-decoration: none; transition: background .2s; }
+  .bp-head a:hover { background: var(--fill-hover); }
   .events { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 12px; min-height: 0; }
   /* 內層小牌卡：跟加入卡裡的區塊一樣用淡底（--chip-bg），不用白底陰影 */
   .ev { display: flex; flex-direction: column; gap: 2px; min-height: 0; padding: 8px; border-radius: var(--radius-sm); background: var(--chip-bg);
@@ -276,8 +280,8 @@
   .news a { height: 100%; display: flex; flex-direction: column; justify-content: center; gap: 4px; padding: 8px 12px; border-radius: var(--radius-sm);
     background: var(--chip-bg); color: var(--text-primary); text-decoration: none; transition: transform .2s, background-color .2s; }
   .news a:hover { transform: translateY(-2px); }
-  .news .ntag { align-self: flex-start; font-size: 13px; font-weight: 600; line-height: 1.4; color: var(--color-primary); }   /* 分類標籤：跟「一起從這裡起步」的橘色粗體小標一樣 */
-  .news b { font-size: 13px; color: var(--card-title); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .news .ntag { align-self: flex-start; font-size: calc(14px * var(--inv, 1)); font-weight: 600; line-height: 1.4; color: var(--color-primary); }   /* 分類標籤：跟「一起從這裡起步」的橘色粗體小標一樣，畫面上實際 14px */
+  .news b { font-size: 14px; color: var(--card-title); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .news time { font-size: 10px; color: var(--text-secondary); opacity: .75; }   /* 時間、地點再淡一階，跟標題拉開層次 */
 
   /* ---------- 3D 標籤 ---------- */
@@ -289,7 +293,7 @@
   .label.pet-name i { display: none; }   /* 貓狗的名字：不需要場景的完工狀態圓點 */
   .label { opacity: 0; }
   /* 貓狗的對話框：白底圓角、底下一個小尖角指向頭頂；滑鼠移到牠身上，或拉近到看得清楚時出現 */
-  .pet-bubble { position: relative; padding: 6px 12px; border-radius: 12px; background: #fff; color: #1f2328; font-size: 13px; font-weight: 500;
+  .pet-bubble { position: relative; padding: 6px 12px; border-radius: 12px; background: #fff; color: #1f2328; font-size: 14px; font-weight: 500;
     white-space: nowrap; box-shadow: 0 4px 14px rgba(0,0,0,.16); opacity: 0; transform: translateY(-34px) scale(.85); transform-origin: 50% 100%;
     transition: opacity .25s, transform .3s cubic-bezier(.2,.8,.2,1); pointer-events: none; }
   .pet-bubble::after { content: ""; position: absolute; left: 50%; bottom: -6px; width: 12px; height: 12px; background: #fff; border-radius: 2px;
@@ -319,9 +323,9 @@
     opacity: 0; transform: translateY(-8px); pointer-events: none; transition: opacity .3s, transform .3s, background-color .8s; }
   body.in-sections .sec-nav { opacity: 1; transform: none; pointer-events: auto; }
   .sec-nav button { display: inline-flex; align-items: center; gap: 6px; height: var(--nav-btn); padding: 0 14px; border: 0; border-radius: var(--radius-btn);
-    background: transparent; color: var(--text-secondary); font: 500 13px/1 var(--font-family); cursor: pointer; white-space: nowrap;
+    background: transparent; color: var(--text-secondary); font: 500 14px/1 var(--font-family); cursor: pointer; white-space: nowrap;
     transition: background .2s, color .2s; }
-  .sec-nav button b { font: 700 11px/1 var(--font-display); color: var(--muted); }
+  .sec-nav button b { font: 700 14px/1 var(--font-display); color: var(--muted); }
   .sec-nav { position: fixed; }   /* 滑塊以錨點列為定位基準 */
   .sec-nav button { position: relative; z-index: 1; flex: none; }
   /* 錨點列最寬 40vw，超過就可以左右捲動（隱藏捲軸）；兩側淡出提示還有內容 */
@@ -340,8 +344,8 @@
   /* 滑塊裡面放一份同樣排版的文字（反白色），跟著滑塊位置反向位移，被蓋到的那一段文字就會變成反白 */
   .sec-thumb .clone { position: absolute; top: -6px; left: 0; display: flex; gap: 4px; padding: 6px; }
   .sec-thumb .clone span.btn-like { display: inline-flex; align-items: center; gap: 6px; height: var(--nav-btn); padding: 0 14px;
-    color: var(--text-on-fill); font: 500 13px/1 var(--font-family); white-space: nowrap; }
-  .sec-thumb .clone b { font: 700 11px/1 var(--font-display); color: var(--color-primary); }
+    color: var(--text-on-fill); font: 500 14px/1 var(--font-family); white-space: nowrap; }
+  .sec-thumb .clone b { font: 700 14px/1 var(--font-display); color: var(--color-primary); }
 
   /* ---------- 交通資訊彈窗 ---------- */
   /* 交通資訊：跟辦公研發空間一樣是畫面左側的說明卡（不擋地圖、沒有遮罩），鏡頭在右邊跟著小汽車走 */
@@ -355,7 +359,7 @@
   @keyframes tr-fade { from { opacity: 0; } }
   @keyframes tr-pop { from { opacity: 0; transform: translateY(12px); } }
   .tr-head { flex: none; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
-  .tr-head small { display: block; margin-bottom: 8px; color: var(--color-primary); font-family: var(--font-display); font-weight: 700; font-size: 13px; letter-spacing: .02em; }
+  .tr-head small { display: block; margin-bottom: 8px; color: var(--color-primary); font-family: var(--font-display); font-weight: 700; font-size: 14px; letter-spacing: .02em; }
   .tr-head h2 { margin: 0; font-size: 26px; font-weight: 700; line-height: 1.4; color: var(--card-title); }
   /* 標題固定，下面的內容在卡片裡面捲動；捲軸改成細細的圓角條，貼在卡片內側 */
   .tr-body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; display: flex; flex-direction: column; gap: 20px;
@@ -420,7 +424,7 @@
   .cookie p { flex: 1; margin: 0; }
   .cookie p a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
   .cookie button { flex: none; height: 44px; padding: 0 20px; border: 0; border-radius: var(--radius-btn); background: var(--fill-button); color: var(--text-on-fill);
-    font: 500 15px/1 var(--font-family); cursor: pointer; transition: background .2s; }
+    font: 500 14px/1 var(--font-family); cursor: pointer; transition: background .2s; }
   .cookie button:hover { background: var(--fill-hover); }
   body[data-layout="a"] .cookie { left: 50%; width: min(600px, calc(100vw - (var(--gutter) + 104px) * 2)); }   /* 全幅（進場時）：放在畫面正中間 */
   @media (max-width: 900px) {
@@ -447,19 +451,66 @@
   /* 材質切換（分段按鈕） */
   .seg { display: flex; gap: 2px; padding: 2px; border-radius: var(--radius-btn); background: var(--hover); }
   .seg button { height: 32px; padding: 0 10px; border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--text-secondary);
-    font: 500 12px/1 var(--font-family); cursor: pointer; transition: background .2s, color .2s; }
+    font: 500 14px/1 var(--font-family); cursor: pointer; transition: background .2s, color .2s; }
   .seg button:hover { color: var(--text-primary); }
   .seg button[aria-pressed="true"] { background: var(--seg-on); color: var(--text-primary); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
   .tools [hidden] { display: none !important; }
   /* 裝置切換：圖示按鈕 */
   #deviceSeg button, .icon-seg button { width: 36px; padding: 0; display: grid; place-items: center; }
   #deviceSeg svg, .icon-seg svg { width: 18px; height: 18px; }
+  /* ---------- 建模總覽（?catalog）：蓋在地圖上面的一整頁，Header 照常顯示 ---------- */
+  .catalog { position: fixed; z-index: 20; inset: var(--header-h) 0 0 0; overflow-y: auto; overscroll-behavior: contain; background: var(--bg); }   /* 不做底色漸變：有些瀏覽器切深淺色時漸變會卡住，底色停在上一個模式 */
+  .catalog[hidden] { display: none; }
+  .catalog-inner { max-width: 1240px; margin: 0 auto; padding: 48px var(--gutter) 80px; }
+  .catalog-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; flex-wrap: wrap; margin-bottom: 40px; }
+  .catalog-head h1 { margin: 0 0 8px; font: 700 40px/1.2 var(--font-display); letter-spacing: -0.04em; color: var(--text-heading); }
+  .catalog-head p { margin: 0; font-size: 14px; line-height: 1.7; color: var(--text-secondary); }
+  .catalog-head .cap-cta { align-self: flex-end; text-decoration: none; }
+  .cat-group { margin-top: 40px; }
+  .cat-group h2 { display: flex; align-items: baseline; gap: 10px; margin: 0 0 16px; font-size: 20px; font-weight: 700; color: var(--card-title); }
+  .cat-group h2 small { font-size: 14px; font-weight: 600; color: var(--color-primary); }
+  .cat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+  .cat-card { margin: 0; padding: 12px; border-radius: var(--radius-card); background: var(--card-bg); border: 1px solid var(--card-border); }
+  .cat-card canvas { position: static; display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; border-radius: var(--radius-sm); background: var(--hover); }
+  .cat-card figcaption { margin-top: 10px; font-size: 14px; font-weight: 600; color: var(--card-title); }
+  .cat-card figcaption small { display: block; margin-top: 2px; font-size: 12px; font-weight: 400; color: var(--text-secondary); }
+  body.catalog-on .continue, body.catalog-on .drag-tip { display: none; }
+  .cat-card { cursor: pointer; transition: transform .2s, box-shadow .2s; }
+  .cat-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.08); }
+  .cat-card:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+  /* 檢視彈窗：半透明遮罩＋置中的大卡片，裡面是可以轉動的 3D 檢視 */
+  .cat-modal { position: fixed; z-index: 65; inset: 0; display: grid; place-items: center; padding: 24px; background: rgba(15,18,24,.45);
+    backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); animation: modal-in .2s ease-out; }
+  .cat-modal[hidden] { display: none; }
+  @keyframes modal-in { from { opacity: 0; } }
+  .cat-dialog { display: flex; flex-direction: column; width: min(960px, 100%); height: min(720px, 100%); border-radius: var(--radius-card);
+    background: var(--surface-page); color: var(--text-primary); box-shadow: 0 24px 60px rgba(0,0,0,.25); overflow: hidden; }
+  .cat-modal-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 20px 20px 12px 24px; }
+  .cat-modal-head h2 { margin: 0; font-size: 20px; font-weight: 700; color: var(--card-title); }
+  .cat-modal-head p { margin: 4px 0 0; font-size: 14px; color: var(--text-secondary); }
+  .cat-view { position: relative; flex: 1; min-height: 0; margin: 0 20px; border-radius: var(--radius-sm); background: var(--hover); overflow: hidden; touch-action: none; }
+  .cat-view canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: grab; }
+  .cat-view canvas:active { cursor: grabbing; }
+  .cat-modal-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 20px 16px 24px; font-size: 14px; color: var(--text-secondary); }
+  .cat-modal-foot .help-touch-only { display: none; }
+  .cat-modal-foot .cat-count { font-weight: 600; color: var(--text-primary); font-variant-numeric: tabular-nums; }
+  .cat-modal-foot .help-mouse-only, .cat-modal-foot .help-touch-only { margin-right: auto; }
+  /* 左右切換箭頭：浮在檢視區兩側中間的圓形按鈕 */
+  .cat-nav { position: absolute; z-index: 1; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; display: grid; place-items: center;
+    border: 0; border-radius: 50%; background: var(--surface-page); color: var(--text-primary); box-shadow: 0 4px 14px rgba(0,0,0,.12); cursor: pointer; transition: background .2s; }
+  .cat-nav:hover { background: var(--hover); }
+  .cat-nav svg { width: 20px; height: 20px; }
+  .cat-nav.prev { left: 12px; } .cat-nav.next { right: 12px; }
+  @media (pointer: coarse) { .cat-modal-foot .help-mouse-only { display: none; } .cat-modal-foot .help-touch-only { display: inline; } }
+  @media (max-width: 760px) { .cat-modal { padding: 12px; } .cat-dialog { height: min(640px, 100%); } }
+  .site-header nav a.catalog-link[aria-current="page"] { color: var(--color-primary); }
+  @media (max-width: 760px) { .catalog-inner { padding-top: 32px; } .catalog-head h1 { font-size: 32px; } .cat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; } }
   #musicBtn .music-off { display: none; }                                   /* 背景音樂關閉時才畫斜線 */
   #musicBtn[aria-pressed="false"] .music-off { display: inline; }
   /* 材質：自訂下拉選單（外觀跟分段按鈕、浮動面板同一套） */
   .select { position: relative; display: inline-flex; }
   .select-btn { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 10px 0 12px; border: 0; border-radius: var(--radius-btn);
-    background: var(--hover); color: var(--text-primary); font: 500 12px/1 var(--font-family); cursor: pointer; transition: background .2s, color .8s; }
+    background: var(--hover); color: var(--text-primary); font: 500 14px/1 var(--font-family); cursor: pointer; transition: background .2s, color .8s; }
   .select-btn:hover, .select-btn[aria-expanded="true"] { background: var(--sep); }
   .select-btn:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
   .select-btn svg { width: 14px; height: 14px; color: var(--text-secondary); transition: transform .2s; }
@@ -472,7 +523,7 @@
   .select-menu[hidden] { display: none; }
   @keyframes menu-in { from { opacity: 0; transform: translateY(-4px); } }
   .select-menu li { display: flex; align-items: center; justify-content: space-between; gap: 16px; height: 32px; padding: 0 10px;
-    border-radius: var(--radius-sm); color: var(--text-secondary); font: 500 12px/1 var(--font-family); white-space: nowrap; cursor: pointer; outline: none; }
+    border-radius: var(--radius-sm); color: var(--text-secondary); font: 500 14px/1 var(--font-family); white-space: nowrap; cursor: pointer; outline: none; }
   .select-menu li:hover, .select-menu li:focus-visible { background: var(--hover); color: var(--text-primary); }
   .select-menu li[aria-selected="true"] { color: var(--text-primary); font-weight: 700; }
   .select-menu li[aria-selected="true"]::after { content: ""; width: 10px; height: 6px; margin-top: -3px; border: solid var(--color-primary); border-width: 0 0 2px 2px; transform: rotate(-45deg); }   /* 勾勾 */
@@ -492,7 +543,7 @@
   .free-panel.collapsed { display: none; }         /* 預設收合，按工具列的 ? 展開 */
   .free-panel strong { font-size: 12px; font-weight: 700; }
   .free-panel .keys { display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; line-height: 1.6; }
-  .free-panel kbd { font-family: inherit; font-size: 11px; padding: 1px 6px; border-radius: 4px; background: var(--hover); white-space: nowrap; }
+  .free-panel kbd { font-family: inherit; font-size: 12px; padding: 1px 6px; border-radius: 4px; background: var(--hover); white-space: nowrap; }
   #tHelp[aria-expanded="true"] { background: var(--seg-on); color: var(--text-primary); box-shadow: 0 1px 3px rgba(0,0,0,.12); }   /* 說明展開中：跟分段按鈕選中一樣 */
   .hd-tools { display: flex; align-items: center; gap: 8px; }
   .free-panel .help-touch { display: none; }      /* 觸控裝置換成手勢說明（見下方 pointer: coarse） */
@@ -516,7 +567,7 @@
   .drag-tip { position: fixed; z-index: 3; top: 50%; left: var(--tip-x, 62%); display: flex; align-items: center; gap: 12px;
     padding: 14px 22px 14px 16px; border-radius: var(--radius-panel); background: var(--panel); color: var(--text-primary);
     backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); box-shadow: 0 10px 30px rgba(0,0,0,.12);
-    font: 500 15px/1.4 var(--font-family); white-space: nowrap; pointer-events: none;
+    font: 500 14px/1.4 var(--font-family); white-space: nowrap; pointer-events: none;
     opacity: 0; transform: translate(-50%, calc(-50% + 10px)) scale(.96); transition: opacity .5s, transform .5s cubic-bezier(.2,.8,.2,1); }
   .drag-tip.show { opacity: 1; transform: translate(-50%, -50%); }
   body[data-layout="b"] .drag-tip { --tip-x: 70%; }   /* 左文右圖：放在右側地圖的中間 */
@@ -558,10 +609,10 @@
   .device.phone { --d-w: 393px; --d-h: 852px; --d-bezel: 12px; --d-r: 66px; --d-sr: 54px; --d-sb: 54px; --d-sp: 34px; --d-fs: 16px; }
   .device.phone .d-cam { display: none; }
   /* iPad（第 10 代）：820 × 1180 pt，沒有動態島，上方黑框中間是鏡頭 */
-  .device.tablet { --d-w: 820px; --d-h: 1180px; --d-bezel: 24px; --d-r: 44px; --d-sr: 20px; --d-sb: 26px; --d-sp: 22px; --d-fs: 13px; }
+  .device.tablet { --d-w: 820px; --d-h: 1180px; --d-bezel: 24px; --d-r: 44px; --d-sr: 20px; --d-sb: 26px; --d-sp: 22px; --d-fs: 14px; }
   .device.tablet .d-island { display: none; }
   .device.tablet .d-home { width: 300px; margin-left: -150px; }
-  .rwd-cap { margin: 0; font-size: 13px; color: var(--text-secondary); }
+  .rwd-cap { margin: 0; font-size: 14px; color: var(--text-secondary); }
   html.embed #deviceSeg, html.embed #deviceSeg + .sep { display: none !important; }      /* 裝置裡面的網頁不再顯示裝置切換 */
   html.embed { scrollbar-width: none; }                                       /* 手機、平板的捲軸是浮動的，不佔寬度 */
   html.embed::-webkit-scrollbar { display: none; }
@@ -576,7 +627,7 @@
   body.join-open .join-card, body.join-open .join-again { pointer-events: auto; transform: translateY(calc(-1 * var(--join-lift, 0px))); }
   body.join-open .continue { opacity: 0 !important; pointer-events: none !important; }   /* 這段改用牌卡下方置中的「再看一次」 */
   .join-again { flex: none; display: inline-flex; align-items: center; gap: 8px; height: 48px; padding: 0 28px; border: 0; border-radius: var(--radius-btn);
-    background: var(--fill-button); color: var(--text-on-fill); font: 500 15px/1 var(--font-family); cursor: pointer;
+    background: var(--fill-button); color: var(--text-on-fill); font: 500 14px/1 var(--font-family); cursor: pointer;
     box-shadow: 0 10px 30px rgba(0,0,0,.18); transform: translateY(16px); transition: transform .8s cubic-bezier(.2,.8,.2,1), background .2s; }
   .join-again:hover { background: var(--fill-hover); }
   .join-again svg { width: 18px; height: 18px; }
@@ -584,11 +635,11 @@
     background: var(--card-bg); border: 1px solid var(--card-border); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
     box-shadow: 0 20px 60px rgba(0,0,0,.12); transform: translateY(16px); transition: transform .8s cubic-bezier(.2,.8,.2,1), background-color .8s; }
   .join-card > h2 { margin: 0; text-align: center; font-size: 32px; font-weight: 700; line-height: 1.4; color: var(--card-title); }
-  .join-card > p { margin: 12px 0 0; text-align: center; font-size: 15px; line-height: 1.8; color: var(--text-secondary); }
+  .join-card > p { margin: 12px 0 0; text-align: center; font-size: 14px; line-height: 1.8; color: var(--text-secondary); }
   .join-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 36px; }
   .join-item { position: relative; display: flex; flex-direction: column; gap: 12px; min-height: 260px; padding: 32px 190px 32px 32px; border-radius: var(--radius-panel);
     background: var(--chip-bg); }
-  .join-item .eyebrow { font-size: 13px; font-weight: 600; color: var(--color-primary); }
+  .join-item .eyebrow { font-size: 14px; font-weight: 600; color: var(--color-primary); }
   .join-item h3 { margin: 0; font-size: 22px; font-weight: 700; line-height: 1.4; color: var(--card-title); }
   .join-item p { margin: 0; font-size: 14px; line-height: 1.8; color: var(--text-secondary); }
   .join-item dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; margin: 4px 0 0; font-size: 14px; line-height: 1.6; }
@@ -645,7 +696,7 @@
      改成地圖在上半部、文字在下方全寬；鏡頭用 shiftY 把主體推到卡片上方的空白區（程式用同一組條件判斷，見 STACKED_MQ） */
   @media (max-width: 760px), (max-width: 1100px) and (max-aspect-ratio: 10/11) {
     .cookie, body[data-layout="a"] .cookie { left: 0; right: 0; bottom: 0; width: auto; transform: none; border-radius: 0; border-width: 1px 0 0;
-      padding: 14px var(--gutter) calc(14px + env(safe-area-inset-bottom)); font-size: 13px; box-shadow: 0 -6px 24px rgba(0,0,0,.08); }
+      padding: 14px var(--gutter) calc(14px + env(safe-area-inset-bottom)); font-size: 14px; box-shadow: 0 -6px 24px rgba(0,0,0,.08); }
     .cookie.out { transform: translateY(16px); }
     .panel-b { display: none; }
     /* 跟電腦版的左側面板一樣：文字區（大標＋牌卡）底下是實色底，地圖只在上半部，不跟文字疊在一起；上緣位置由程式依大標位置設定 */
@@ -675,16 +726,17 @@
     .site-header .side-nav .btn { height: 40px; min-width: 0; padding: 0 12px; gap: 4px; font-size: 14px; }   /* 手機：按鈕寬度跟著文字，不用桌機的最小寬度 156px */
     /* 手機：牌卡跟右下角的圓形箭頭按鈕並排（牌卡右邊讓出按鈕的寬度），底部對齊 */
     :root { --continue: 52px; }
-    .hero-main, body[data-layout="b"] .hero-main { --gap: 20px; --card-w: 100%; bottom: var(--gutter); right: calc(var(--gutter) + var(--continue) + 10px); }
+    .hero-main, body[data-layout="b"] .hero-main { --gap: 20px; --card-w: 100%; bottom: var(--gutter); right: calc(var(--gutter) + var(--continue) + 10px);
+      --slogan: 48px; }   /* 手機大標固定 48px；文字區貼齊底部，上方剩下的高度都給地圖 */
     .card { width: 100%; padding: 16px; gap: 12px; }
     .card .copy { gap: 8px; }
     .card h2 { font-size: 16px; }
-    .card p { font-size: 13px; }
+    .card p { font-size: 14px; }
     .tag { padding: 4px 12px; font-size: 12px; }
     .caption { right: calc(var(--gutter) + var(--continue) + 10px); width: auto; bottom: var(--gutter); }
     .caption h3 { font-size: 20px; }
     .about-copy h4 { font-size: 16px; }
-    .about-copy p { font-size: 13px; }
+    .about-copy p { font-size: 14px; }
     /* 圓形按鈕縮小、只留箭頭（提示往下看的閱讀順序）；文字仍保留給螢幕閱讀器 */
     .continue { width: var(--continue); height: var(--continue); box-shadow: 0 6px 18px rgba(0,0,0,.18); }
     .continue #continueLabel { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
@@ -732,16 +784,16 @@
     .tr-head h2 { font-size: 20px; }
     .tr-map { height: 14vh; }
     .tr-body { gap: 16px; }
-    .tr-addr p { font-size: 15px; }
+    .tr-addr p { font-size: 14px; }
     /* 一起從這裡起步：上方不用讓工具列（收在選單裡）；角色插圖縮小 */
     .join { padding: calc(var(--header-h) + var(--gutter) + var(--nav-btn) + 24px) var(--gutter) var(--gutter); gap: 14px; }   /* 上方讓出錨點列（07 一同起步也在錨點列上） */
     .join-card { padding: 20px 16px; }
     .join-card > h2 { font-size: 20px; }
-    .join-card > p { font-size: 13px; line-height: 1.7; }
+    .join-card > p { font-size: 14px; line-height: 1.7; }
     .join-grid { gap: 12px; margin-top: 16px; }
     .join-item { padding: 18px 92px 18px 16px; gap: 8px; }
     .join-item h3 { font-size: 16px; }
-    .join-item p, .join-item dl { font-size: 13px; }
+    .join-item p, .join-item dl { font-size: 14px; }
     .join-fig { width: 84px; height: 140px; right: 4px; }
   }
 
@@ -751,18 +803,16 @@
     #deviceSeg, #deviceSeg + .sep { display: none !important; }        /* 橫式平板也是觸控裝置，不需要 RWD 預覽切換 */
     .icon-btn, #deviceSeg button { width: 44px; height: 44px; }
     .cap-steps button { min-width: 40px; height: 36px; }
-    .select-btn { height: 44px; font-size: 13px; }
-    .select-menu li { height: 40px; font-size: 13px; }
+    .select-btn { height: 44px; font-size: 14px; }
+    .select-menu li { height: 40px; font-size: 14px; }
     .free-panel .help-mouse { display: none; }
     .free-panel .help-touch { display: grid; }
     /* 3D 標籤：可以點的那幾個（理念與使命、進駐企業、園區活動、交通資訊）在首屏常駐顯示，點標籤直接前往；點擊區往外擴 */
-    .label.hot { position: relative; pointer-events: auto; cursor: pointer; font-size: 13px; padding: 7px 12px; }
+    .label.hot { position: relative; pointer-events: auto; cursor: pointer; font-size: 14px; padding: 7px 12px; }
     .label.hot::after { content: ""; position: absolute; inset: -6px -4px; }
-    .bp-head { height: 44px; }
-    .bp-head a { padding: 12px 0 12px 12px; }
   }
 
-  @media (max-width: 760px) { .site-header .logo { font-size: 19px; } .ft-logo { font-size: 22px; } }   /* 手機 Logo 小一號 */
+  @media (max-width: 760px) { .site-header .logo { font-size: 20px; } .ft-logo { font-size: 22px; } }   /* 手機 Logo 小一號 */
   /* ---------- 手機：按鈕統一規格（右下角的 Scroll 圓形按鈕不變）：高度一律 38px、字級一律 14px；放在最後，蓋過觸控裝置的 44px 設定 ---------- */
   @media (max-width: 760px) {
     :root { --nav-btn: 38px; --btn-h: 38px; }
@@ -779,6 +829,12 @@
     .select-btn { height: var(--btn-h); font-size: 14px; }
     .select-menu li { height: 40px; font-size: 14px; }
     .seg button { height: 34px; font-size: 14px; }                                    /* 外框 2px 內距＋34 = 整組 38 */
+  }
+  /* 全站字級一律偶數：跟著畫面縮放的大字（大標、載入百分比）往下取到 2px 的倍數 */
+  @supports (width: round(down, 3px, 2px)) {
+    .hero-main .slogan { font-size: round(down, var(--slogan), 2px); }
+    .loader-num { font-size: round(down, clamp(88px, 15vw, 168px), 2px); }
+    .loader-num small { font-size: round(down, .38em, 2px); }
   }
 </style>
 <link rel="preload" as="image" href="assets/loader-runner.png">   <!-- 載入畫面的跑步小人：最先下載，一打開就出現 -->
@@ -848,6 +904,7 @@
     <a href="#">產學合作</a>
     <a href="#">最新消息</a>
     <a href="#" target="_blank" rel="noopener">研究發展處<img src="assets/icon-external-link.svg" width="16" height="16" alt="另開新視窗" /></a>
+    <a href="?catalog" class="catalog-link">建模總覽</a>
   </nav>
   <nav class="side-nav">
     <!-- 顯示設定：材質 → 白天／夜晚 → 背景音樂 → 操作說明（間距比入口連結小，看起來是同一組） -->
@@ -900,6 +957,7 @@
     <a href="#">產學合作</a>
     <a href="#">最新消息</a>
     <a href="#" target="_blank" rel="noopener">研究發展處<img src="assets/icon-external-link.svg" width="16" height="16" alt="另開新視窗" /></a>
+    <a href="?catalog" class="catalog-link">建模總覽</a>
     <a href="#" class="lang-toggle" lang="en" data-i18n-skip>English</a>
   </nav>
   <p class="drawer-title">顯示設定</p>
@@ -958,6 +1016,44 @@
   <div class="about-rail" id="aboutRail" role="group" aria-label="理念與使命進度"></div>
 </section>
 <div class="about-fade" id="aboutFade" aria-hidden="true"></div>
+<!-- 建模總覽（網址加 ?catalog）：網站裡所有用程式建出來的 3D 模型，一格一個縮圖 -->
+<section class="catalog" id="catalog" aria-labelledby="catalogTitle" hidden>
+  <div class="catalog-inner">
+    <header class="catalog-head">
+      <div>
+        <h1 id="catalogTitle">建模總覽</h1>
+        <p id="catalogSum">整理網站裡所有 3D 模型。全部都是用程式即時組出來的，沒有使用任何 3D 模型檔。</p>
+      </div>
+      <a class="cap-cta" id="catalogBack" href="./">回到網站 <span aria-hidden="true">→</span></a>
+    </header>
+    <div id="catalogBody"></div>
+  </div>
+</section>
+<!-- 建模總覽的檢視彈窗：點一個模型打開，可以拖曳旋轉、縮放、平移 -->
+<div class="cat-modal" id="catModal" hidden>
+  <div class="cat-dialog" role="dialog" aria-modal="true" aria-labelledby="catModalTitle">
+    <header class="cat-modal-head">
+      <div><h2 id="catModalTitle"></h2><p id="catModalNote"></p></div>
+      <button type="button" class="icon-btn" id="catModalClose" aria-label="關閉" title="關閉">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </header>
+    <div class="cat-view" id="catView">
+      <button type="button" class="cat-nav prev" id="catPrev" aria-label="上一個" title="上一個（←）">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"/></svg>
+      </button>
+      <button type="button" class="cat-nav next" id="catNext" aria-label="下一個" title="下一個（→）">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+      </button>
+    </div>
+    <footer class="cat-modal-foot">
+      <span class="cat-count" id="catCount"></span>
+      <span class="help-mouse-only">拖曳旋轉・滾輪縮放・右鍵拖曳平移・← → 切換</span>
+      <span class="help-touch-only">單指旋轉・雙指縮放、平移</span>
+      <button type="button" class="select-btn" id="catReset">重設視角</button>
+    </footer>
+  </div>
+</div>
 <!-- 計畫亮點・產研媒合平台（WF 81:1898）：鏡頭鑽進辦公研發空間的電腦，螢幕裡就是平台畫面 -->
 <section class="plat" id="plat" aria-labelledby="platTitle">
   <div class="plat-inner">
@@ -1232,8 +1328,10 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { M } from './shared/materials.js';
 import { box, cyl, ball, tree, lamp } from './shared/kit.js';
+import { FACE, blob, hairNew, faceNew, HAIR_LONG } from './shared/face.js';   // 新版五官與髮型（理念與使命的小劇場也用同一套）
 import { createStage, createAnimator, SUN_DIR, ISO_DIR } from './shared/stage.js';
 import { createAboutSlides, ABOUT_COPY, ABOUT_TIMING } from './shared/slides.js';   // 「關於這個計畫」電腦螢幕裡的 3D 幻燈片（動態 session 製作）
 let lang = 'zh', dict = null;   // 目前語系、英文對照表（放在最前面：選單、按鈕初始化時就會用到 tr()）
@@ -1644,6 +1742,9 @@ const capsule = (r, len, mat) => {
 // chibi = Q 版公仔（大頭、膠囊身體、短手短腳）
 // 兩種風格回傳一樣的關節（手、腳、頭），走路擺動、比手勢、點頭的動畫可以共用
 const PERSON_STYLES = ['illus', 'chibi'];
+// 人物外觀：髮型 classic = 原本的安全帽鮑伯頭、detail = 新版；眼睛 dot = 豆豆眼、big = 大眼睛（目前用新版，設定在 shared/face.js）
+let eyeStyle = FACE.eyes;                                                   // dot = 豆豆眼、big = 大眼睛（設定在 shared/face.js）
+let hairStyle = FACE.hair;                                                  // classic = 安全帽鮑伯頭、detail = 新版髮型
 let personStyle = PERSON_STYLES.includes(new URLSearchParams(location.search).get('people')) ? new URLSearchParams(location.search).get('people') : 'illus';   // 預設插畫版
 function person(o) { return { chibi: personChibi, illus: personIllus }[personStyle](o); }
 // Q 版公仔：總高度跟標準版一樣（約 4.2），但頭佔約 2/5，身體是一顆圓膠囊，手腳短短的
@@ -1733,13 +1834,19 @@ function personIllus({ shirt, pants, hair, long = false, thumb = true }) {   // 
   // ---- 頭：略帶方感的圓頭（臉）+ 安全帽鮑伯頭 + 豆豆眼 + 一字嘴 ----
   const head = new THREE.Group(); head.position.y = 3.2;
   head.add(box(1.0, 1.06, 0.94, M.skin, 0, 0.6, 0, 0.42));                 // 臉
-  head.add(box(1.14, 0.72, 1.08, hair, 0, 1.06, -0.03, 0.35));             // 頭頂：圓頂安全帽形，前緣就是齊瀏海（眉毛高度）
-  head.add(box(1.12, long ? 0.9 : 0.66, 0.6, hair, 0, long ? 0.42 : 0.55, -0.25, 0.24));   // 兩側與後腦（長髮的人比較長）
-  [-0.2, 0.2].forEach(x => head.add(ball(0.06, M.dark, x, 0.6, 0.47)));    // 眼睛
-  const mouth = capsule(0.022, 0.1, M.dark); mouth.rotation.z = Math.PI / 2; mouth.position.set(0, 0.36, 0.47); head.add(mouth);   // 一字嘴
-  if (n % 3 === 0) {                                                        // 黑框眼鏡
-    [-0.21, 0.21].forEach(x => { const r = new THREE.Mesh(new THREE.TorusGeometry(0.15, 0.026, 8, 24), M.dark); r.position.set(x, 0.61, 0.5); r.castShadow = true; head.add(r); });
-    const bridge = cyl(0.018, 0.018, 0.13, M.dark, 0, 0.64, 0.5, 6); bridge.rotation.z = Math.PI / 2; head.add(bridge);
+  if (hairStyle === 'detail') hairDetail(head, hair, long, n);           // 精細髮型（試做中，可用切換鈕對比）
+  else {
+    head.add(box(1.14, 0.72, 1.08, hair, 0, 1.06, -0.03, 0.35));           // 頭頂：圓頂安全帽形，前緣就是齊瀏海（眉毛高度）
+    head.add(box(1.12, long ? 0.9 : 0.66, 0.6, hair, 0, long ? 0.42 : 0.55, -0.25, 0.24));   // 兩側與後腦（長髮的人比較長）
+  }
+  if (eyeStyle === 'big') faceNew(head, hair, { glasses: n % 3 === 0 });   // 新版五官：大眼睛、小鼻子、微笑嘴、耳朵、眉毛（見 shared/face.js）
+  else {
+    [-0.2, 0.2].forEach(x => head.add(ball(0.06, M.dark, x, 0.6, 0.47)));   // 眼睛：豆豆眼
+    const mouth = capsule(0.022, 0.1, M.dark); mouth.rotation.z = Math.PI / 2; mouth.position.set(0, 0.36, 0.47); head.add(mouth);   // 一字嘴
+    if (n % 3 === 0) {                                                      // 黑框眼鏡
+      [-0.21, 0.21].forEach(x => { const r = new THREE.Mesh(new THREE.TorusGeometry(0.15, 0.026, 8, 24), M.dark); r.position.set(x, 0.61, 0.5); r.castShadow = true; head.add(r); });
+      const bridge = cyl(0.018, 0.018, 0.13, M.dark, 0, 0.64, 0.5, 6); bridge.rotation.z = Math.PI / 2; head.add(bridge);
+    }
   }
   g.add(mergeParts(head));
   // ---- 道具：外帶咖啡（拿在右手）或斜背包（掛在左肩）----
@@ -1753,6 +1860,14 @@ function personIllus({ shirt, pants, hair, long = false, thumb = true }) {   // 
   mergeParts(g);
   g.scale.setScalar(PERSON_SCALE);
   return { g, legL, legR, armL, armR, head, cloudY: 1.35 };
+}
+// 精細髮型（試做）：髮型本體在 shared/face.js；hairForce = 建模總覽指定要哪一種
+let hairForce = null;
+function hairDetail(head, hair, long, n) {
+  hairNew(head, hair, long, n, hairForce ?? undefined);
+  if (eyeStyle !== 'big') [-1, 1].forEach(sx => {                                          // 豆豆眼版也加短平眉（大眼睛版的眉毛在 faceNew 裡）
+    const b = capsule(0.028, 0.1, hair); b.rotation.z = Math.PI / 2; b.position.set(sx * 0.21, 0.8, 0.47); head.add(b);
+  });
 }
 // 坐姿（插畫版）：把原本直直的兩條腿換成「大腿往前平放＋小腿垂直往下」，整個人往下移到座面上
 // 回傳人物要放的高度（世界座標）：屁股底部剛好貼在座面 seatTop
@@ -1774,22 +1889,23 @@ function sitDown(p, { pants }, seatTop) {
 }
 // ============ 一起從這裡起步：牌卡上的兩個角色 ============
 // 用跟地圖一樣的插畫公仔，再各自換裝、加道具，兩個人的髮型、身形、配件都不一樣
-function personBiz() {
+function personBiz({ bag = true } = {}) {   // bag：要不要提電腦包（辦公室裡坐著打電腦的那位不提）
   illusN = 1;                                                               // 道具輪到「外帶咖啡」那組，先拿掉換成電腦包
   const p = personIllus({ shirt: M.blue, pants: M.pantsNavy, hair: M.hair, thumb: false });
   p.armR.children.slice().forEach(c => { if (c.geometry?.type === 'CylinderGeometry') p.armR.remove(c); });
   // 領帶（品牌橘）：從領口垂到外套下緣
   p.g.add(box(0.16, 0.12, 0.08, M.accent, 0, 3.08, 0.25, 0.04));
   const tie = box(0.15, 0.72, 0.05, M.accent, 0, 2.66, 0.25, 0.05); tie.rotation.z = 0.02; p.g.add(tie);
-  // 電腦包：扁長的公事型筆電包，提在右手（包身＋前蓋＋提把）
-  p.armR.add(box(0.86, 0.6, 0.14, M.dark, 0.08, -1.42, 0.06, 0.06));
-  p.armR.add(box(0.8, 0.26, 0.04, M.pantsNavy, 0.08, -1.24, 0.14, 0.03));
-  p.armR.add(box(0.3, 0.06, 0.06, M.dark, 0.08, -1.1, 0.06, 0.02));
+  if (bag) {                                                                // 電腦包：扁長的公事型筆電包，提在右手（包身＋前蓋＋提把）
+    p.armR.add(box(0.86, 0.6, 0.14, M.dark, 0.08, -1.42, 0.06, 0.06));
+    p.armR.add(box(0.8, 0.26, 0.04, M.pantsNavy, 0.08, -1.24, 0.14, 0.03));
+    p.armR.add(box(0.3, 0.06, 0.06, M.dark, 0.08, -1.1, 0.06, 0.02));
+  }
   return p;
 }
 function personStudent() {
   illusN = 1;                                                               // 道具輪到「外帶咖啡」那組（沒有眼鏡），咖啡杯拿掉
-  const p = personIllus({ shirt: M.yellow, pants: M.rug, hair: M.hairBrown, long: true, thumb: false });
+  const p = personIllus({ shirt: M.yellow, pants: M.rug, hair: M.hairOrange, long: true, thumb: false });
   p.armR.children.slice().forEach(c => { if (c.geometry?.type === 'CylinderGeometry') p.armR.remove(c); });
   p.g.add(box(0.78, 0.92, 0.36, M.accent, 0, 2.55, -0.42, 0.14));          // 後背包（從正面只看得到兩側一點點）
   p.armL.rotation.z = -2.5; p.armL.rotation.x = -0.15;                     // 舉手打招呼
@@ -1895,10 +2011,22 @@ function drawJoinFigures() {
     const cam = new THREE.OrthographicCamera(-2.0, 2.0, 3.3, -3.3, 0.1, 100);
     cam.position.set(0, 3.6, 20); cam.lookAt(0, 2.5, 0);
     const cv = document.getElementById(id); cv.width = W; cv.height = H;
-    return { p, sc, cam, ctx: cv.getContext('2d'), baseArmZ: p.armL.rotation.z };
+    return { p, sc, cam, make, yaw, ctx: cv.getContext('2d'), baseArmZ: p.armL.rotation.z };
   }) };
   illusN = keepN;
   animateJoinFigures(0);
+}
+// 換髮型時把兩個角色重做一次（場景、相機不動）
+function rebuildJoinFigures() {
+  if (!joinFig) return;
+  const keepN = illusN;
+  joinFig.figs.forEach(f => {
+    f.sc.remove(f.p.g);
+    const p = f.make(); p.g.scale.setScalar(1); p.g.rotation.y += f.yaw;
+    f.sc.add(p.g); f.p = p; f.baseArmZ = p.armL.rotation.z;
+  });
+  illusN = keepN;
+  animateJoinFigures(performance.now());
 }
 // 一起從這裡起步的角色動作（主畫面迴圈在牌卡打開時每幀呼叫）：
 //   上班族：原地走路（手腳交錯擺動、身體隨步伐上下），提著電腦包的右手擺小一點
@@ -2032,11 +2160,13 @@ const OUTFITS = [
   { shirt: M.blue, pants: M.pantsNavy, hair: M.hair },
   { shirt: M.accent, pants: M.pantsSand, hair: M.hairBrown, long: true },
   { shirt: M.white, pants: M.pantsNavy, hair: M.hair, long: true },
-  { shirt: M.yellow, pants: M.pantsNavy, hair: M.hairBrown },
+  { shirt: M.yellow, pants: M.pantsNavy, hair: M.hairOrange },   // 橘髮＋黃上衣（參考圖三的男生）
   { shirt: M.green, pants: M.pantsSand, hair: M.hair },
   { shirt: M.rug, pants: M.pantsNavy, hair: M.hairBrown, long: true },
 ];
 
+// 建模總覽用：地圖上只有一個、寫在組裝地圖裡的地標（CNRD 立體字、復古電腦、時鐘、噴水池、布告欄、燈箱），建好時登記起來
+const catalogMarks = new Map();
 // ============ 組裝地圖 ============
 let current = null;   // 目前方案（給鏡頭用）
 let board = null, lightbox = null, computer = null, spaceSpots = [];   // spaceSpots：計畫亮點三個空間（首頁點了跳到 03 對應的那一站）   // computer：廣場復古電腦（hover 標籤、鑽進螢幕的位置）
@@ -2187,6 +2317,7 @@ function build(variantId, { replay = true } = {}) {
     lb.position.set(LX, 0, LZ);
     towerC.wrap.add(lb);
     const w = towerC.wrap;
+    catalogMarks.set('進駐企業廣告燈箱', lb);
     lightbox = { g: lb, stop: 6, label: hotspotLabel(lb, '進駐企業', 2.5),
       center: new THREE.Vector3(w.position.x + LX, w.userData.baseY + BY, w.position.z + LZ), dir: new THREE.Vector3(0, 26, 28.3).normalize() };   // 比等角稍微高一點，前面的大學和路人會落到畫面下方
   }
@@ -2269,6 +2400,7 @@ function build(variantId, { replay = true } = {}) {
       g.add(sub);
       g.rotation.y = FACE;
       addItem(g, cx + C, cz + C, { delay: 1.2, baseY: Y, drop: 6, hoverable: false });   // 裝飾物：hover 不浮起
+      catalogMarks.set('CNRD 立體字', g);
       g.rotation.y = FACE;
     }
     // 左角：復古電腦裝置藝術（參考 80 年代一體式電腦：米色外殼、映像管螢幕、軟碟槽、分離式鍵盤）
@@ -2334,6 +2466,7 @@ function build(variantId, { replay = true } = {}) {
       g.add(kb);
       g.scale.setScalar(0.85);                                                   // 比人物稍大一點的尺寸
       addItem(g, cx - C, cz + C, { delay: 1.3, baseY: Y, drop: 6 });             // 正面朝 +z：跟前方的道路平行（不再斜對鏡頭）
+      catalogMarks.set('復古電腦裝置藝術', g);
       g.userData.labelEl = hotspotLabel(g, '理念與使命', 3.4);                     // hover 時顯示，點下去跳到「理念與使命」段落
       g.updateMatrixWorld(true);
       computer = { g, stop: 1, label: g.userData.labelEl,
@@ -2369,6 +2502,7 @@ function build(variantId, { replay = true } = {}) {
       });
       const x = cx - C, z = cz - C;
       addItem(g, x, z, { delay: 1.4, baseY: Y, drop: 6, hoverable: false });   // 裝飾物：hover 不浮起
+      catalogMarks.set('公園時鐘', g);
       g.rotation.y = Math.atan2(cx - x, cz - z);                      // 鐘面正對中央廣場
       clocks.push(hands);
     }
@@ -2415,6 +2549,7 @@ function build(variantId, { replay = true } = {}) {
         arc.castShadow = false; jets.add(arc);
       }
       addItem(g, cx + C, cz - C, { delay: 1.5, baseY: Y, drop: 6, hoverable: false });   // 裝飾物：hover 不浮起
+      catalogMarks.set('噴水池', g);
       fountains.push({ jets, strands, drops });
     }
     // 左側（時鐘與雕像之間）：園區布告欄，跟旁邊的道路平行（正面朝 +x、面向廣場）
@@ -2456,6 +2591,7 @@ function build(variantId, { replay = true } = {}) {
       g.rotation.y = Math.PI / 2;                              // 正面朝 +x：跟左邊的道路平行
       const bx = cx - 10.8, bz = cz;                       // 往後退到綠地邊緣，前面的樹才不會擋到板面
       addItem(g, bx, bz, { delay: 1.4, baseY: Y, drop: 6, liftAmount: 0.5 });   // hover 會浮起
+      catalogMarks.set('園區布告欄', g);
       // 兩張 HTML 牌卡剛好貼在兩塊板面上（白紙和圖釘藏在牌卡後面）：四個角（本地座標：左上、右上、右下、左下）每一幀投影到螢幕上
       board = {
         stop: 7, label: (g.userData.labelEl = hotspotLabel(g, '園區活動・最新消息', 5.2)),
@@ -2488,7 +2624,7 @@ function build(variantId, { replay = true } = {}) {
   if (owner) {
     const d = dog();
     addItem(d.g, 0, 0, { delay: 2.4, drop: 3 });                      // hover 時跟場景一樣浮起來（可以點：拉近看牠說話）
-    pets.push({ kind: 'dog', ...d, owner, rect: rectOf(walkerBlocks[0], OFF + 0.9), phase: 0, bubble: petBubble(d.g, '好想去公園玩！'), name: petName(d.g, '許志豪') });
+    pets.push({ kind: 'dog', ...d, owner, rect: rectOf(walkerBlocks[0], OFF + 0.9), phase: 0, bubble: petBubble(d.g, '好想去公園玩！'), name: petName(d.g, '小黃狗') });
   }
   // 小貓：坐在中央大綠地右側的空位（CNRD 立體字和噴水池中間，正對布告欄的另一側）
   const catLawn = L.blocks.find(b => b.ground === 'grass' && b.x1 - b.x0 > 20 && b.z1 - b.z0 > 20)
@@ -2498,7 +2634,7 @@ function build(variantId, { replay = true } = {}) {
     c.g.scale.setScalar(PERSON_SCALE * 1.2);   // 比人物的比例稍大一點，鳥瞰時還找得到
     c.g.rotation.y = Math.PI / 4;              // 臉朝向觀看者
     addItem(c.g, (catLawn.x0 + catLawn.x1) / 2 + 9, (catLawn.z0 + catLawn.z1) / 2, { delay: 2.6, baseY: CURB_H, drop: 3 });   // hover 浮起來、可以點
-    pets.push({ kind: 'cat', ...c, phase: rand() * 6, bubble: petBubble(c.g, '喵...喵...喵...'), name: petName(c.g, '陳淑芬') });
+    pets.push({ kind: 'cat', ...c, phase: rand() * 6, bubble: petBubble(c.g, '喵...喵...喵...'), name: petName(c.g, '小灰貓') });
   }
 
   // 小汽車（黃、橘兩台）：沿著整張地圖最外圈的街道慢慢繞
@@ -2532,7 +2668,7 @@ function build(variantId, { replay = true } = {}) {
   const INSIDERS = {
     // seat：坐在椅子上（座面高度，對齊場景裡那張椅子）；沒有 seat 的站著
     office: [   // 辦公研發空間：一人坐在人體工學椅上用電腦、一人在白板前寫想法
-      { kind: 'type', x: 0.6, z: 1.3, face: Math.PI, seat: 1.27 },
+      { kind: 'type', x: 0.6, z: 1.3, face: Math.PI, seat: 1.27, biz: true },   // biz：用「一起從這裡起步」的上班族（打領帶），坐著打電腦
       { kind: 'point', x: -2.3, z: -3.3, face: Math.PI + 0.35 },
     ],
     cowork: [   // 跨院系研發中心：三個人坐在圓桌旁的椅子上討論（前面那張空著，不擋視線）
@@ -2553,8 +2689,12 @@ function build(variantId, { replay = true } = {}) {
       root.add(l); spaceLights.push(l);
     });
     INSIDERS[sp.id]?.forEach((d, k, list) => {
-      const fit = OUTFITS[(outfit++ + si) % OUTFITS.length];
-      const pp = person(fit);
+      const auto = OUTFITS[(outfit++ + si) % OUTFITS.length];           // 照順序輪的穿搭（有指定外觀時也要往下輪，其他人才不會跟著變）
+      const fit = d.biz ? { pants: M.pantsNavy } : d.look ?? auto;
+      hairForce = d.look?.kind ?? null;                                 // 精細髮型時用指定的髮型
+      const keepN = illusN;
+      const pp = d.biz && personStyle === 'illus' ? personBiz({ bag: false }) : person(d.biz ? auto : fit);
+      illusN = keepN; hairForce = null;
       // 沒給朝向的（圍桌討論）面向圓桌中心
       pp.g.rotation.y = d.face ?? Math.atan2(0.8 - d.x, 0.7 - d.z);
       pp.g.position.set(d.x, d.seat && personStyle === 'illus' ? sitDown(pp, fit, d.seat) : 0, d.z);
@@ -2984,10 +3124,10 @@ function innerScroll(t, dir) {
   }
   return false;
 }
-// 現在是不是由分段捲動接管（地圖操作模式、交通資訊、一起從這裡起步、選單、RWD 預覽、載入中都不接管）
+// 現在是不是由分段捲動接管（地圖操作模式、交通資訊、一起從這裡起步、選單、RWD 預覽、建模總覽、載入中都不接管）
 function pagingOn(target, dir) {
   return !document.documentElement.classList.contains('loading') && !free && !joinOn && trModal.hidden && !carFocus
-    && !body.classList.contains('rwd') && !body.classList.contains('menu-open') && !innerScroll(target, dir);
+    && !body.classList.contains('rwd') && !body.classList.contains('menu-open') && !body.classList.contains('catalog-on') && !innerScroll(target, dir);
 }
 // 畫面狀態的「指紋」：鏡頭停在哪一站／轉場到哪、理念與使命第幾步、媒合平台畫面淡入多少；指紋一樣 = 畫面看起來一樣
 function camSig(sv) {
@@ -3261,6 +3401,7 @@ document.getElementById('ftTop').onclick = () => joinToOverview();   // 回頂�
 // Header、頁尾的 Logo：回到最一開始的首屏（不管現在在哪一段：一起從這裡起步、交通資訊、螢幕裡、地圖各站）
 // 原本只是 href="#"，瀏覽器只會捲到頂端；但這幾段鎖住了捲動或狀態還留著，所以看起來沒反應
 document.querySelectorAll('.site-header .logo, .ft-logo').forEach(a => a.addEventListener('click', e => {
+  if (new URLSearchParams(location.search).has('catalog')) return;      // 建模總覽頁：照連結回到網站首頁（不攔）
   e.preventDefault();
   setMenu?.(false);
   if (joinOn) return joinToOverview();
@@ -3935,7 +4076,143 @@ async function warmUp() {
 logosReady.then(warmUp).then(() => requestAnimationFrame(() => requestAnimationFrame(() => {
   if (window.__load) { window.__load.caption = '準備完成'; window.__load.done = true; }
 })));
-addEventListener('loader:hide', () => { anim.replay(); showDragTip(); scheduleAutoLayout(); showCookie(); }, { once: true });
+const CATALOG = new URLSearchParams(location.search).has('catalog');
+// Logo 的連結指向同一頁（拿掉 ?catalog）：本機是 /hero-map.html，正式站是 /（不會跑到資料夾列表）；點擊行為見上方「回到最一開始的首屏」
+document.querySelectorAll('.logo, .ft-logo').forEach(a => { a.href = location.pathname; });
+addEventListener('loader:hide', () => { anim.replay(); if (!CATALOG) showDragTip(); scheduleAutoLayout(); showCookie(); if (CATALOG) openCatalog(); }, { once: true });
+// ===== 建模總覽的檢視彈窗：一個常駐的渲染器＋可以轉動的相機（透視相機，近看比較有立體感）=====
+let catView = null, catItems = [], catIndex = 0;
+function openCatModal(i) {
+  catIndex = (i + catItems.length) % catItems.length;                      // 頭尾相接：第一個再往前 = 最後一個
+  const [name, make, note] = catItems[catIndex];
+  document.getElementById('catCount').textContent = `${catIndex + 1} / ${catItems.length}`;
+  const modal = document.getElementById('catModal'), host = document.getElementById('catView');
+  document.getElementById('catModalTitle').textContent = name;
+  document.getElementById('catModalNote').textContent = note;
+  const firstOpen = modal.hidden;
+  modal.hidden = false;
+  if (!catView) {                                                          // 第一次打開才建立
+    const r = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    r.setPixelRatio(Math.min(devicePixelRatio, 2));
+    r.toneMapping = THREE.ACESFilmicToneMapping; r.toneMappingExposure = 0.95;
+    const pm = new THREE.PMREMGenerator(r), env = pm.fromScene(new RoomEnvironment(), 0.04).texture; pm.dispose();
+    const sc = new THREE.Scene(); sc.environment = env;
+    sc.add(new THREE.HemisphereLight('#ffffff', '#c9cdd6', 0.6));
+    const sun = new THREE.DirectionalLight('#ffffff', 2.0); sun.position.set(-4, 8, 6); sc.add(sun);
+    const cam = new THREE.PerspectiveCamera(30, 1, 0.05, 500);
+    host.append(r.domElement);
+    const ctl = new OrbitControls(cam, r.domElement);
+    ctl.enableDamping = true; ctl.dampingFactor = 0.12;
+    catView = { r, sc, cam, ctl, obj: null, home: null, raf: 0 };
+    new ResizeObserver(() => {
+      const w = host.clientWidth, h = host.clientHeight; if (!w || !h) return;
+      r.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix();
+    }).observe(host);
+    document.getElementById('catModalClose').onclick = closeCatModal;
+    modal.addEventListener('pointerdown', e => { if (e.target === modal) closeCatModal(); });
+    addEventListener('keydown', e => {
+      if (modal.hidden) return;
+      if (e.key === 'Escape') closeCatModal();
+      else if (e.key === 'ArrowLeft') openCatModal(catIndex - 1);
+      else if (e.key === 'ArrowRight') openCatModal(catIndex + 1);
+    });
+    document.getElementById('catPrev').onclick = () => openCatModal(catIndex - 1);
+    document.getElementById('catNext').onclick = () => openCatModal(catIndex + 1);
+    document.getElementById('catReset').onclick = () => { const v = catView; v.cam.position.copy(v.home.pos); v.ctl.target.copy(v.home.target); v.ctl.update(); };
+  }
+  const v = catView;
+  if (v.obj) v.sc.remove(v.obj);
+  const keepN = illusN; illusN = 0;
+  const obj = make(); v.obj = obj.g ?? obj; illusN = keepN;
+  v.obj.position.set(0, 0, 0); v.obj.visible = true;
+  const tags = []; v.obj.traverse(o => { if (o.isCSS2DObject) tags.push(o); }); tags.forEach(o => o.removeFromParent());
+  v.sc.add(v.obj); v.obj.updateMatrixWorld(true);
+  const bx = new THREE.Box3();
+  v.obj.traverse(o => { if (o.isMesh && o.visible && !o.material.transparent) bx.expandByObject(o, false); });
+  const sp = bx.getBoundingSphere(new THREE.Sphere());
+  const dist = sp.radius / Math.sin(THREE.MathUtils.degToRad(v.cam.fov / 2)) * 1.08;
+  v.home = { target: sp.center.clone(), pos: sp.center.clone().addScaledVector(ISO_DIR, dist) };
+  v.cam.position.copy(v.home.pos); v.ctl.target.copy(v.home.target);
+  v.ctl.minDistance = sp.radius * 0.4; v.ctl.maxDistance = dist * 3;
+  v.ctl.update();
+  cancelAnimationFrame(v.raf);
+  const loop = () => { v.ctl.update(); v.r.render(v.sc, v.cam); v.raf = requestAnimationFrame(loop); };
+  loop();
+  if (firstOpen) document.getElementById('catModalClose').focus();          // 切換上一個／下一個時不搶焦點
+}
+function closeCatModal() {
+  document.getElementById('catModal').hidden = true;
+  if (catView) cancelAnimationFrame(catView.raf);
+}
+// ===== 建模總覽：用一個小渲染器，把每個模型各畫一張縮圖（等角視角、白天光線），依類別排好 =====
+async function openCatalog() {
+  const sec = document.getElementById('catalog'), bodyEl = document.getElementById('catalogBody');
+  sec.hidden = false; body.classList.add('catalog-on');
+  document.getElementById('catalogBack').href = location.pathname;          // 回到同一個網址、拿掉 ?catalog（本機是 /hero-map.html，正式站是 /）
+  document.querySelectorAll('.catalog-link').forEach(a => a.setAttribute('aria-current', 'page'));
+  const keepN = illusN;
+  const asObj = o => o.g ?? o;                                               // 有的工廠回傳 { g }，有的直接回傳群組
+  const groups = [
+    ['空間場景', Object.entries(NAMES).map(([id, name]) => [name, () => buildScene(id).g, '地圖上的街區場景'])],
+    ['地標與設施', [
+      ...[...catalogMarks].map(([name, g]) => [name, () => g.clone(), name === '進駐企業廣告燈箱' ? '商業大樓門口，點了看 04 進駐企業' : name === '園區布告欄' ? '中央大綠地，點了看 05 活動消息' : name === '復古電腦裝置藝術' ? '中央大綠地，點了看 02 理念與使命' : '中央大綠地']),
+      ['行道樹', () => tree(1.1), '綠地點綴'], ['路燈', () => lamp(2.6), '路口，晚上會亮'],
+      ['小汽車（黃）', () => toyCar(M.yellow).g, '沿最外圈道路繞行'], ['小汽車（橘）', () => toyCar(M.accent).g, '點了打開交通資訊'],
+    ]],
+    ['人物', [
+      ...OUTFITS.map((o, i) => [`路人 ${i + 1}`, () => { illusN = i; return personIllus(o).g; }, `${o.long ? '長髮' : '短髮'}・${['戴眼鏡', '拿咖啡', '背包包'][i % 3]}`]),   // illusN 固定：縮圖和彈窗的道具、髮型一致
+      ['上班族', () => personBiz().g, '一起從這裡起步'], ['北大學生', () => personStudent().g, '一起從這裡起步'],
+      ['Q 版公仔', () => personChibi(OUTFITS[0]).g, '人物風格備案（目前沒用）'],
+    ]],
+    ...(hairStyle === 'detail' ? [['髮型', [
+      ['側撥光滑短髮', 'smooth', 0], ['雲朵瀏海', 'cloud', 3], ['雙包包頭', 'buns', 1], ['光滑鮑伯頭', 'bobSmooth', 5],
+    ].map(([name, kind, o]) => [name, () => { hairForce = kind; illusN = 1; const g = personIllus(OUTFITS[o]).g; hairForce = null; return g; }, HAIR_LONG.includes(kind) ? '長髮' : '短髮'])]] : []),
+    ['動物', [['小黃狗', () => dog().g, '跟著主人散步'], ['小灰貓', () => cat().g, '坐在中央大綠地']]],
+    ['產研媒合平台插圖', [['實習媒合', figLaptop, '筆電＋履歷卡'], ['研究合作', figScope, '顯微鏡＋玻片'], ['線下交流', figTalk, '兩朵對話雲']]],
+  ];
+  illusN = 0;
+  const total = groups.reduce((n, [, l]) => n + l.length, 0);
+  document.getElementById('catalogSum').textContent = tr(`共 ${total} 個模型，分成 ${groups.length} 類。全部都是用程式即時組出來的，沒有使用任何 3D 模型檔。`);
+  bodyEl.innerHTML = groups.map(([title, list]) => `<section class="cat-group"><h2>${title}<small>${list.length}</small></h2><div class="cat-grid">${
+    list.map(([name, , note]) => `<figure class="cat-card" tabindex="0" role="button" aria-label="${name}：放大檢視"><canvas width="640" height="480"></canvas><figcaption>${name}<small>${note}</small></figcaption></figure>`).join('')}</div></section>`).join('');
+  catItems = groups.flatMap(([, list]) => list);                           // 彈窗左右切換用的完整清單
+  [...bodyEl.querySelectorAll('.cat-card')].forEach((card, i) => {
+    const open = () => openCatModal(i);
+    card.onclick = open;
+    card.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } };
+  });
+  if (lang === 'en') translateDOM(sec);
+  // 縮圖渲染器：跟一起從這裡起步的角色同一套光線（環境光＋一盞太陽）
+  const W = 640, H = 480;
+  const r = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+  r.setPixelRatio(1); r.setSize(W, H, false);
+  r.toneMapping = THREE.ACESFilmicToneMapping; r.toneMappingExposure = 0.95;
+  const pm = new THREE.PMREMGenerator(r), env = pm.fromScene(new RoomEnvironment(), 0.04).texture; pm.dispose();
+  const sc = new THREE.Scene(); sc.environment = env;
+  sc.add(new THREE.HemisphereLight('#ffffff', '#c9cdd6', 0.6));
+  const sun = new THREE.DirectionalLight('#ffffff', 2.0); sun.position.set(-4, 8, 6); sc.add(sun);
+  const cam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 400);
+  const canvases = [...bodyEl.querySelectorAll('canvas')];
+  let k = 0;
+  for (const [, list] of groups) for (const [, make] of list) {
+    const obj = asObj(make());
+    obj.position.set(0, 0, 0); obj.visible = true;
+    const tags = []; obj.traverse(o => { if (o.isCSS2DObject) tags.push(o); }); tags.forEach(o => o.removeFromParent());   // 拿掉 hover 標籤（縮圖只要模型）
+    sc.add(obj); obj.updateMatrixWorld(true);
+    const bx = new THREE.Box3();                                             // 只算實心的零件（小汽車貼在路面的半透明車燈光不算，不然車子會縮得很小）
+    obj.traverse(o => { if (o.isMesh && o.visible && !o.material.transparent) bx.expandByObject(o, false); });
+    const sp = bx.getBoundingSphere(new THREE.Sphere());
+    const half = sp.radius * 1.02;
+    Object.assign(cam, { left: -half * W / H, right: half * W / H, top: half, bottom: -half }); cam.updateProjectionMatrix();
+    cam.position.copy(sp.center).addScaledVector(ISO_DIR, 150); cam.lookAt(sp.center);
+    r.render(sc, cam);
+    canvases[k++].getContext('2d').drawImage(r.domElement, 0, 0);
+    sc.remove(obj);
+    await new Promise(res => requestAnimationFrame(res));                   // 一張畫完讓畫面喘口氣，捲動不會卡
+  }
+  illusN = keepN;
+  r.dispose(); env.dispose();
+}
 // ===== Cookie 同意 =====
 // 進場後從底部浮上來；按「同意」後記在瀏覽器，下次不再出現（瀏覽器不讓存就只在這次關掉）
 // 手機、直式平板：Cookie 條貼在最底下，用 --cookie-push 讓 Hero 文字和右下角箭頭往上讓位，關掉後滑回原位
@@ -4564,7 +4841,7 @@ stage.renderer.setAnimationLoop(() => {
   boardEls.forEach((el, i) => {
     el.classList.toggle('show', !!showBoard);
     if (!board) return;
-    if (stacked) { if (el.style.transform) { el.style.transform = ''; el.style.height = ''; } return; }   // 上圖下文：牌卡在下方面板，不貼板面
+    if (stacked) { if (el.style.transform) { el.style.transform = ''; el.style.height = ''; el.style.removeProperty('--inv'); } return; }   // 上圖下文：牌卡在下方面板，不貼板面
     const [tl, tr, , bl] = board.panels[i].map(v => {
       tmpV.copy(v); board.g.localToWorld(tmpV).project(stage.camera);
       return [(tmpV.x + 1) / 2 * innerWidth, (1 - tmpV.y) / 2 * innerHeight];
@@ -4573,6 +4850,7 @@ stage.renderer.setAnimationLoop(() => {
     const wPx = Math.hypot(tr[0] - tl[0], tr[1] - tl[1]), hPx = Math.hypot(bl[0] - tl[0], bl[1] - tl[1]);
     const H = 480 * hPx / wPx;
     el.style.height = `${H}px`;
+    el.style.setProperty('--inv', (480 / wPx).toFixed(4));       // 牌卡被放大的倒數：分類標籤、查看全部按鈕用它換算，看起來跟全站其他地方的實際尺寸一樣
     el.style.transform = `matrix(${(tr[0] - tl[0]) / 480}, ${(tr[1] - tl[1]) / 480}, ${(bl[0] - tl[0]) / H}, ${(bl[1] - tl[1]) / H}, ${tl[0]}, ${tl[1]})`;
   });
   // 右下角圓形按鈕：首屏顯示「開始體驗」，動過地圖後變成「點擊體驗」（手機「點擊」），捲走後隱藏

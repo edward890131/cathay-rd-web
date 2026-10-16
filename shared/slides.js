@@ -19,6 +19,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { M } from './materials.js';
 import { SUN_DIR } from './stage.js';
 import { box, cyl, ball, tree, lamp } from './kit.js';
+import { FACE, hairNew, faceNew } from './face.js';   // 新版五官與髮型（跟地圖上的人物同一套、同一個開關）
 import buildUniversity from '../scenes/university.js';
 import buildTower from '../scenes/tower.js';
 import buildShop from '../scenes/shop.js';
@@ -155,15 +156,21 @@ function personIllus({ shirt, pants, hair, long = false }, scale) {
   };
   const armL = armJ(-1), armR = armJ(1);
   armL.rotation.z = -0.08; armR.rotation.z = 0.08;
-  const head = new THREE.Group(); head.position.y = 3.2;              // 頭：方圓臉 + 鮑伯頭 + 豆豆眼 + 一字嘴
+  const head = new THREE.Group(); head.position.y = 3.2;              // 頭：方圓臉＋頭髮＋五官（新版、舊版跟地圖上的人物一致）
   head.add(box(1.0, 1.06, 0.94, M.skin, 0, 0.6, 0, 0.42));
-  head.add(box(1.14, 0.72, 1.08, hair, 0, 1.06, -0.03, 0.35));
-  head.add(box(1.12, long ? 0.9 : 0.66, 0.6, hair, 0, long ? 0.42 : 0.55, -0.25, 0.24));
-  [-0.2, 0.2].forEach(x => head.add(ball(0.06, M.dark, x, 0.6, 0.47)));
-  const mouth = capsule(0.022, 0.1, M.dark); mouth.rotation.z = Math.PI / 2; mouth.position.set(0, 0.36, 0.47); head.add(mouth);
-  if (n % 3 === 0) {                                                   // 黑框眼鏡
-    [-0.21, 0.21].forEach(x => { const r = new THREE.Mesh(new THREE.TorusGeometry(0.15, 0.026, 8, 24), M.dark); r.position.set(x, 0.61, 0.5); r.castShadow = true; head.add(r); });
-    const bridge = cyl(0.018, 0.018, 0.13, M.dark, 0, 0.64, 0.5, 6); bridge.rotation.z = Math.PI / 2; head.add(bridge);
+  if (FACE.hair === 'detail') hairNew(head, hair, long, n);            // 新版髮型（shared/face.js）
+  else {                                                               // 舊版：安全帽鮑伯頭
+    head.add(box(1.14, 0.72, 1.08, hair, 0, 1.06, -0.03, 0.35));
+    head.add(box(1.12, long ? 0.9 : 0.66, 0.6, hair, 0, long ? 0.42 : 0.55, -0.25, 0.24));
+  }
+  if (FACE.eyes === 'big') faceNew(head, hair, { glasses: n % 3 === 0 });   // 新版五官：大眼睛、小鼻子、微笑嘴、耳朵、眉毛
+  else {                                                               // 舊版：豆豆眼＋一字嘴
+    [-0.2, 0.2].forEach(x => head.add(ball(0.06, M.dark, x, 0.6, 0.47)));
+    const mouth = capsule(0.022, 0.1, M.dark); mouth.rotation.z = Math.PI / 2; mouth.position.set(0, 0.36, 0.47); head.add(mouth);
+    if (n % 3 === 0) {                                                 // 黑框眼鏡
+      [-0.21, 0.21].forEach(x => { const r = new THREE.Mesh(new THREE.TorusGeometry(0.15, 0.026, 8, 24), M.dark); r.position.set(x, 0.61, 0.5); r.castShadow = true; head.add(r); });
+      const bridge = cyl(0.018, 0.018, 0.13, M.dark, 0, 0.64, 0.5, 6); bridge.rotation.z = Math.PI / 2; head.add(bridge);
+    }
   }
   g.add(mergeParts(head));
   if (n % 3 === 1) {                                                   // 外帶咖啡
