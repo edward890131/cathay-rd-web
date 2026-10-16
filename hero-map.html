@@ -456,13 +456,26 @@
   #deviceSeg svg, .icon-seg svg { width: 18px; height: 18px; }
   #musicBtn .music-off { display: none; }                                   /* 背景音樂關閉時才畫斜線 */
   #musicBtn[aria-pressed="false"] .music-off { display: inline; }
-  /* 材質：下拉選單（用原生 select，鍵盤、手機都好操作；外觀改成跟分段按鈕同一套） */
-  .select { position: relative; display: inline-flex; align-items: center; }
-  .select select { appearance: none; -webkit-appearance: none; height: 36px; padding: 0 30px 0 12px; border: 0; border-radius: var(--radius-btn);
+  /* 材質：自訂下拉選單（外觀跟分段按鈕、浮動面板同一套） */
+  .select { position: relative; display: inline-flex; }
+  .select-btn { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 10px 0 12px; border: 0; border-radius: var(--radius-btn);
     background: var(--hover); color: var(--text-primary); font: 500 12px/1 var(--font-family); cursor: pointer; transition: background .2s, color .8s; }
-  .select select:hover { background: var(--sep); }
-  .select select:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
-  .select svg { position: absolute; right: 9px; width: 14px; height: 14px; pointer-events: none; color: var(--text-secondary); }
+  .select-btn:hover, .select-btn[aria-expanded="true"] { background: var(--sep); }
+  .select-btn:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+  .select-btn svg { width: 14px; height: 14px; color: var(--text-secondary); transition: transform .2s; }
+  .select-btn[aria-expanded="true"] svg { transform: rotate(180deg); }
+  /* 選單：跟工具列、操作說明一樣的毛玻璃浮動面板，從按鈕下方淡入 */
+  .select-menu { position: absolute; z-index: 10; top: calc(100% + 6px); left: 0; min-width: 100%; margin: 0; padding: 4px; list-style: none;
+    display: flex; flex-direction: column; gap: 2px; border-radius: var(--radius-panel); background: var(--panel);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 10px 30px rgba(0,0,0,.14);
+    animation: menu-in .16s ease-out; }
+  .select-menu[hidden] { display: none; }
+  @keyframes menu-in { from { opacity: 0; transform: translateY(-4px); } }
+  .select-menu li { display: flex; align-items: center; justify-content: space-between; gap: 16px; height: 32px; padding: 0 10px;
+    border-radius: var(--radius-sm); color: var(--text-secondary); font: 500 12px/1 var(--font-family); white-space: nowrap; cursor: pointer; outline: none; }
+  .select-menu li:hover, .select-menu li:focus-visible { background: var(--hover); color: var(--text-primary); }
+  .select-menu li[aria-selected="true"] { color: var(--text-primary); font-weight: 700; }
+  .select-menu li[aria-selected="true"]::after { content: ""; width: 10px; height: 6px; margin-top: -3px; border: solid var(--color-primary); border-width: 0 0 2px 2px; transform: rotate(-45deg); }   /* 勾勾 */
   /* 全幅開關 */
   .switch { display: inline-flex; align-items: center; gap: 8px; padding: 0 8px 0 10px; height: 36px; font-size: 12px;
     color: var(--text-primary); cursor: pointer; user-select: none; }
@@ -480,7 +493,8 @@
   .free-panel strong { font-size: 12px; font-weight: 700; }
   .free-panel .keys { display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; line-height: 1.6; }
   .free-panel kbd { font-family: inherit; font-size: 11px; padding: 1px 6px; border-radius: 4px; background: var(--hover); white-space: nowrap; }
-  #tHelp[aria-expanded="true"] { background: var(--hover); }
+  #tHelp[aria-expanded="true"] { background: var(--seg-on); color: var(--text-primary); box-shadow: 0 1px 3px rgba(0,0,0,.12); }   /* 說明展開中：跟分段按鈕選中一樣 */
+  .hd-tools { display: flex; align-items: center; gap: 8px; }
   .free-panel .help-touch { display: none; }      /* 觸控裝置換成手勢說明（見下方 pointer: coarse） */
   /* 繼續觀看：使用者動過地圖後才出現，點了回到原本的捲動流程 */
   .continue { position: fixed; z-index: 4; right: var(--gutter); bottom: var(--gutter); width: 88px; height: 88px; border-radius: 50%; border: 0;
@@ -616,12 +630,13 @@
     .drawer .dock { position: static; display: flex; align-items: stretch; gap: 8px; }
     .drawer .tools, .drawer .free-panel { box-shadow: none; backdrop-filter: none; background: var(--hover); }
     .drawer .tools { align-self: flex-start; }
-    .drawer .select select { background: var(--surface-page); }
+    .drawer .select-btn { background: var(--surface-page); }
     .drawer-title:has(+ #drawerTools:empty) { display: none; }       /* 平板的顯示設定還在右上角，選單裡不顯示這個標題 */
     .sec-nav { max-width: calc(100vw - var(--gutter) * 3 - 320px); }   /* 錨點列可以用到工具列左邊為止，不再限制 40vw */
   }
   @media (max-width: 900px) {
     #deviceSeg, #deviceSeg + .sep { display: none !important; }        /* 手機、平板本身不需要 RWD 預覽切換 */
+    .dock > .tools:not(:has(#finishSelWrap)) { display: none; }       /* 平板：工具列只剩 RWD 切換（已隱藏），整條收起；手機的選單裡另外放了材質等設定 */
     .sec-nav { max-width: calc(100vw - var(--gutter) * 3 - 230px); }
   }
 
@@ -633,7 +648,8 @@
       padding: 14px var(--gutter) calc(14px + env(safe-area-inset-bottom)); font-size: 13px; box-shadow: 0 -6px 24px rgba(0,0,0,.08); }
     .cookie.out { transform: translateY(16px); }
     .panel-b { display: none; }
-    .fade-a, body[data-layout="b"] .fade-a { background: linear-gradient(0deg, var(--bg) 0%, color-mix(in srgb, var(--bg) 82%, transparent) 30%, transparent 55%); }   /* 漸層改成從下往上，墊在文字底下 */
+    /* 跟電腦版的左側面板一樣：文字區（大標＋牌卡）底下是實色底，地圖只在上半部，不跟文字疊在一起；上緣位置由程式依大標位置設定 */
+    .fade-a, body[data-layout="b"] .fade-a { background: var(--bg); box-shadow: 0 -12px 40px rgba(0,0,0,.04); transition: background-color .8s; }
     .hero-main, body[data-layout="b"] .hero-main { --slogan: clamp(56px, 11vw, 104px); --gap: 28px; --card-w: min(560px, 100%);
       left: var(--gutter); right: var(--gutter); bottom: var(--gutter); }   /* 底部貼齊邊距，跟右下角圓形按鈕的底邊對齊 */
     .drag-tip, body[data-layout="b"] .drag-tip { --tip-x: 50%; top: 30%; }     /* 放在上半部的地圖中間 */
@@ -735,7 +751,8 @@
     #deviceSeg, #deviceSeg + .sep { display: none !important; }        /* 橫式平板也是觸控裝置，不需要 RWD 預覽切換 */
     .icon-btn, #deviceSeg button { width: 44px; height: 44px; }
     .cap-steps button { min-width: 40px; height: 36px; }
-    .select select { height: 44px; font-size: 13px; }
+    .select-btn { height: 44px; font-size: 13px; }
+    .select-menu li { height: 40px; font-size: 13px; }
     .free-panel .help-mouse { display: none; }
     .free-panel .help-touch { display: grid; }
     /* 3D 標籤：可以點的那幾個（理念與使命、進駐企業、園區活動、交通資訊）在首屏常駐顯示，點標籤直接前往；點擊區往外擴 */
@@ -759,7 +776,8 @@
     /* 一排的切換按鈕（錨點列、計畫亮點 01～04、材質下拉） */
     .sec-nav button b, .sec-thumb .clone span.btn-like b { font-size: 14px; }
     .cap-steps button { min-width: 40px; height: var(--btn-h); font-size: 14px; }
-    .select select { height: var(--btn-h); font-size: 14px; }
+    .select-btn { height: var(--btn-h); font-size: 14px; }
+    .select-menu li { height: 40px; font-size: 14px; }
     .seg button { height: 34px; font-size: 14px; }                                    /* 外框 2px 內距＋34 = 整組 38 */
   }
 </style>
@@ -832,18 +850,43 @@
     <a href="#" target="_blank" rel="noopener">研究發展處<img src="assets/icon-external-link.svg" width="16" height="16" alt="另開新視窗" /></a>
   </nav>
   <nav class="side-nav">
-    <div class="seg icon-seg" id="nightSeg" role="group" aria-label="白天／夜晚">
-      <button data-night="0" aria-pressed="true" aria-label="白天" title="白天">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
-      </button>
-      <button data-night="1" aria-pressed="false" aria-label="夜晚" title="夜晚">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
-      </button>
-    </div>
-    <div class="seg icon-seg" id="musicSeg" role="group" aria-label="背景音樂">
-      <button id="musicBtn" aria-pressed="false" aria-label="背景音樂" title="背景音樂">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/><path class="music-off" d="M3 3l18 18"/></svg>
-      </button>
+    <!-- 顯示設定：材質 → 白天／夜晚 → 背景音樂 → 操作說明（間距比入口連結小，看起來是同一組） -->
+    <div class="hd-tools">
+      <!-- 材質：自訂下拉選單（不用瀏覽器原生樣式）；隱藏的 select 只當資料來源，選了一樣觸發原本的 change -->
+      <div class="select" id="finishSelWrap">
+        <select id="finishSel" aria-hidden="true" tabindex="-1" hidden>
+          <option value="matte">霧面</option>
+          <option value="clay">黏土</option>
+          <option value="paper">紙雕</option>
+        </select>
+        <button type="button" class="select-btn" id="finishBtn" aria-haspopup="listbox" aria-expanded="false" aria-controls="finishMenu" aria-label="材質" title="材質">
+          <span id="finishLabel">霧面</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <ul class="select-menu" id="finishMenu" role="listbox" aria-label="材質" hidden>
+          <li role="option" data-value="matte" tabindex="-1">霧面</li>
+          <li role="option" data-value="clay" tabindex="-1">黏土</li>
+          <li role="option" data-value="paper" tabindex="-1">紙雕</li>
+        </ul>
+      </div>
+      <div class="seg icon-seg" id="nightSeg" role="group" aria-label="白天／夜晚">
+        <button data-night="0" aria-pressed="true" aria-label="白天" title="白天">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        </button>
+        <button data-night="1" aria-pressed="false" aria-label="夜晚" title="夜晚">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        </button>
+      </div>
+      <div class="seg icon-seg" id="musicSeg" role="group" aria-label="背景音樂">
+        <button id="musicBtn" aria-pressed="false" aria-label="背景音樂" title="背景音樂">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/><path class="music-off" d="M3 3l18 18"/></svg>
+        </button>
+      </div>
+      <div class="seg icon-seg" id="helpSeg">
+        <button id="tHelp" aria-expanded="false" aria-controls="freePanel" aria-label="操作說明" title="操作說明">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .8-1 1.5v.4"/><circle cx="12" cy="17" r=".6" fill="currentColor"/></svg>
+        </button>
+      </div>
     </div>
     <a href="#" class="lang-toggle" lang="en" data-i18n-skip>EN</a>
     <a class="btn" href="#">產研媒合平台 →</a>
@@ -1062,24 +1105,12 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 5.5h2"/></svg>
     </button>
   </div>
-  <span class="sep"></span>
   <!-- 全幅、人物風格切換：先隱藏（功能保留，之後要再打開把 hidden 拿掉） -->
   <label class="switch" title="地圖全幅出血／左文右圖" hidden><input type="checkbox" id="tFull" checked><span class="track"></span>全幅</label>
   <div class="seg" id="peopleSeg" role="group" aria-label="人物風格" hidden>
     <button data-people="illus" aria-pressed="true">插畫</button>
     <button data-people="chibi" aria-pressed="false">Q版</button>
   </div>
-  <label class="select" title="材質">
-    <select id="finishSel" aria-label="材質">
-      <option value="matte">霧面</option>
-      <option value="clay">黏土</option>
-      <option value="paper">紙雕</option>
-    </select>
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
-  </label>
-  <button class="icon-btn" id="tHelp" aria-expanded="false" aria-controls="freePanel" aria-label="操作說明" title="操作說明">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .8-1 1.5v.4"/><circle cx="12" cy="17" r=".6" fill="currentColor"/></svg>
-  </button>
 </div>
 
 <div class="free-panel collapsed" id="freePanel" role="dialog" aria-label="地圖操作說明">
@@ -1230,7 +1261,7 @@ const setAboutView = () => {
   if (!STACKED_MQ.matches) return about.setView(innerWidth, innerHeight, { shiftX: innerWidth * 0.16 });
   // 上緣：工具列／Header 和錨點列取比較低的那個（手機的錨點列在 Header 下方，主體要放在錨點列以下才不會太靠上）
   const bottomOf = sel => document.querySelector(sel)?.getBoundingClientRect().bottom ?? 0;
-  const top = Math.max(bottomOf(innerWidth < 760 ? '.site-header' : '.tools'), bottomOf('#secNav')) + 8;
+  const top = Math.max(bottomOf('.site-header'), innerWidth < 760 ? 0 : bottomOf('.tools'), bottomOf('#secNav')) + 8;   // 平板的工具列可能是空的（隱藏），所以也看 Header
   const bottom = document.getElementById('aboutCard')?.getBoundingClientRect().top ?? innerHeight;
   about.setView(innerWidth, innerHeight, { shiftY: -(innerHeight / 2 - (top + bottom) / 2) });
 };
@@ -3476,9 +3507,35 @@ function setFinish(name) {
   });
   paperU.value = f.paper;
   finishSel.value = name;
+  syncFinishUI();
 }
 const finishSel = document.getElementById('finishSel');
 finishSel.onchange = () => setFinish(finishSel.value);
+// 自訂下拉選單：點按鈕展開；點選項、Enter／空白鍵選取；上下鍵移動；Esc、點外面收起
+const finishBtn = document.getElementById('finishBtn'), finishMenu = document.getElementById('finishMenu');
+const finishOpts = [...finishMenu.children];
+function syncFinishUI() {                                   // 按鈕文字、選中的勾勾跟著目前材質（切換語言後也要再跑一次）
+  const opt = finishSel.selectedOptions[0];
+  document.getElementById('finishLabel').textContent = tr(opt?.dataset.zh ?? opt?.textContent ?? '');
+  finishOpts.forEach(li => li.setAttribute('aria-selected', String(li.dataset.value === finishSel.value)));
+}
+[...finishSel.options].forEach(o => { o.dataset.zh = o.textContent; });   // 記住中文原文（翻譯時用）
+function setFinishMenu(open, focusSel = false) {
+  finishMenu.hidden = !open; finishBtn.setAttribute('aria-expanded', String(open));
+  if (open && focusSel) (finishOpts.find(li => li.getAttribute('aria-selected') === 'true') ?? finishOpts[0]).focus();
+}
+const pickFinish = li => { setFinishMenu(false); finishBtn.focus(); if (li.dataset.value !== finishSel.value) { finishSel.value = li.dataset.value; finishSel.dispatchEvent(new Event('change')); } };
+finishBtn.onclick = () => setFinishMenu(finishMenu.hidden, true);
+finishBtn.addEventListener('keydown', e => { if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); setFinishMenu(true, true); } });
+finishOpts.forEach(li => { li.onclick = () => pickFinish(li); });
+finishMenu.addEventListener('keydown', e => {
+  const i = finishOpts.indexOf(document.activeElement);
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); finishOpts[(i + (e.key === 'ArrowDown' ? 1 : finishOpts.length - 1)) % finishOpts.length].focus(); }
+  else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (i >= 0) pickFinish(finishOpts[i]); }
+  else if (e.key === 'Escape') { e.stopPropagation(); setFinishMenu(false); finishBtn.focus(); }
+  else if (e.key === 'Tab') setFinishMenu(false);
+});
+addEventListener('pointerdown', e => { if (!finishMenu.hidden && !e.target.closest('#finishSelWrap')) setFinishMenu(false); });
 setFinish(FINISH[new URLSearchParams(location.search).get('finish')] ? new URLSearchParams(location.search).get('finish') : 'matte');   // 網址加 ?finish=clay / paper 直接用該材質打開
 
 // ============ 白天／夜晚 ============
@@ -3536,6 +3593,7 @@ function setNight(on, instant = false) {
   nightBtns.forEach(b => b.setAttribute('aria-pressed', String((b.dataset.night === '1') === on)));
   nightTarget = on ? 1 : 0;
   body.classList.toggle('night', on);
+  bgm.src?.sync?.();                                        // 背景音樂：白天 Happy Beat ↔ 夜晚 Happy Vibes 交叉淡換
   if (instant) { nightT = nightTarget; applyNight(nightT); }
 }
 let nightManual = false;                                    // 使用者自己按過切換，就不再依時間自動切
@@ -3566,24 +3624,30 @@ const nightSegEl = document.getElementById('nightSeg'), nightHome = document.cre
 nightSegEl.before(nightHome);
 const musicSegEl = document.getElementById('musicSeg'), musicHome = document.createComment('music');
 musicSegEl.before(musicHome);                                // 背景音樂鈕跟著白天／夜晚切換一起搬
+const finishEl = document.getElementById('finishSelWrap'), finishHome = document.createComment('finish');
+finishEl.before(finishHome);                                 // 材質、操作說明也在 Header，手機一樣搬進選單
+const helpSegEl = document.getElementById('helpSeg'), helpHome = document.createComment('help');
+helpSegEl.before(helpHome);
 const placeDock = () => {
-  if (PHONE_MQ.matches) { document.getElementById('drawerTools').append(dockEl); const tl = dockEl.querySelector('.tools'); tl.prepend(musicSegEl); tl.prepend(nightSegEl); }
-  else { dockHome.after(dockEl); nightHome.after(nightSegEl); musicHome.after(musicSegEl); setMenu(false); }
+  if (PHONE_MQ.matches) { document.getElementById('drawerTools').append(dockEl); const tl = dockEl.querySelector('.tools'); tl.prepend(finishEl, nightSegEl, musicSegEl, helpSegEl); }
+  else { dockHome.after(dockEl); finishHome.after(finishEl); nightHome.after(nightSegEl); musicHome.after(musicSegEl); helpHome.after(helpSegEl); setMenu(false); }
 };
 placeDock();
 PHONE_MQ.addEventListener('change', placeDock);
 
 // ───────── 背景音樂（原型）─────────
-// 預設關閉；使用者按下開關才播放。記住的「開」也要等第一次點擊／按鍵之後才會出聲（瀏覽器不允許自動播放）。
-// 目前沒有音檔，用 Web Audio 即時合成一段 96 BPM 的五聲音階小曲；日後換真實音檔只要設定 BGM_FILE（見 makeFileSource）
-const BGM_FILE = null;                                       // 例：'assets/bgm.m4a'；null = 用程式合成
+// 預設開啟（使用者關掉過就記住關）；瀏覽器不允許自動播放，所以要等第一次點擊／按鍵／觸控之後才會出聲。
+// 白天、夜晚各一首音檔配樂（見 makeDayNightSource），底下墊 Web Audio 即時合成的城市環境音
+// 配樂：白天 Happy Beat（burabotti）、夜晚 Happy Vibes（Ruskerdax），都是 OpenGameArt 的 CC0 授權（可商用、不用標註）
+// 兩首都疊一層程式合成的城市環境音；切換白天／夜晚時兩首交叉淡入淡出，環境音不中斷
+const BGM_DAY = 'assets/bgm-day.mp3', BGM_NIGHT = 'assets/bgm-night.mp3';
 const BGM_KEY = 'cnrd-bgm', BGM_VOL = 0.2, BGM_FADE = 1.5;   // 記憶用的 key、主音量、淡入淡出秒數
 const bgm = { ctx: null, master: null, src: null, on: false, pending: false };
 const musicBtn = document.getElementById('musicBtn');
 
-// 合成音源：輕柔的鋼琴旋律（80 BPM，8 小節循環）＋ 城市環境音（遠方車流、路過的車、風、樹葉、腳步、偶爾狗叫）
-// 環境音全部用雜訊即時調出來，不用音檔；隨機事件的間隔都拉長，只當背景質感，不搶主題
-function makeSynthSource(ctx, out) {
+// 合成音源：輕柔的鋼琴旋律（80 BPM，8 小節循環）＋ 城市環境音（遠方車流、汽車喇叭、風、樹葉、腳步、狗叫、白天的鳥叫）
+// 環境音全部用雜訊、振盪器即時調出來，不用音檔；隨機事件的間隔都拉長，只當背景質感，不搶主題
+function makeSynthSource(ctx, out, { piano: withPiano = true } = {}) {
   const BPM = 80, BEAT = 60 / BPM, BAR = BEAT * 4, SR = ctx.sampleRate;
   const hz = m => 440 * 2 ** ((m - 69) / 12);                 // MIDI 音高轉頻率
   const rnd = (a, b) => a + Math.random() * (b - a);
@@ -3626,14 +3690,14 @@ function makeSynthSource(ctx, out) {
   // 遠方車流：低頻轟轟聲
   const hum = filt('lowpass', 220), humG = ctx.createGain(); humG.gain.value = 0.18;
   // 風：中低頻雜訊，頻率和音量隨陣風慢慢起伏
-  const wind = filt('bandpass', 450, 0.6), windG = ctx.createGain(); windG.gain.value = 0.05;
+  const wind = filt('bandpass', 450, 0.6), windG = ctx.createGain(); windG.gain.value = 0.025;
   // 樹葉：高頻沙沙聲，跟著陣風變大變小
   const leaf = filt('highpass', 3200), leaf2 = filt('lowpass', 7500), leafG = ctx.createGain(); leafG.gain.value = 0.004;
   const gust = t => {                                          // 每隔幾秒換一個陣風強度
     const k = rnd(0.2, 1);
-    windG.gain.setTargetAtTime(0.03 + k * 0.07, t, 1.6);
+    windG.gain.setTargetAtTime(0.015 + k * 0.035, t, 1.6);   // 風、樹葉都比原本小聲一半
     wind.frequency.setTargetAtTime(300 + k * 500, t, 2);
-    leafG.gain.setTargetAtTime(0.002 + k * k * 0.014, t, 0.8);
+    leafG.gain.setTargetAtTime(0.001 + k * k * 0.007, t, 0.8);
   };
 
   // 鋼琴：幾個泛音疊成的音色＋兩支微微走音的振盪器（比較溫暖），亮度隨時間變暗、音量指數衰減
@@ -3652,18 +3716,19 @@ function makeSynthSource(ctx, out) {
   };
 
   // ── 偶發事件 ──
-  // 路過的車：一團低沉雜訊從一邊滑到另一邊，越近越亮越大聲
+  // 汽車喇叭：遠方輕輕的「叭」或「叭叭」，兩個差一點點音高的方波疊在一起（真的汽車喇叭也是雙音），濾掉刺耳的高頻、走殘響
   const car = t => {
-    const dur = rnd(4, 7), dir = Math.random() < 0.5 ? -1 : 1, peak = rnd(0.12, 0.28);
-    const s = noise(BROWN, t, dur), f = filt('lowpass', 250), g = ctx.createGain(), p = ctx.createStereoPanner?.();
-    f.frequency.setValueAtTime(250, t); f.frequency.linearRampToValueAtTime(rnd(700, 1100), t + dur / 2); f.frequency.linearRampToValueAtTime(250, t + dur);
-    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + dur / 2); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    s.connect(f); f.connect(g);
-    if (p) { p.pan.setValueAtTime(-0.8 * dir, t); p.pan.linearRampToValueAtTime(0.8 * dir, t + dur); g.connect(p); p.connect(amb); } else g.connect(amb);
+    const n = Math.random() < 0.5 ? 1 : 2, p = rnd(-0.8, 0.8), f0 = rnd(380, 460), vol = rnd(0.05, 0.08);
+    for (let i = 0; i < n; i++) {
+      const tt = t + i * rnd(0.22, 0.3), d = n === 1 ? rnd(0.25, 0.4) : rnd(0.12, 0.18), g = ctx.createGain(), lp = filt('lowpass', 1400);
+      g.gain.setValueAtTime(0, tt); g.gain.linearRampToValueAtTime(vol, tt + 0.02); g.gain.setValueAtTime(vol, tt + d - 0.03); g.gain.linearRampToValueAtTime(0, tt + d);
+      [1, 1.26].forEach(r => { const o = ctx.createOscillator(); o.type = 'square'; o.frequency.value = f0 * r; o.connect(lp); o.start(tt); o.stop(tt + d + 0.02); });
+      lp.connect(g); pan(g, p).connect(bus);
+    }
   };
   // 腳步聲：一個人走過，6～10 步，每步是一小段悶悶的雜訊，左右腳輕重略有不同
   const steps = t => {
-    const n = Math.floor(rnd(6, 11)), gap = rnd(0.45, 0.58), p0 = rnd(-0.6, 0.6), dp = rnd(-0.06, 0.06), vol = rnd(0.4, 0.6);
+    const n = Math.floor(rnd(6, 11)), gap = rnd(0.45, 0.58), p0 = rnd(-0.6, 0.6), dp = rnd(-0.06, 0.06), vol = rnd(1.8, 2.2);   // 比原本大聲很多
     for (let i = 0; i < n; i++) {
       const tt = t + i * gap + rnd(-0.02, 0.02), s = noise(WHITE, tt, 0.09), f = filt('bandpass', rnd(500, 800), 1.2), g = ctx.createGain();
       const v = vol * (i % 2 ? 0.8 : 1) * Math.sin(Math.PI * (i + 1) / (n + 1));   // 由遠而近再走遠
@@ -3677,12 +3742,28 @@ function makeSynthSource(ctx, out) {
     for (let i = 0; i < n; i++) {
       const tt = t + i * rnd(0.26, 0.34), o = ctx.createOscillator(), f = filt('bandpass', rnd(800, 1100), 2), lp = filt('lowpass', 1800), g = ctx.createGain();
       o.type = 'sawtooth'; o.frequency.setValueAtTime(base * 1.15, tt); o.frequency.exponentialRampToValueAtTime(base * 0.7, tt + 0.16);
-      g.gain.setValueAtTime(0, tt); g.gain.linearRampToValueAtTime(0.16, tt + 0.015); g.gain.exponentialRampToValueAtTime(0.0001, tt + 0.18);
+      g.gain.setValueAtTime(0, tt); g.gain.linearRampToValueAtTime(0.7, tt + 0.015); g.gain.exponentialRampToValueAtTime(0.0001, tt + 0.18);   // 比原本大聲很多
       o.connect(f); f.connect(lp); lp.connect(g); pan(g, p).connect(bus); o.start(tt); o.stop(tt + 0.2);
     }
   };
 
+  // 鳥叫（只有白天）：2～5 聲短促的「啾」，每聲是快速上下滑的高音正弦波；走殘響，像在樹上
+  const bird = t => {
+    if (document.body.classList.contains('night')) return;
+    const n = Math.floor(rnd(2, 6)), p = rnd(-0.8, 0.8), base = rnd(2600, 3800), vol = rnd(0.05, 0.09);
+    for (let i = 0; i < n; i++) {
+      const tt = t + i * rnd(0.11, 0.2), d = rnd(0.06, 0.11), o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = 'sine';
+      o.frequency.setValueAtTime(base * rnd(0.9, 1.05), tt);
+      o.frequency.exponentialRampToValueAtTime(base * rnd(1.25, 1.6), tt + d * 0.4);   // 往上挑
+      o.frequency.exponentialRampToValueAtTime(base * rnd(0.8, 1), tt + d);           // 再落下
+      g.gain.setValueAtTime(0, tt); g.gain.linearRampToValueAtTime(vol, tt + 0.008); g.gain.exponentialRampToValueAtTime(0.0001, tt + d);
+      o.connect(g); pan(g, p).connect(bus); o.start(tt); o.stop(tt + d + 0.02);
+    }
+  };
+
   const scheduleBar = (bar, t0) => {
+    if (!withPiano) return;                                    // 只要環境音（墊在音檔配樂底下）
     const sparse = Math.floor(bar / 8) % 2 === 1;                // 第二輪鋼琴只彈每小節第一個音，讓環境音多露一點
     CHORDS[bar % 8].forEach((m, i) => piano(m, t0 + i * 0.03, BAR * 0.95, 0.045, -0.15));   // 左手輕輕琶音
     MEL[bar % 8].forEach(([b, m, d], i) => { if (!(sparse && i > 0)) piano(m, t0 + b * BEAT, d * BEAT, sparse ? 0.09 : 0.12); });
@@ -3693,9 +3774,10 @@ function makeSynthSource(ctx, out) {
     const ahead = ctx.currentTime + 1.5;
     while (next < ahead) { scheduleBar(bar++, next); next += BAR; }
     if (ev.gust < ahead) { gust(ev.gust); ev.gust += rnd(2, 5); }
-    if (ev.car < ahead) { car(ev.car); ev.car += rnd(9, 20); }
-    if (ev.steps < ahead) { steps(ev.steps); ev.steps += rnd(14, 30); }
-    if (ev.dog < ahead) { dog(ev.dog); ev.dog += rnd(30, 60); }
+    if (ev.car < ahead) { car(ev.car); ev.car += rnd(10, 20); }       // 喇叭：偶爾一下就好
+    if (ev.steps < ahead) { steps(ev.steps); ev.steps += rnd(9, 18); }
+    if (ev.dog < ahead) { dog(ev.dog); ev.dog += rnd(8, 16); }
+    if (ev.bird < ahead) { bird(ev.bird); ev.bird += rnd(3, 8); }
   };
   return {
     start() {
@@ -3703,7 +3785,7 @@ function makeSynthSource(ctx, out) {
       noise(BROWN, t).connect(hum); hum.connect(humG); humG.connect(amb);
       noise(BROWN, t).connect(wind); wind.connect(windG); windG.connect(amb);
       noise(WHITE, t).connect(leaf); leaf.connect(leaf2); leaf2.connect(leafG); leafG.connect(amb);
-      bar = 0; next = t; ev = { gust: t, car: t + rnd(2, 6), steps: t + rnd(5, 10), dog: t + rnd(12, 25) };
+      bar = 0; next = t; ev = { gust: t, car: t + rnd(2, 6), steps: t + rnd(4, 8), dog: t + rnd(3, 6), bird: t + rnd(1, 3) };
       tick(); timer = setInterval(tick, 500);
     },
     stop() {
@@ -3713,14 +3795,48 @@ function makeSynthSource(ctx, out) {
     },
   };
 }
-// 音檔音源（日後換真實音檔用）：<audio loop> 接進同一條增益節點，淡入淡出、暫停邏輯完全不用改
-function makeFileSource(ctx, out) {
-  const el = new Audio(BGM_FILE); el.loop = true; el.crossOrigin = 'anonymous';
-  const node = ctx.createMediaElementSource(el); node.connect(out);
-  return { start() { el.currentTime = 0; el.play().catch(() => {}); }, stop() { el.pause(); node.disconnect(); } };
+// 白天／夜晚配樂：整首下載、解碼後用 AudioBuffer 無縫循環（去掉 MP3 頭尾的編碼空白，接縫比較順）
+// 兩首依各自的平均音量（RMS）自動調成一樣大聲；底下墊城市環境音（不彈鋼琴）
+const bgmBuffers = new Map();                                // 解碼過的音檔先記住，切回來不用重新下載
+const MUSIC_RMS = 0.1;                                       // 兩首配樂統一調到的平均音量
+async function loadBgm(ctx, file) {
+  if (bgmBuffers.has(file)) return bgmBuffers.get(file);
+  const buf = await ctx.decodeAudioData(await (await fetch(file)).arrayBuffer());
+  const d = buf.getChannelData(0), n = d.length;
+  let sum = 0; for (let i = 0; i < n; i += 4) sum += d[i] * d[i];
+  const rms = Math.sqrt(sum / (n / 4)) || MUSIC_RMS;
+  let a = 0, b = n - 1; while (a < n && Math.abs(d[a]) < 1e-4) a++; while (b > a && Math.abs(d[b]) < 1e-4) b--;   // 頭尾完全無聲的部分
+  const rec = { buf, gain: Math.min(MUSIC_RMS / rms, 4), loopStart: a / buf.sampleRate, loopEnd: (b + 1) / buf.sampleRate };
+  bgmBuffers.set(file, rec);
+  return rec;
+}
+function makeDayNightSource(ctx, out) {
+  const amb = makeSynthSource(ctx, out, { piano: false });
+  let cur = null, stopped = false, want = null;
+  const play = async file => {
+    want = file;
+    let rec; try { rec = await loadBgm(ctx, file); } catch { console.warn('配樂載入失敗', file); return; }
+    if (stopped || want !== file) return;                    // 下載期間又切走了
+    const t = ctx.currentTime, g = ctx.createGain(), src = ctx.createBufferSource();
+    src.buffer = rec.buf; src.loop = true; src.loopStart = rec.loopStart; src.loopEnd = rec.loopEnd;
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(rec.gain, t + 1.5);   // 淡入
+    src.connect(g); g.connect(out); src.start(t, rec.loopStart);
+    fadeOut(cur); cur = { src, g, file };
+  };
+  const fadeOut = c => {                                     // 舊的那首 1.5 秒淡出後停掉
+    if (!c) return;
+    const t = ctx.currentTime; c.g.gain.cancelScheduledValues(t); c.g.gain.setValueAtTime(c.g.gain.value, t); c.g.gain.linearRampToValueAtTime(0, t + 1.5);
+    setTimeout(() => { try { c.src.stop(); } catch {} c.g.disconnect(); }, 1600);
+  };
+  const pick = () => (body.classList.contains('night') ? BGM_NIGHT : BGM_DAY);
+  return {
+    start() { amb.start(); play(pick()); },
+    sync() { if (!stopped && pick() !== want) play(pick()); },   // 白天／夜晚切換時呼叫
+    stop() { stopped = true; if (cur) { try { cur.src.stop(); } catch {} cur.g.disconnect(); } amb.stop(); },
+  };
 }
 const bgmSave = on => { try { localStorage.setItem(BGM_KEY, on ? '1' : '0'); } catch {} };
-const bgmRead = () => { try { return localStorage.getItem(BGM_KEY) === '1'; } catch { return false; } };
+const bgmRead = () => { try { return localStorage.getItem(BGM_KEY) !== '0'; } catch { return true; } };   // 預設開啟：只有使用者自己關掉過才記成關
 const bgmFade = (to, sec) => {                               // 淡入淡出：從目前音量線性拉到目標，避免爆音
   const g = bgm.master.gain, t = bgm.ctx.currentTime;
   g.cancelScheduledValues(t); g.setValueAtTime(g.value, t); g.linearRampToValueAtTime(to, t + sec);
@@ -3734,7 +3850,7 @@ async function bgmStart() {
     }
     await bgm.ctx.resume();                                  // iOS 必須在點擊事件裡 resume
     if (!bgm.on) return;                                     // 等 resume 的期間使用者又按掉了
-    bgm.src = (BGM_FILE ? makeFileSource : makeSynthSource)(bgm.ctx, bgm.master);
+    bgm.src = makeDayNightSource(bgm.ctx, bgm.master);
     bgm.src.start(); bgmFade(BGM_VOL, BGM_FADE);
   } catch { bgm.on = false; setMusicUI(false); }             // 瀏覽器不支援或被擋，就安靜地回到關閉
 }
@@ -3748,22 +3864,24 @@ function setMusic(on) {
   bgm.on = on; bgm.pending = false; setMusicUI(on); bgmSave(on);
   on ? bgmStart() : bgmStop();
 }
-musicBtn.onclick = () => setMusic(bgm.pending ? true : !bgm.on);   // 記住「開」但還沒出聲時，按音樂鈕＝直接開始播，不是關掉
+musicBtn.onclick = () => setMusic(bgm.pending ? true : !bgm.on);
+   // 記住「開」但還沒出聲時，按音樂鈕＝直接開始播，不是關掉
 // 分頁切到背景就暫停（省電、不干擾別的分頁）；回來再恢復
 document.addEventListener('visibilitychange', () => {
   if (!bgm.ctx || !bgm.on) return;
   if (document.hidden) { bgmFade(0, 0.3); setTimeout(() => { if (document.hidden) bgm.ctx.suspend(); }, 400); }
   else bgm.ctx.resume().then(() => bgmFade(BGM_VOL, 0.8)).catch(() => {});
 });
-// 上次是開啟：按鈕先顯示為開，但要等使用者第一次點擊／按鍵才真的出聲
+// 預設開啟（或上次是開啟）：按鈕先顯示為開，但瀏覽器不允許自動播放，要等使用者第一次點擊／按鍵／觸控才真的出聲
 if (bgmRead()) {
   bgm.on = true; bgm.pending = true; setMusicUI(true);
+  const UNLOCK = ['pointerdown', 'keydown', 'touchend'];     // touchend：手機的第一下觸控（pointerdown 在 iOS 不算使用者啟動）
   const unlock = e => {
-    if (e.target.closest?.('#musicBtn')) { removeEventListener('pointerdown', unlock, true); removeEventListener('keydown', unlock, true); return; }   // 按的就是音樂鈕：交給它自己的 onclick
-    removeEventListener('pointerdown', unlock, true); removeEventListener('keydown', unlock, true);
+    UNLOCK.forEach(ev => removeEventListener(ev, unlock, true));
+    if (e.target.closest?.('#musicBtn')) return;             // 按的就是音樂鈕：交給它自己的 onclick
     if (bgm.on && bgm.pending) { bgm.pending = false; bgmStart(); }
   };
-  addEventListener('pointerdown', unlock, true); addEventListener('keydown', unlock, true);
+  UNLOCK.forEach(ev => addEventListener(ev, unlock, true));
 }
 const freePanel = document.getElementById('freePanel'), helpBtn = document.getElementById('tHelp');
 helpBtn.onclick = () => {
@@ -3941,10 +4059,11 @@ async function setLang(next) {
   translateDOM();
   document.querySelectorAll('.lang-toggle').forEach(a => {                 // 切換鈕顯示「另一個」語言
     const header = !a.closest('.drawer');
-    a.textContent = lang === 'en' ? (header ? 'ZH' : '中文') : (header ? 'EN' : 'English');
+    a.textContent = lang === 'en' ? '中文' : (header ? 'EN' : 'English');   // 英文版時切回中文的按鈕：Header、選單都顯示「中文」
     a.lang = lang === 'en' ? 'zh-Hant' : 'en';
   });
   setSpaceCopy(spaceShown, true, true);                                   // 計畫亮點牌卡重新套一次文字
+  syncFinishUI();                                                         // 材質下拉的按鈕文字
 }
 document.querySelectorAll('.lang-toggle').forEach(a => a.addEventListener('click', e => {
   e.preventDefault(); setMenu(false); setLang(lang === 'en' ? 'zh' : 'en');
@@ -3980,8 +4099,10 @@ if (focusParam) {
 const toolsEl = document.querySelector('.tools'), siteHeader = document.querySelector('.site-header'), boardSheet = document.getElementById('boardSheet');
 function measureStackArea() {
   const H = innerHeight, top = el => el.getBoundingClientRect().top, bottom = el => el.getBoundingClientRect().bottom;
-  const toolsB = (innerWidth < 760 ? bottom(siteHeader) : bottom(toolsEl)) + 8, navB = Math.max(toolsB, bottom(secNav) + 8);   // 手機：工具列收在選單裡，從 Header 下緣起算
-  stackArea.hero = [toolsB / H, (top(hero) - 8) / H];
+  const toolsB = Math.max(bottom(siteHeader), innerWidth < 760 ? 0 : bottom(toolsEl)) + 8, navB = Math.max(toolsB, bottom(secNav) + 8);   // 手機：工具列收在選單裡，從 Header 下緣起算
+  const panelTop = top(hero) - 24;                                 // 文字區底色的上緣：大標上方再留 24px
+  fadeA.style.top = `${panelTop}px`;
+  stackArea.hero = [toolsB / H, panelTop / H];
   stackArea.caption = [navB / H, (top(caption) - 8) / H];
   stackArea.tenants = [navB / H, (top(capTenants) - 8) / H];
   // 交通資訊卡飛到車子前才打開（還量不到），所以用 CSS 的卡片高度 --tr-h 推算卡片上緣
@@ -3995,8 +4116,8 @@ function stackedHome() {
   const a = stackArea.hero;
   const v = fitView(LAYOUT.a, true);
   // 手機：地圖放大到約 1.9 倍、填滿寬度（左右超出沒關係），中央綠地落在 Header 與大標之間
-  if (innerWidth < 760) return { home: STACK_HOME, view: v / 1.9, shift: 0, sy: areaSY(a) - 0.05 };   // 往下一點，讓地圖下緣墊在大標後面
-  return { home: STACK_HOME, view: v / 1.5, shift: 0, sy: areaSY(a) - 0.04 };   // 直式平板：一樣拉近、左右可以超出畫面
+  if (innerWidth < 760) return { home: STACK_HOME, view: v / 1.9, shift: 0, sy: areaSY(a) };   // 地圖置中在文字區底色上方的空間
+  return { home: STACK_HOME, view: v / 1.5, shift: 0, sy: areaSY(a) };   // 直式平板：一樣拉近、左右可以超出畫面
 }
 function smooth(t) { return t * t * (3 - 2 * t); }   // 用 function 宣告：程式一開始就能用（夜晚模式初始化會用到）
 function lerp(a, b, t) { return a + (b - a) * t; }
@@ -4042,7 +4163,10 @@ stage.renderer.setAnimationLoop(() => {
   const p = max > 0 ? scrollY / max : 0;
   const stacked = STACKED_MQ.matches;                                // 上圖下文（手機、直式平板）
   if (stacked) measureStackArea();
-  else boardDeskArea = [(secNav.getBoundingClientRect().bottom + 16) / innerHeight, (continueBtn.offsetTop - 16) / innerHeight];   // 下緣停在右下角圓形按鈕上方，不會壓到牌卡
+  else {
+    if (fadeA.style.top) fadeA.style.top = '';                       // 電腦版：漸層回到整個畫面
+    boardDeskArea = [(secNav.getBoundingClientRect().bottom + 16) / innerHeight, (continueBtn.offsetTop - 16) / innerHeight];   // 下緣停在右下角圓形按鈕上方，不會壓到牌卡
+  }
   // 全幅切換：版型進度 0（全幅）→ 1（左文右圖）慢慢過渡，鏡頭位置、大小、偏移一起混合
   layoutT += ((body.dataset.layout === 'b' ? 1 : 0) - layoutT) * Math.min(0.065 * dt, 1);   // 約 0.9 秒完成
   if (Math.abs(layoutT - Math.round(layoutT)) < 0.001) layoutT = Math.round(layoutT);
