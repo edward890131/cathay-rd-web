@@ -12,7 +12,8 @@
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { M } from '../shared/materials.js';
-import { box, ball } from '../shared/kit.js';
+import { box } from '../shared/kit.js';
+import { hairNew, faceNew } from '../shared/face.js';   // 新版髮型與五官（跟地圖上的人物同一套）
 const S = 512;
 const r = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
 r.setPixelRatio(1); r.setSize(S, S, false);
@@ -21,20 +22,17 @@ const pm = new THREE.PMREMGenerator(r);
 const sc = new THREE.Scene(); sc.environment = pm.fromScene(new RoomEnvironment(), 0.04).texture;
 sc.add(new THREE.HemisphereLight('#ffffff', '#c9cdd6', 0.6));
 const sun = new THREE.DirectionalLight('#ffffff', 2.0); sun.position.set(-3, 6, 6); sc.add(sun);
-// 頭像（胸像）：安全帽鮑伯頭、豆豆眼、一字嘴，下面露出藍色外套和白色內搭的肩膀
+// 頭像（胸像）：新版的側撥瀏海、大眼睛、微笑嘴，下面露出藍色外套和白色內搭的肩膀
 const g = new THREE.Group(); sc.add(g);
 g.add(box(1.0, 1.06, 0.94, M.skin, 0, 0.6, 0, 0.42));                   // 臉
-g.add(box(1.14, 0.72, 1.08, M.hair, 0, 1.06, -0.03, 0.35));             // 頭頂（前緣就是齊瀏海）
-g.add(box(1.12, 0.66, 0.6, M.hair, 0, 0.55, -0.25, 0.24));              // 兩側與後腦
-[-0.2, 0.2].forEach(x => g.add(ball(0.065, M.dark, x, 0.6, 0.47)));     // 眼睛
-const mouth = new THREE.Mesh(new THREE.CapsuleGeometry(0.024, 0.11, 4, 8), M.dark);
-mouth.rotation.z = Math.PI / 2; mouth.position.set(0, 0.36, 0.47); g.add(mouth);   // 一字嘴
+hairNew(g, M.hair, false, 1, 'smooth');                                  // 髮型：側撥光滑短髮
+faceNew(g, M.hair);                                                      // 五官：大眼睛、小鼻子、微笑嘴、耳朵、平眉
 g.add(box(0.74, 0.5, 0.46, M.white, 0, -0.2, 0, 0.18));                 // 內搭
 [-1, 1].forEach(sx => g.add(box(0.42, 0.56, 0.54, M.blue, sx * 0.3, -0.22, 0, 0.16)));   // 外套肩膀
 g.rotation.y = -0.18;                                                    // 稍微側一點，看得出立體
 // 正交相機：正面稍微偏上看，頭像置中填滿
-const cam = new THREE.OrthographicCamera(-0.88, 0.88, 0.88, -0.88, 0.1, 100);
-cam.position.set(0, 1.4, 10); cam.lookAt(0, 0.62, 0);
+const cam = new THREE.OrthographicCamera(-0.98, 0.98, 0.98, -0.98, 0.1, 100);   // 新版髮型比較高、兩側有耳朵，畫面放寬一點才不會裁到
+cam.position.set(0, 1.5, 10); cam.lookAt(0, 0.68, 0);
 r.render(sc, cam);
 window.iconDataURL = r.domElement.toDataURL('image/png');
 // iPhone 主畫面圖示不支援透明底：再拍一張淺灰底（跟網站底色一樣）
