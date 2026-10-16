@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="robots" content="noindex, nofollow" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 <!-- iPhone Safari 會自動把地址、電話變成連結（文字下面出現虛線），把一段字切成好幾塊，語系切換就對不到原文；電話和信箱已經手動做成連結 -->
 <meta name="format-detection" content="telephone=no, address=no, email=no, date=no" />
 <title>國泰產研中心平台</title>
@@ -76,6 +76,7 @@
   .scroll-space { height: 1840vh; }   /* 首屏 → 理念與使命（鑽進螢幕＋3 步＋退出）→ 計畫亮點三個空間 → 產研媒合平台（鑽進辦公室電腦）→ 進駐企業 → 園區活動／最新消息（時間軸總長 17.2 屏＋最後停留 1.2 屏） */
 
   /* ---------- 載入畫面 ---------- */
+  html { touch-action: pan-x pan-y; }   /* 手機：整個頁面不能用雙指放大（也不能點兩下放大），只有地圖本身可以捏合縮放 */
   html.loading, html.loading body { overflow: hidden; }   /* 載入中不能捲動 */
   .loader { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; background: var(--bg);
     transition: opacity .7s ease, visibility .7s; }
@@ -83,7 +84,7 @@
   .loader.hide .loader-inner { transform: translateY(-12px) scale(.98); }
   .loader-inner { display: flex; flex-direction: column; align-items: center; gap: 14px; width: min(560px, 84vw);
     transition: transform .7s ease; }
-  .loader-brand { font: 700 14px/1 var(--font-display); letter-spacing: .2em; color: var(--text-secondary); }
+  .loader-brand { font: 700 18px/1 var(--font-display); letter-spacing: -.06em; color: var(--text-primary); }   /* 跟 Header 的 Logo 同一個樣式，小一號（Header 22px） */
   .loader-num { display: flex; align-items: baseline; gap: 4px; font: 700 clamp(88px, 15vw, 168px)/1 var(--font-display);
     letter-spacing: -0.06em; color: var(--text-heading); font-variant-numeric: tabular-nums; }
   .loader-num small { font-size: .38em; color: var(--color-primary); letter-spacing: 0; }
@@ -99,7 +100,6 @@
   @keyframes loader-run { to { transform: translateX(-1400px); } }
   @media (prefers-reduced-motion: reduce) { #loaderRunner img { animation: none; } }
   body.night .loader-bar { background: rgba(255,255,255,.12); }   /* 夜晚：深色底上的進度條底軌 */
-  body.night .loader-brand { color: var(--muted); }
 
   /* ---------- Site Header（WF 81:1850） ---------- */
   .site-header { position: fixed; z-index: 5; top: 0; left: 0; right: 0; height: var(--header-h);
@@ -178,14 +178,17 @@
     background: var(--fill-button); color: var(--text-on-fill); font: 500 14px/1 var(--font-family); text-decoration: none; transition: background .2s; }
   .cap-cta:hover { background: var(--fill-hover); }
 
-  /* 理念與使命卡：步驟線（可點）＋ 目前步驟的 01／02／03 內文，換步時淡出換字 */
+  /* 理念與使命卡：右上角 01／02／03 切換（跟計畫亮點同一種按鈕，自動輪播時跟著換 active）＋ 目前步驟的內文 ＋ 右下角進度條 */
+  .about-card .copy { width: 100%; }                 /* 撐滿卡片寬度，右上角的切換按鈕才會貼齊右邊 */
   .about-card .copy p { margin: 0; }
-  .about-step { display: flex; gap: 16px; padding-top: 18px; border-top: 1px solid var(--chip-bg); width: 100%; }
-  .about-rail { display: flex; flex-direction: column; gap: 8px; padding-top: 4px; }
-  /* 步驟線＝進度條：播過的填滿、目前這一步由上往下慢慢填（填滿時剛好自動接下一步）、還沒播的是空的 */
-  .about-rail button { position: relative; width: 4px; height: 26px; border: 0; padding: 0; border-radius: 2px; overflow: hidden;
-    background: var(--track); cursor: pointer; }
-  .about-rail button i { position: absolute; inset: 0; background: var(--text-primary); transform-origin: 50% 0; transform: scaleY(0); }
+  .about-step { padding-top: 18px; border-top: 1px solid var(--chip-bg); width: 100%; }
+  /* 進度條（右下角三小段）：播過的填滿、目前這一段由左往右慢慢填（填滿時剛好自動接下一步）、還沒播的是空的 */
+  .about-rail { display: flex; gap: 6px; align-self: flex-end; margin: -10px 0; }   /* 上下負邊距：點擊範圍加高，但不撐高牌卡 */
+  /* 每一小段也可以點：按鈕本身 24px 高（好點），畫出來的條只有中間 4px */
+  .about-rail button { position: relative; width: 28px; height: 24px; padding: 0; border: 0; background: none; cursor: pointer; }
+  .about-rail span { position: absolute; left: 0; right: 0; top: 10px; height: 4px; border-radius: 2px; overflow: hidden; background: var(--track); transition: background .2s; }
+  .about-rail button:hover span { background: var(--muted); }
+  .about-rail i { position: absolute; inset: 0; background: var(--text-primary); transform-origin: 0 50%; transform: scaleX(0); }
   /* 三段文字疊在同一格，只顯示目前這段：牌卡高度自動以最長的那段為準，切換時不會忽高忽低 */
   .about-copy { display: grid; }
   .about-copy > div { grid-area: 1 / 1; opacity: 0; visibility: hidden; transition: opacity .25s, visibility 0s .25s; }
@@ -495,7 +498,7 @@
   @keyframes nudge { 50% { transform: translateY(3px); } }
   .continue .cue { display: none; }
   .card-wrap { display: flex; flex-direction: column; gap: 12px; }
-  /* 進場提示彈窗：物件掉落時出現在地圖上方，5 秒後淡出（使用者先拖曳或捲動就提早消失） */
+  /* 進場提示彈窗：物件掉落時出現在地圖上方，5 秒後換成捲動提示、再 5 秒淡出（使用者先拖曳或捲動就提早消失） */
   .drag-tip { position: fixed; z-index: 3; top: 50%; left: var(--tip-x, 62%); display: flex; align-items: center; gap: 12px;
     padding: 14px 22px 14px 16px; border-radius: var(--radius-panel); background: var(--panel); color: var(--text-primary);
     backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); box-shadow: 0 10px 30px rgba(0,0,0,.12);
@@ -503,7 +506,15 @@
     opacity: 0; transform: translate(-50%, calc(-50% + 10px)) scale(.96); transition: opacity .5s, transform .5s cubic-bezier(.2,.8,.2,1); }
   .drag-tip.show { opacity: 1; transform: translate(-50%, -50%); }
   body[data-layout="b"] .drag-tip { --tip-x: 70%; }   /* 左文右圖：放在右側地圖的中間 */
+  .drag-tip { display: grid; }
+  .drag-tip .tip-a, .drag-tip .tip-b { grid-area: 1 / 1; display: flex; align-items: center; gap: 12px; transition: opacity .35s; }
+  .drag-tip .tip-b, .drag-tip.scroll .tip-a { opacity: 0; }
+  .drag-tip.scroll .tip-b { opacity: 1; transition-delay: .2s; }               /* 先淡出拖曳提示，再淡入捲動提示 */
   .drag-tip .ico { position: relative; width: 40px; height: 32px; color: var(--color-primary); }
+  .drag-tip .ico .wheel { animation: tip-wheel 1.6s ease-in-out infinite; }     /* 滑鼠滾輪往下滾 */
+  .drag-tip .ico .down { animation: tip-down 1.6s ease-in-out infinite; }       /* 往下的箭頭輕輕上下跳 */
+  @keyframes tip-wheel { 0% { transform: translateY(0); opacity: 1; } 60% { transform: translateY(5px); opacity: 0; } 100% { transform: translateY(0); opacity: 0; } }
+  @keyframes tip-down { 0%, 100% { transform: translateY(-2px); } 50% { transform: translateY(1px); } }
   .drag-tip .ico svg { position: absolute; inset: 0; width: 100%; height: 100%; }
   .drag-tip .ico .hand { animation: tip-drag 1.6s ease-in-out infinite; color: var(--text-primary); }
   @keyframes tip-drag { 0%, 100% { transform: translateX(-7px); } 50% { transform: translateX(7px); } }
@@ -730,12 +741,6 @@
     /* 3D 標籤：可以點的那幾個（理念與使命、進駐企業、園區活動、交通資訊）在首屏常駐顯示，點標籤直接前往；點擊區往外擴 */
     .label.hot { position: relative; pointer-events: auto; cursor: pointer; font-size: 13px; padding: 7px 12px; }
     .label.hot::after { content: ""; position: absolute; inset: -6px -4px; }
-    /* 理念與使命的步驟線：看起來一樣細，可點的範圍加寬加高 */
-    .about-step { gap: 6px; }
-    .about-rail { gap: 0; padding-top: 0; }
-    .about-rail button { width: 24px; height: 40px; background: transparent; overflow: visible; }
-    .about-rail button::before, .about-rail button i { content: ""; position: absolute; top: 7px; bottom: 7px; left: 10px; right: auto; width: 4px; border-radius: 2px; }
-    .about-rail button::before { background: var(--track); }
     .bp-head { height: 44px; }
     .bp-head a { padding: 12px 0 12px 12px; }
   }
@@ -897,14 +902,17 @@
 <!-- 理念與使命（WF 81:1859）：鏡頭鑽進廣場復古電腦的螢幕，螢幕裡播 3 段 3D 幻燈片 -->
 <section class="card caption about-card" id="aboutCard" aria-live="polite">
   <div class="copy">
-    <small id="aboutEyebrow"></small>
+    <div class="cap-head">
+      <small id="aboutEyebrow"></small>
+      <div class="cap-steps" id="aboutSteps" role="group" aria-label="理念與使命段落"></div>
+    </div>
     <h3 id="aboutTitle"></h3>
     <p id="aboutLead"></p>
   </div>
   <div class="about-step">
-    <div class="about-rail" id="aboutRail" aria-label="步驟"></div>
     <div class="about-copy" id="aboutCopy"></div>
   </div>
+  <div class="about-rail" id="aboutRail" role="group" aria-label="理念與使命進度"></div>
 </section>
 <div class="about-fade" id="aboutFade" aria-hidden="true"></div>
 <!-- 計畫亮點・產研媒合平台（WF 81:1898）：鏡頭鑽進辦公研發空間的電腦，螢幕裡就是平台畫面 -->
@@ -1023,11 +1031,22 @@
 
 <!-- 進場提示：拖曳可轉動地圖 -->
 <div class="drag-tip" id="dragTip" role="status" aria-live="polite">
-  <span class="ico" aria-hidden="true">
-    <svg viewBox="0 0 40 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12c3-5 9-8 14-8s11 3 14 8"/><path d="M6 6v6h6"/><path d="M34 6v6h-6"/></svg>
-    <svg class="hand" viewBox="0 0 40 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 30v-4l-4-5a2 2 0 0 1 3-2.5l2 2V12a2 2 0 0 1 4 0v6l5 1a3 3 0 0 1 2.4 3.3L30 30"/></svg>
+  <!-- 前 5 秒：拖曳轉動地圖；之後換成「向下捲動開始瀏覽」再 5 秒（兩段疊在同一格，切換時交叉淡入淡出） -->
+  <span class="tip-a">
+    <span class="ico" aria-hidden="true">
+      <svg viewBox="0 0 40 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12c3-5 9-8 14-8s11 3 14 8"/><path d="M6 6v6h6"/><path d="M34 6v6h-6"/></svg>
+      <svg class="hand" viewBox="0 0 40 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 30v-4l-4-5a2 2 0 0 1 3-2.5l2 2V12a2 2 0 0 1 4 0v6l5 1a3 3 0 0 1 2.4 3.3L30 30"/></svg>
+    </span>
+    <span id="dragTipText">拖曳可轉動地圖</span>
   </span>
-  <span id="dragTipText">拖曳可轉動地圖</span>
+  <span class="tip-b">
+    <span class="ico" aria-hidden="true">
+      <svg viewBox="0 0 40 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="14" y="2" width="12" height="19" rx="6" style="color: var(--text-primary)"/></svg>
+      <svg class="wheel" viewBox="0 0 40 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6.5v3"/></svg>
+      <svg class="down" viewBox="0 0 40 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 25l4 4 4-4"/></svg>
+    </span>
+    <span>向下捲動開始瀏覽</span>
+  </span>
 </div>
 
 <div class="dock" id="dock">
@@ -1989,7 +2008,7 @@ const OUTFITS = [
 
 // ============ 組裝地圖 ============
 let current = null;   // 目前方案（給鏡頭用）
-let board = null, lightbox = null, computer = null;   // computer：廣場復古電腦（hover 標籤、鑽進螢幕的位置）
+let board = null, lightbox = null, computer = null, spaceSpots = [];   // spaceSpots：計畫亮點三個空間（首頁點了跳到 03 對應的那一站）   // computer：廣場復古電腦（hover 標籤、鑽進螢幕的位置）
 let retroScreen = null;   // 廣場復古電腦的螢幕（之後播「關於這個計畫」幻燈片）
 // 布告欄、燈箱的 hover 標籤（點擊後捲到對應段落）
 // 貓狗頭上的對話框（CSS2D 標籤）：量一次模型高度，放在頭頂上方
@@ -2025,13 +2044,13 @@ function hotspotLabel(parent, text, y) {
   parent.add(lab);
   return el;
 }
-const boardLights = [];   // 布告欄的看板燈（夜晚開）   // 布告欄、燈箱（捲動到對應段落時鏡頭拉近）
+const boardLights = [], boardLamps = [], frontables = [];   // frontables：場景、綠地的樹（停在布告欄時，擋在板子前面的會先藏起來）   // boardLamps：看板燈的燈座、燈臂、燈罩、燈泡（桌機停在布告欄時隱藏，免得擋到牌卡）   // 布告欄的看板燈（夜晚開）   // 布告欄、燈箱（捲動到對應段落時鏡頭拉近）
 let currentVariant = '1';
 function build(variantId, { replay = true } = {}) {
   currentVariant = variantId;
   // 清空上一個方案
   world.traverse(o => { if (o.isCSS2DObject) o.element.remove(); });   // 標籤是 DOM 元素，要手動移除
-  board = null; lightbox = null; computer = null; boardLights.length = 0;
+  board = null; lightbox = null; computer = null; spaceSpots = []; boardLights.length = 0; boardLamps.length = 0; frontables.length = 0;
   world.clear(); items.length = 0; people.length = 0; pets.length = 0; cars.length = 0; carLights.length = 0; clocks.length = 0; fountains.length = 0; labelEls.length = 0; lampLights.length = 0; spaceLights.length = 0;
   seed = 7; illusN = 0;
   const L = VARIANTS[variantId]();
@@ -2085,6 +2104,7 @@ function build(variantId, { replay = true } = {}) {
     wrap.add(g);
     addItem(wrap, p.x, p.z, { delay: 0.35 + Math.hypot(p.x, p.z) / 40, baseY: p.y + 1, drop: 9, liftAmount: 0.6 });
     p.wrap = wrap;                                     // 計畫亮點、媒合平台螢幕要用到場景本身
+    frontables.push(wrap);
     // 畫面座標：等角視角下，畫面水平 ∝ x − z、畫面垂直 ∝ x + z
     (inst[p.id] ??= []).push({ id: p.id, wrap, done, sx: p.x - p.z, sy: p.x + p.z });
   });
@@ -2154,6 +2174,7 @@ function build(variantId, { replay = true } = {}) {
     (big ? [[cx, b.z0 + 2.2]] :   // 大綠地左側那棵換成布告欄
       [[b.x0 + 2, b.z0 + 2], [b.x1 - 2, b.z1 - 2]]).forEach(([x, z]) => {
       const t = tree(1.1); addItem(t, x, z, { delay: 1.5, baseY: CURB_H, drop: 4, hoverable: false });   // 裝飾物：hover 不浮起
+      frontables.push(t);
     });
   });
   L.blocks.slice(0, 6).forEach(b => {
@@ -2369,14 +2390,15 @@ function build(variantId, { replay = true } = {}) {
     // 左半「園區活動」、右半「最新消息」；遠看只有白紙和彩色圖釘，捲到這兩個段落時鏡頭轉正拉近，疊上 HTML 牌卡
     {
       const g = new THREE.Group();
-      const PW = 3.05, PH = 2.75, PY = 2.5, PZ = 0.12;                // 板面寬、高、中心高度、前後位置
+      const PY = 2.5, PZ = 0.12;                                       // 板面中心高度、前後位置
+      const CX0 = 0.08, CX1 = 3.3, CH = 3.0;                           // 板面（＝HTML 牌卡）內緣、外緣的 x，高度：兩塊板面幾乎蓋滿背板，四周只留一圈邊框
       [-3.35, 3.35].forEach(x => g.add(box(0.22, 4.25, 0.22, M.white, x, 2.12, 0, 0.08)));   // 兩根立柱
       g.add(box(6.9, 3.25, 0.22, M.white, 0, PY, 0, 0.1));                                   // 背板
       g.add(box(7.2, 0.16, 0.55, M.white, 0, 4.3, 0.05, 0.06));                               // 頂部小屋簷
       const panels = [-1, 1].map(sx => {
-        const x = sx * (PW / 2 + 0.06);
-        g.add(box(PW, PH, 0.05, M.keybase, x, PY, PZ, 0.03));                                // 淺灰板面
-        return { x, w: PW, h: PH };
+        const x = sx * (CX0 + CX1) / 2;
+        g.add(box(CX1 - CX0 - 0.16, CH - 0.16, 0.05, M.keybase, x, PY, PZ, 0.03));          // 淺灰板面：比牌卡小一圈，直角不會從牌卡的圓角露出來
+        return { x, w: CX1 - CX0, h: CH };
       });
       const pins = [M.accent, M.yellow, M.blue, M.green];
       const paper = (x, y, w, h, pin, tilt = 0) => {                                          // 一張白紙＋一顆圖釘
@@ -2390,11 +2412,12 @@ function build(variantId, { replay = true } = {}) {
       [0.78, 0, -0.78].forEach((dy, i) => paper(panels[1].x, PY + dy, 2.6, 0.6, pins[(i + 1) % 4], [-0.01, 0.015, 0][i]));
       // 兩盞往下照的看板燈（晚上會亮）：裝在屋簷上方，鏡頭正對時燈不會跟板面重疊
       [-1.75, 1.75].forEach(x => {
-        g.add(box(0.06, 0.16, 0.06, M.dark, x, 4.46, 0.15, 0.02));                          // 立在屋簷上的燈座
-        g.add(box(0.06, 0.06, 0.6, M.dark, x, 4.54, 0.42, 0.02));                           // 往前伸的燈臂
+        const base = box(0.06, 0.16, 0.06, M.dark, x, 4.46, 0.15, 0.02);                    // 立在屋簷上的燈座
+        const arm = box(0.06, 0.06, 0.6, M.dark, x, 4.54, 0.42, 0.02);                      // 往前伸的燈臂
         const shade = cyl(0.17, 0.08, 0.2, M.dark, x, 4.5, 0.74);                            // 燈罩
-        shade.rotation.x = -0.6; g.add(shade);
-        const bulb = ball(0.09, M.lampBulb, x, 4.41, 0.8); bulb.castShadow = false; g.add(bulb);
+        shade.rotation.x = -0.6;
+        const bulb = ball(0.09, M.lampBulb, x, 4.41, 0.8); bulb.castShadow = false;
+        g.add(base, arm, shade, bulb); boardLamps.push(base, arm, shade, bulb);
         const light = new THREE.PointLight('#ffd9a0', 0, 5.5, 1.5);
         light.position.set(x, 3.7, 1.1); g.add(light);
         boardLights.push(light);
@@ -2402,13 +2425,14 @@ function build(variantId, { replay = true } = {}) {
       g.rotation.y = Math.PI / 2;                              // 正面朝 +x：跟左邊的道路平行
       const bx = cx - 10.8, bz = cz;                       // 往後退到綠地邊緣，前面的樹才不會擋到板面
       addItem(g, bx, bz, { delay: 1.4, baseY: Y, drop: 6, liftAmount: 0.5 });   // hover 會浮起
-      // 兩塊板面的四個角（本地座標：左上、右上、右下、左下），每一幀投影到螢幕上，對齊 HTML 牌卡
+      // 兩張 HTML 牌卡剛好貼在兩塊板面上（白紙和圖釘藏在牌卡後面）：四個角（本地座標：左上、右上、右下、左下）每一幀投影到螢幕上
       board = {
         stop: 7, label: (g.userData.labelEl = hotspotLabel(g, '園區活動・最新消息', 5.2)),
-        g, center: new THREE.Vector3(bx, Y + PY, bz), width: 6.4, height: 3.2,
-        dir: new THREE.Vector3(28.3, 22, 0).normalize(),     // 鏡頭正對布告欄（比等角視角高一點，前面的樹會落到板面下方）
-        panels: panels.map(pn => [[-1, 1], [1, 1], [1, -1], [-1, -1]].map(([a, b2]) =>
-          new THREE.Vector3(pn.x + a * pn.w / 2, PY + b2 * PH / 2, PZ + 0.1))),
+        g, center: new THREE.Vector3(bx, Y + PY, bz), width: 6.4, height: 3.2, cardW: CX1 * 2, cardH: CH,
+        dir: new THREE.Vector3(28.3, 22, 0).normalize(),     // 手機、直式平板：鏡頭正對布告欄（比等角視角高一點，前面的樹會落到板面下方）
+        dirDesk: new THREE.Vector3(28.3, 7, 0).normalize(),  // 桌機：幾乎平視，牌卡貼齊板面、四周的邊框寬度一致
+        panels: [[-CX1, -CX0], [CX0, CX1]].map(([x0, x1]) => [[x0, 1], [x1, 1], [x1, -1], [x0, -1]].map(([x, b2]) =>
+          new THREE.Vector3(x, PY + b2 * CH / 2, PZ + 0.03))),                // 板面正面（跟板面同一個平面，任何角度都對齊）
       };
     }
     // 前側中間：一組聊天的人
@@ -2464,6 +2488,12 @@ function build(variantId, { replay = true } = {}) {
   // 計畫亮點三個空間：辦公研發空間 → 跨院系研發中心 → 產學合作空間（各取地圖上第一個）
   const office = placed.find(p => p.id === 'office');
   current = { L, office, spaces: ['office', 'cowork', 'exchange'].map(id => placed.find(p => p.id === id)).filter(Boolean) };
+  // 首頁點這三個空間（跟理念與使命、進駐企業一樣）：hover 浮起＋標籤，點了直飛到計畫亮點裡介紹它的那一站
+  spaceSpots = current.spaces.map((sp, si) => {
+    const label = sp.wrap.userData.labelEl;
+    label?.classList.add('hot');
+    return { g: sp.wrap, stop: 2 + si, label };
+  });
   platScr = null;
   // ---- 計畫亮點三個空間裡的人：只有鏡頭拉近時才出現，在做這個空間會做的事 ----
   // 座標是各場景自己的座標（跟 scenes/*.js 的家具位置對齊），人物掛在場景底下，場景浮起、掉落時一起動
@@ -2568,14 +2598,16 @@ const anim = createAnimator(stage, items);
 const body = document.body;
 const hero = document.getElementById('hero');
 const caption = document.getElementById('caption');
-// 進場提示彈窗：跟著進場掉落動畫一起出現，5 秒後淡出；使用者先拖曳或往下捲就提早收起
+// 進場提示彈窗：跟著進場掉落動畫一起出現，5 秒後換成「向下捲動開始瀏覽」、再 5 秒淡出；使用者先拖曳或往下捲就提早收起
 const dragTip = document.getElementById('dragTip');
 if (matchMedia('(pointer: coarse)').matches) document.getElementById('dragTipText').textContent = '左右滑動可轉動地圖';   // 手機、平板
 let dragTipTimer;
 function showDragTip() {
   clearTimeout(dragTipTimer);
+  dragTip.classList.remove('scroll');
   dragTip.classList.add('show');
-  dragTipTimer = setTimeout(hideDragTip, 5000);
+  // 5 秒後換成「向下捲動開始瀏覽」，再 5 秒才收起
+  dragTipTimer = setTimeout(() => { dragTip.classList.add('scroll'); dragTipTimer = setTimeout(hideDragTip, 5000); }, 5000);
 }
 function hideDragTip() { clearTimeout(dragTipTimer); dragTip.classList.remove('show'); }
 let free = false;
@@ -2645,7 +2677,8 @@ const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const stopTarget = new THREE.Vector3();
 // stacked：上圖下文（手機、直式平板）。sy = 垂直偏移，把主體推到下方卡片上方的空白區（stackArea 每幀量一次）
 const stackArea = { hero: [0, 1], caption: [0, 1], tenants: [0, 1], board: [0, 1], traffic: [0, 1] };   // 每一站可用的畫面高度範圍（佔畫面高度比例：上緣、下緣）
-const areaSY = a => 0.5 - (a[0] + a[1]) / 2;                         // 讓主體落在這個範圍的正中間
+const areaSY = a => 0.5 - (a[0] + a[1]) / 2;
+let boardDeskArea = [0.15, 0.97];                                    // 桌機布告欄：錨點列下方到畫面底部（每幀量一次）                         // 讓主體落在這個範圍的正中間
 function stopAt(i, Lc, stacked) {
   const aspect = innerWidth / innerHeight;
   if (i >= 2 && i <= 4 && current?.spaces?.[i - 2]) {   // 計畫亮點：辦公研發空間、跨院系研發中心、產學合作空間
@@ -2666,7 +2699,9 @@ function stopAt(i, Lc, stacked) {
       const a = stackArea.board, h = Math.max(a[1] - a[0], 0.2);
       return { target: board.center, view: board.height * 0.75 / h, shift: 0, dir: board.dir, sy: areaSY(a) };   // 板面比牌卡高約 1.25 倍，上下露出布告欄的框
     }
-    return { target: board.center, view: Math.max(board.width / 0.9 / aspect, board.height / 0.86), shift: 0, dir: board.dir };   // 兩塊板面佔畫面寬約 90%
+    // 桌機：鏡頭拉近到兩張牌卡快填滿錨點列下方的空間（寬約 94%），板面往後仰的角度也算進高度
+    const a = boardDeskArea, cosE = Math.hypot(board.dirDesk.x, board.dirDesk.z);
+    return { target: board.center, view: Math.max(board.cardW / 0.96 / aspect, board.cardH * cosE / Math.max(a[1] - a[0], 0.3)), shift: 0, dir: board.dirDesk, sy: areaSY(a) };
   }
   if (i === 'screen' && computer) {               // 貼近螢幕：正對電腦、螢幕玻璃剛好填滿整個畫面
     const aspect2 = innerWidth / innerHeight;
@@ -2794,8 +2829,15 @@ function lockPageScroll(on) {
   if (on && isCoarse) return;
   document.documentElement.style.overflow = on ? 'hidden' : '';
 }
+// 首屏文字區（Slogan＋牌卡）：手指放在這裡不算操作地圖，捏合、左右滑都不會動到地圖（只有上方地圖區可以）
+function overHeroText(x, y) {
+  if (free || +getComputedStyle(hero).opacity < 0.1) return false;
+  const r = hero.getBoundingClientRect();
+  return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
+}
 canvas.addEventListener('pointerdown', e => {
   if (e.pointerType !== 'touch') return;
+  if (overHeroText(e.clientX, e.clientY)) { e.stopImmediatePropagation(); return; }   // 不交給地圖操作（OrbitControls）
   if (!touchPts.size) touchDX = touchDY = 0;
   touchPts.set(e.pointerId, [e.clientX, e.clientY]);
   if (touchPts.size >= 2 && !free && ctl.enabled) enterFree();      // 雙指一放上去就進入操作模式，第一次捏合就能縮放
@@ -2809,6 +2851,8 @@ ctl.addEventListener('change', () => {                                // 使用�
   if (free || !ctl.enabled || (touchPts.size === 1 && !(touchDX > 12 && touchDX > touchDY * 1.2))) return;
   enterFree();
 });
+// iPhone Safari 不理會 viewport 的禁止縮放，另外用它自己的手勢事件擋掉整頁放大（地圖的捏合走 pointer 事件，不受影響）
+['gesturestart', 'gesturechange', 'gestureend'].forEach(ev => document.addEventListener(ev, e => e.preventDefault(), { passive: false }));
 // 觸控板捏合（瀏覽器會當成 Ctrl＋滾輪）：擋掉瀏覽器縮放網頁，改成進入操作模式
 canvas.addEventListener('wheel', e => {
   if (!free && ctl.enabled && e.ctrlKey) { e.preventDefault(); enterFree(); }
@@ -2854,7 +2898,7 @@ canvas.addEventListener('pointerleave', () => hotPtr.set(9, 9));
 canvas.addEventListener('pointerdown', e => { downAt = [e.clientX, e.clientY]; petFly = null; });   // 自己拖曳地圖：取消拉近貓狗
 function pickHotspot(ptr) {                          // 滑鼠位置底下是布告欄還是燈箱
   hotRay.setFromCamera(ptr, stage.camera);
-  return [board, lightbox, computer, ...cars].find(h => h && hotRay.intersectObject(h.g, true).some(i => i.object.isMesh)) ?? null;
+  return [board, lightbox, computer, ...spaceSpots, ...cars].find(h => h && hotRay.intersectObject(h.g, true).some(i => i.object.isMesh)) ?? null;
 }
 let tapLabel = null, tapLabelUntil = 0;               // 觸控：點一下地圖上的場景，顯示它的標籤 2.5 秒（取代 hover）
 canvas.addEventListener('click', e => {
@@ -2877,7 +2921,7 @@ canvas.addEventListener('click', e => {
 // 可點的標籤本身也能點（觸控裝置上標籤常駐，手指直接點標籤最直覺）
 labels.domElement.addEventListener('click', e => {
   const el = e.target.closest('.label.hot');
-  const h = el && [board, lightbox, computer, ...cars].find(x => x?.label === el);
+  const h = el && [board, lightbox, computer, ...spaceSpots, ...cars].find(x => x?.label === el);
   if (h) h.stop === 'traffic' ? goTraffic(h) : goStop(h.stop);
 });
 // ===== 交通資訊彈窗 =====
@@ -3028,6 +3072,7 @@ let carFocus = null;                                   // { car, t0, from }
 const CAR_FLY = 1800;
 let carFocusTimer;
 function goTraffic(car) {
+  if (joinOn) leaveOverlays();                        // 從 07 一同起步點 06：先收掉一同起步的牌卡，再飛去小汽車
   if (reduceMotion || !cars.length) return openTraffic();
   exitFree();
   if (glide) { cancelAnimationFrame(glide.raf); glide = null; }
@@ -3119,12 +3164,13 @@ function leaveOverlays() {
 }
 function goStop(n) {                                  // 回到原本視角，捲到第 n 站
   const from = currentChapter;
-  const wasFree = free;
   const fromOverlay = leaveOverlays();                // 從交通資訊／一起從這裡起步出發：一律用直飛
   exitFree();
   userNav(n === 1 ? 0 : -1);
-  if (!fromOverlay && (wasFree || Math.abs(n - from) <= 1)) { glideTo(innerHeight * STOP_S[n]); return; }   // 相鄰章節：照常慢慢捲過去
+  if (!fromOverlay && Math.abs(n - from) <= 1) { glideTo(innerHeight * STOP_S[n]); return; }   // 相鄰章節：照常慢慢捲過去
+  // 其他（含操作地圖時點物件）：一律直飛，不會從 01 一路捲過中間每個章節
   if (glide) { cancelAnimationFrame(glide.raf); glide = null; }
+  returning = null;                                   // 從操作模式出發：鏡頭直接從目前的角度飛過去，不用先轉回等角
   startJump();
   if (from === 1) {                                     // 從螢幕裡跳出去：先用底色蓋住，再淡出露出地圖
     aboutFade.classList.add('loop'); aboutFade.style.opacity = 1;
@@ -3259,11 +3305,9 @@ function setSecActive(i, instant = false) {
   rubber.dir = rubber.active < 0 ? 0 : Math.sign(i - rubber.active);
   rubber.active = i; rubber.tl = tl; rubber.tr = tr;
   secBtns.forEach((b, k) => b.setAttribute('aria-current', k === i ? 'true' : 'false'));
-  // 目前章節的那一格如果被藏在捲動範圍外，就把錨點列捲到讓它完整露出來（置中）
+  // 錨點列放不下時：目前章節那一格一律捲到中間，前後的章節（例如 06 後面的 07）都會露出來；捲到底就停在底（瀏覽器自動夾住）
   const nav = secThumb.parentElement, b = secBtns[i];
-  if (b.offsetLeft < nav.scrollLeft + 8 || b.offsetLeft + b.offsetWidth > nav.scrollLeft + nav.clientWidth - 8) {
-    nav.scrollTo({ left: b.offsetLeft - (nav.clientWidth - b.offsetWidth) / 2, behavior: instant ? 'instant' : 'smooth' });
-  }
+  if (nav.scrollWidth > nav.clientWidth + 2) nav.scrollTo({ left: b.offsetLeft - (nav.clientWidth - b.offsetWidth) / 2, behavior: instant ? 'instant' : 'smooth' });
   if (instant) { rubber.l = tl; rubber.r = tr; rubber.vl = rubber.vr = 0; drawThumb(); return; }
   if (!rubber.running) { rubber.running = true; rubber.last = performance.now(); requestAnimationFrame(stepRubber); }
 }
@@ -3299,14 +3343,17 @@ document.getElementById('aboutEyebrow').textContent = ABOUT_COPY.eyebrow;
 document.getElementById('aboutTitle').textContent = ABOUT_COPY.title;
 document.getElementById('aboutLead').textContent = ABOUT_COPY.lead;
 const aboutRail = document.getElementById('aboutRail');
-aboutRail.innerHTML = ABOUT_COPY.steps.map((c, i) => `<button data-step="${i}" aria-label="${c.n} ${c.h}"><i></i></button>`).join('');
-const railBtns = [...aboutRail.children], railFills = railBtns.map(b => b.firstChild);
+aboutRail.innerHTML = ABOUT_COPY.steps.map((c, i) => `<button data-step="${i}" aria-label="${c.n} ${c.h}"><span><i></i></span></button>`).join('');
+const railFills = [...aboutRail.children].map(b => b.querySelector('i'));
+const aboutSteps = document.getElementById('aboutSteps');           // 右上角 01／02／03：點了切到那一步，自動輪播時跟著換 active
+aboutSteps.innerHTML = ABOUT_COPY.steps.map((c, i) => `<button data-step="${i}" title="${c.h}">${c.n}</button>`).join('');
+const railBtns = [...aboutSteps.children];
 aboutCopy.innerHTML = ABOUT_COPY.steps.map(c => `<div><span class="n">${c.n}</span><h4>${c.h}</h4><p>${c.p}</p></div>`).join('');
 const copyBlocks = [...aboutCopy.children];
 setAboutView();                                                      // 卡片內容填好、高度確定後，重新量一次幻燈片的取景（上圖下文時要避開卡片）
 document.fonts.ready.then(setAboutView);
 const goAboutStep = i => glideTo(innerHeight * (ABOUT_IN + ABOUT_STEP * i + 0.3));
-railBtns.forEach((b, i) => { b.onclick = () => { userNav(i); goAboutStep(i); }; });
+[...railBtns, ...aboutRail.children].forEach(b => { const i = Number(b.dataset.step); b.onclick = () => { userNav(i); goAboutStep(i); }; });   // 右上角按鈕、右下角進度條都能點
 let shownCopy = -1;
 function showAboutCopy(i) {                                         // 換步驟：上一段淡出、這一段淡入（三段疊在同一格）
   if (i === shownCopy) return;
@@ -3317,7 +3364,7 @@ function showAboutCopy(i) {                                         // 換步驟
 // 進度條：播過的步驟 = 1、目前這步 = 到自動接下一步的進度、還沒播的 = 0（關掉動態效果：目前這步直接填滿）
 function drawAboutProgress(step, now) {
   const cur = reduceMotion ? 1 : Math.min((now - aboutState.arrivedAt) / 1000 / ADVANCE[step], 1);
-  railFills.forEach((f, k) => { f.style.transform = `scaleY(${k < step ? 1 : k === step ? cur : 0})`; });
+  railFills.forEach((f, k) => { f.style.transform = `scaleX(${k < step ? 1 : k === step ? cur : 0})`; });
 }
 // 每一步「到站自動播」：往前捲 → 從頭播；往回捲 → 直接顯示完成畫面（不倒帶）
 // 自動接續：到這一步 advance 秒後自動捲到下一步；03 播完畫面淡成底色、跳回 01 從頭播，一直循環到使用者自己往下捲離開
@@ -3995,6 +4042,7 @@ stage.renderer.setAnimationLoop(() => {
   const p = max > 0 ? scrollY / max : 0;
   const stacked = STACKED_MQ.matches;                                // 上圖下文（手機、直式平板）
   if (stacked) measureStackArea();
+  else boardDeskArea = [(secNav.getBoundingClientRect().bottom + 16) / innerHeight, (continueBtn.offsetTop - 16) / innerHeight];   // 下緣停在右下角圓形按鈕上方，不會壓到牌卡
   // 全幅切換：版型進度 0（全幅）→ 1（左文右圖）慢慢過渡，鏡頭位置、大小、偏移一起混合
   layoutT += ((body.dataset.layout === 'b' ? 1 : 0) - layoutT) * Math.min(0.065 * dt, 1);   // 約 0.9 秒完成
   if (Math.abs(layoutT - Math.round(layoutT)) < 0.001) layoutT = Math.round(layoutT);
@@ -4038,7 +4086,7 @@ stage.renderer.setAnimationLoop(() => {
     // 鑽進／退出：大小用「等比」縮放（越靠近推得越細，不會最後一下猛衝）；地圖站之間：先稍微拉遠再拉近
     stage.view = seg.kind === 'map' ? lerp(A.view, B.view, kk2) + Math.sin(Math.PI * kk2) * 14 : Math.exp(lerp(Math.log(A.view), Math.log(B.view), kk2));
     stage.shift = stacked ? 0 : lerp(A.shift, B.shift, kk2);
-    stage.shiftY = stacked ? lerp(A.sy ?? 0, B.sy ?? 0, kk2) : 0;      // 上圖下文：主體推到卡片上方
+    stage.shiftY = lerp(A.sy ?? 0, B.sy ?? 0, kk2);                    // 上圖下文：主體推到卡片上方；桌機布告欄：牌卡放在錨點列下方
     tmp.copy(A.target).lerp(B.target, kk2);
     stage.camera.zoom = 1;
     stage.lookAt(tmp);
@@ -4381,6 +4429,14 @@ stage.renderer.setAnimationLoop(() => {
   }
   // 布告欄牌卡：把兩塊板面的四個角投影到螢幕上，HTML 牌卡等比縮放貼齊
   const showBoard = !free && !jump && !carFocus && at === 7 && board;
+  const lampsOff = !!showBoard;                                      // 停在布告欄時看板燈會擋到牌卡／板面上緣，先藏起來（桌機、平板、手機都一樣）
+  if (boardLamps.length && boardLamps[0].visible === lampsOff) {
+    boardLamps.forEach(m => { m.visible = !lampsOff; });
+    // 擋在板子前面的樹、廣場（板子正面朝 +x）：拉近時一起藏起來；物件本身每幀會被進場動畫設回顯示，所以藏它底下的零件
+    board.front ??= frontables.filter(o => o.position.x > board.center.x + 1 && o.position.x < board.center.x + 26 && Math.abs(o.position.z - board.center.z) < 11);
+    board.front.forEach(o => o.children.forEach(c => { c.visible = !lampsOff; }));
+    stage.renderer.shadowMap.needsUpdate = true;
+  }
   boardEls.forEach((el, i) => {
     el.classList.toggle('show', !!showBoard);
     if (!board) return;
