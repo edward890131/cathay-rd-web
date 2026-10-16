@@ -1,11 +1,12 @@
 // 載入畫面的跑步小人（3D 模型）
-// 跟地圖上的插畫公仔同一套造型（安全帽鮑伯頭、敞開外套、直筒褲、厚底鞋），但多了膝蓋和手肘，才跑得像真的：
+// 跟地圖上的插畫公仔同一套造型（新版髮型與五官、敞開外套、直筒褲、厚底鞋），但多了膝蓋和手肘，才跑得像真的：
 //   腿：大腿前後擺，小腿在擺盪期往後折（腳跟踢到屁股附近）、著地時打直；手：手肘彎 90 度、跟對側的腳同步前後擺
 //   身體：微微前傾，每一步騰空時往上彈一點，骨盆和肩膀反向輕微扭轉
 // 網站不直接畫這個模型：用 tools/runner-sprite.html 預先拍成連續動作圖（assets/loader-runner.png），載入畫面一打開就能播
 import * as THREE from 'three';
 import { M } from './materials.js';
 import { box, cyl, ball } from './kit.js';
+import { hairNew, faceNew } from './face.js';
 
 export const RUN_HZ = 1.45;                 // 每秒 1.45 個循環 ≈ 每分鐘 174 步（一般慢跑的步頻）
 
@@ -21,9 +22,8 @@ export function createRunner() {
   [-1, 1].forEach(sx => torso.add(box(0.36, 1.16, 0.54, coat, sx * 0.25, 0.7, 0, 0.16)));    // 外套左右片
   const head = new THREE.Group(); head.position.y = 1.3; torso.add(head);
   head.add(box(1.0, 1.06, 0.94, M.skin, 0, 0.6, 0, 0.42));                                   // 臉
-  head.add(box(1.14, 0.72, 1.08, M.hair, 0, 1.06, -0.03, 0.35));                             // 頭頂
-  head.add(box(1.12, 0.66, 0.6, M.hair, 0, 0.55, -0.25, 0.24));                              // 兩側與後腦
-  [-0.2, 0.2].forEach(x => head.add(ball(0.06, M.dark, x, 0.6, 0.47)));                      // 眼睛
+  hairNew(head, M.hair, false, 1, 'smooth');                                                 // 新版髮型：側撥瀏海（跟地圖上的人物同一套）
+  faceNew(head, M.hair);                                                                     // 新版五官：大眼睛、小鼻子、微笑嘴、耳朵
   // 腳：大腿（髖關節）→ 小腿（膝關節）→ 腳踝＋鞋
   const leg = x => {
     const hip = new THREE.Group(); hip.position.set(x, 0, 0); pelvis.add(hip);

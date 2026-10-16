@@ -227,5 +227,13 @@
   "綠地公共廣場（圓形廣場）": "Green Plaza (Circular Plaza)",
   "綠地公共廣場（大樹長椅）": "Green Plaza (Tree & Benches)",
   "代表產業的商業大樓": "Commercial Tower (Industry)",
-  "代表學界的大學建築": "University Building (Academia)"
+  "代表學界的大學建築": "University Building (Academia)",
+
+  "設計系統": "Design System",
+  "色彩": "Color",
+  "字體": "Typography",
+  "圓角與間距": "Radius & Spacing",
+  "元件": "Components",
+  "3D 模型": "3D Models",
+  "整理網站用到的色彩、字體、圓角、間距和元件。色票和元件都直接讀網站目前的樣式，切換白天／夜晚會跟著變。": "Colors, type, radius, spacing and components used across the site. Swatches and components read the live styles, so they follow the day / night switch."
 }

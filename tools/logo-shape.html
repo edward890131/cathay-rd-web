@@ -1,0 +1,64 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>CNRD Logo：描成向量外框</title>
+<!-- 產生 assets/cnrd-logo.json：node tools/make-logo-shape.mjs（會打開這頁、描好再存檔）。Logo 字體或字距改了就重新跑一次
+     做法：用網站的 Logo 字體（Lexend Exa 700、字距 -0.06em）在畫布上寫大大的 CNRD，再沿著字的邊緣描出外框（marching squares，邊緣用透明度內插，曲線才會平滑），
+     最後簡化點數。網頁裡用這些外框擠出成立體字（three.js ExtrudeGeometry） -->
+<link href="https://fonts.googleapis.com/css2?family=Lexend+Exa:wght@700&display=swap" rel="stylesheet" />
+<script type="module">
+await document.fonts.load('700 400px "Lexend Exa"');
+const TEXT = 'CNRD', SIZE = 400, PAD = 8;
+const c = document.createElement('canvas'), g = c.getContext('2d');
+g.font = `700 ${SIZE}px "Lexend Exa"`; g.letterSpacing = `${-0.06 * SIZE}px`;   // 跟 Header Logo 一樣的字距
+const m = g.measureText(TEXT);
+const W = Math.ceil(m.width) + PAD * 2, H = Math.ceil(m.actualBoundingBoxAscent + m.actualBoundingBoxDescent) + PAD * 2;
+c.width = W; c.height = H;
+g.font = `700 ${SIZE}px "Lexend Exa"`; g.letterSpacing = `${-0.06 * SIZE}px`; g.fillStyle = '#000';
+g.fillText(TEXT, PAD, PAD + m.actualBoundingBoxAscent);
+const A = g.getImageData(0, 0, W, H).data;
+const f = (x, y) => (x < 0 || y < 0 || x >= W || y >= H) ? -0.5 : A[(y * W + x) * 4 + 3] / 255 - 0.5;   // 字的內部 > 0
+// marching squares：每個 2×2 格子依四角在字內／字外，畫出邊界線段；端點用透明度在邊上內插
+const segs = new Map();                                       // 起點 key → 終點（線段方向固定：字在左手邊）
+const ek = (x, y, d) => `${x},${y},${d}`;                    // 邊的 key：格點 (x, y) 往右（h）或往下（v）的那條邊
+const ep = (x, y, d) => {                                     // 邊上的內插點
+  const a = f(x, y), b = d === 'h' ? f(x + 1, y) : f(x, y + 1), t = a / (a - b);
+  return d === 'h' ? [x + t, y] : [x, y + t];
+};
+const pts = new Map();
+for (let y = -1; y < H; y++) for (let x = -1; x < W; x++) {
+  const tl = f(x, y) > 0, tr = f(x + 1, y) > 0, br = f(x + 1, y + 1) > 0, bl = f(x, y + 1) > 0;
+  const code = (tl ? 8 : 0) | (tr ? 4 : 0) | (br ? 2 : 0) | (bl ? 1 : 0);
+  if (code === 0 || code === 15) continue;
+  const T = ek(x, y, 'h'), R = ek(x + 1, y, 'v'), B = ek(x, y + 1, 'h'), L = ek(x, y, 'v');
+  [[T, x, y, 'h'], [R, x + 1, y, 'v'], [B, x, y + 1, 'h'], [L, x, y, 'v']].forEach(([k, ...a]) => { if (!pts.has(k)) pts.set(k, ep(...a)); });
+  // 線段方向：沿著字的邊界走，字在右手邊（畫布 y 朝下）；鞍點（對角兩點在字內）用中心值決定怎麼連
+  const center = (f(x, y) + f(x + 1, y) + f(x + 1, y + 1) + f(x, y + 1)) / 4 > 0;
+  const table = {
+    1: [[L, B]], 2: [[B, R]], 3: [[L, R]], 4: [[R, T]], 6: [[B, T]], 7: [[L, T]], 8: [[T, L]], 9: [[T, B]],
+    11: [[T, R]], 12: [[R, L]], 13: [[R, B]], 14: [[B, L]],
+    5: center ? [[L, T], [R, B]] : [[L, B], [R, T]], 10: center ? [[T, R], [B, L]] : [[T, L], [B, R]],
+  };
+  table[code].forEach(([a, b]) => segs.set(a, b));
+}
+// 把線段接成封閉的外框
+const loops = [];
+while (segs.size) {
+  const [start] = segs.keys(); let k = start; const loop = [];
+  do { loop.push(pts.get(k)); const n = segs.get(k); segs.delete(k); k = n; } while (k && k !== start && segs.has(k));
+  if (loop.length > 8) loops.push(loop);
+}
+// 簡化點數（Ramer–Douglas–Peucker，容差 0.35px：放大到地圖上看不出折角）
+const rdp = (p, eps) => {
+  if (p.length < 3) return p;
+  const [ax, ay] = p[0], [bx, by] = p[p.length - 1], L2 = Math.hypot(bx - ax, by - ay) || 1;
+  let im = 0, dm = 0;
+  for (let i = 1; i < p.length - 1; i++) { const d = Math.abs((by - ay) * p[i][0] - (bx - ax) * p[i][1] + bx * ay - by * ax) / L2; if (d > dm) { dm = d; im = i; } }
+  return dm > eps ? [...rdp(p.slice(0, im + 1), eps).slice(0, -1), ...rdp(p.slice(im), eps)] : [p[0], p[p.length - 1]];
+};
+const closed = loop => { const i = loop.length >> 1; return [...rdp(loop.slice(0, i + 1), 0.35).slice(0, -1), ...rdp(loop.slice(i).concat([loop[0]]), 0.35).slice(0, -1)]; };
+// 輸出：高度正規化成 1（字的實際高度），y 改成往上，原點在左下
+const top = PAD, bottom = H - PAD, hgt = bottom - top;
+const out = loops.map(closed).map(l => l.map(([x, y]) => [+((x - PAD) / hgt).toFixed(4), +((bottom - y) / hgt).toFixed(4)]));
+window.logoShape = { text: TEXT, font: 'Lexend Exa 700, letter-spacing -0.06em', width: +((W - PAD * 2) / hgt).toFixed(4), loops: out };
+document.body.textContent = `${out.length} loops, ${out.reduce((n, l) => n + l.length, 0)} points`;
+</script>
