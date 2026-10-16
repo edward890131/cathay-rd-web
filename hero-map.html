@@ -1088,7 +1088,7 @@
     <kbd>拖曳</kbd><span>旋轉角度</span>
     <kbd>右鍵／滾輪鍵拖曳</kbd><span>前後左右移動（也可用 Shift＋拖曳）</span>
     <kbd>雙指捏合／Ctrl＋滾輪</kbd><span>拉近拉遠</span>
-    <span></span><span style="color:var(--muted)">動過地圖後，按右下角「繼續觀看」往下看</span>
+    <span></span><span style="color:var(--muted)">動過地圖後，按右下角「點擊體驗」往下看</span>
   </div>
   <div class="keys help-touch">
     <kbd>上下滑動</kbd><span>捲動頁面、切換章節</span>
@@ -3198,7 +3198,7 @@ continueBtn.onclick = () => {
   if (currentChapter >= LAST_STOP) return goTraffic();                // 05 → 06 交通資訊（鏡頭飛到小汽車前面 → 彈窗）
   goStop(currentChapter + 1);
 };
-const continueLabel = document.getElementById('continueLabel');
+const continueLabel = document.getElementById('continueLabel'), continueCue = continueBtn.querySelector('.cue');
 // 手機：右下角按鈕的箭頭和「下滑」每 2 秒輪流（兩個用同一個開關，不會各跑各的而疊在一起）
 setInterval(() => { if (innerWidth <= 760) continueBtn.classList.toggle('cue-on'); }, 2000);
 // ===== 一起從這裡起步 =====
@@ -4451,7 +4451,7 @@ stage.renderer.setAnimationLoop(() => {
     el.style.height = `${H}px`;
     el.style.transform = `matrix(${(tr[0] - tl[0]) / 480}, ${(tr[1] - tl[1]) / 480}, ${(bl[0] - tl[0]) / H}, ${(bl[1] - tl[1]) / H}, ${tl[0]}, ${tl[1]})`;
   });
-  // 右下角圓形按鈕：首屏顯示「開始體驗」，動過地圖後變成「繼續觀看」，捲走後隱藏
+  // 右下角圓形按鈕：首屏顯示「開始體驗」，動過地圖後變成「點擊體驗」（手機「點擊」），捲走後隱藏
   // 段落錨點：離開首屏後顯示；轉場過一半就切換到下一站的按鈕
   body.classList.toggle('in-sections', !free && e > 0.6);
   const navId = id => (id === 'screen' ? 1 : id === 'pscreen' ? 5 : id);
@@ -4461,7 +4461,8 @@ stage.renderer.setAnimationLoop(() => {
   currentChapter = activeStop;
   body.classList.toggle('show-continue', !document.getElementById('loader'));
   const trOpen = !trModal.hidden;                                   // 交通資訊彈窗開著：「繼續瀏覽」（關掉彈窗、回到原本的位置）
-  continueLabel.textContent = tr(joinOn ? '回到總覽' : trOpen ? '繼續瀏覽' : free ? '繼續觀看' : activeStop === 0 ? '開始體驗' : '繼續體驗');
+  continueLabel.textContent = tr(joinOn ? '回到總覽' : trOpen ? '繼續瀏覽' : free ? '點擊體驗' : activeStop === 0 ? '開始體驗' : '繼續體驗');
+  continueCue.textContent = tr(free ? '點擊' : '下滑');                 // 手機只顯示短字（跟箭頭輪流）：拖曳過地圖後改成「點擊」
   continueBtn.classList.toggle('up', joinOn);                       // 回到總覽：箭頭朝上
   continueBtn.setAttribute('aria-label', tr(joinOn ? '回到總覽，從頭開始體驗' : trOpen ? '前往下一段：一起從這裡起步' : '前往下一個章節'));
   // 錨點列還沒出現時直接定位（不播動畫），出現後才用橡皮筋效果切換
